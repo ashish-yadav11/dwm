@@ -494,6 +494,8 @@ focusmaster(const Arg *arg)
 #endif
         Client *c;
 
+	if (selmon->nmaster < 1)
+		return;
         if ((c = nexttiled(selmon->clients))) {
                 focusalt(c);
                 restack(selmon, 0);
