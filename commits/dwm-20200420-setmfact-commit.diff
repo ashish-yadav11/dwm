@@ -1,0 +1,38 @@
+commit a8e9513783f335b1ac7255e40a663adfffc4b475
+parent c82db690cc0c4624dad4dc6ae899020799ec84db
+Author: Chris Down <chris@chrisdown.name>
+Date:   Mon, 20 Apr 2020 16:41:52 +0100
+
+setmfact: Unify bounds for compile-time and runtime mfact
+
+There are two places that mfact can be set:
+
+- In the mfact global, which is defined at compile time and passed
+  into m->mfact during monitor setup. No bounds checks are performed,
+  but the comment alongside it says that valid values are [0.05..0.95]:
+
+      static const float mfact = 0.55; /* factor of master area size [0.05..0.95] */
+
+- By setmfact, which adjusts m->mfact at runtime. It also does some
+  minimum and maximum bounds checks, allowing [0.1..0.9]. Values outside
+  of that range are ignored, and mfact is not adjusted.
+
+These different thresholds mean that one cannot setmfact 0.95 or 0.05,
+despite the comment above that lists the legal range for mfact.
+
+Clarify this by enforcing the same bounds in setmfact at runtime as
+those listed for mfact at compile time.
+
+Diffstat:
+M	dwm.c	|	2	+-
+1 file changed, 1 insertion(+), 1 deletion(-)
+diff --git a/dwm.c b/dwm.c
+@@ -1520,7 +1520,7 @@ setmfact(const Arg *arg)
+ 	if (!arg || !selmon->lt[selmon->sellt]->arrange)
+ 		return;
+ 	f = arg->f < 1.0 ? arg->f + selmon->mfact : arg->f - 1.0;
+-	if (f < 0.1 || f > 0.9)
++	if (f < 0.05 || f > 0.95)
+ 		return;
+ 	selmon->mfact = f;
+ 	arrange(selmon);

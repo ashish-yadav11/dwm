@@ -1,0 +1,20 @@
+commit f04cac6d6e39cd9e3fc4fae526e3d1e8df5e34b2
+parent f09418bbb6651ab4c299cfefbe1d18de401f630e
+Author: Alex Flierl <shad0w73@freenet.de>
+Date:   Thu, 11 Jun 2020 15:28:32 +0200
+
+Fix memory leaks in drw
+
+The function drw_fontset_free in drw.c was never called.
+
+Diffstat:
+M	drw.c	|	1	+
+1 file changed, 1 insertion(+), 0 deletions(-)
+diff --git a/drw.c b/drw.c
+@@ -95,6 +95,7 @@ drw_free(Drw *drw)
+ {
+ 	XFreePixmap(drw->dpy, drw->drawable);
+ 	XFreeGC(drw->dpy, drw->gc);
++	drw_fontset_free(drw->fonts);
+ 	free(drw);
+ }

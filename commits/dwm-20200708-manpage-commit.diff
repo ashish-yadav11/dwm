@@ -1,0 +1,20 @@
+commit bb2e7222baeec7776930354d0e9f210cc2aaad5f
+parent f04cac6d6e39cd9e3fc4fae526e3d1e8df5e34b2
+Author: Hiltjo Posthuma <hiltjo@codemadness.org>
+Date:   Wed,  8 Jul 2020 18:05:50 +0200
+
+dwm.1: fix wrong text in man page
+
+Diffstat:
+M	dwm.1	|	2	+-
+1 file changed, 1 insertion(+), 1 deletion(-)
+diff --git a/dwm.1 b/dwm.1
+@@ -33,7 +33,7 @@ dwm draws a small border around windows to indicate the focus state.
+ .SH OPTIONS
+ .TP
+ .B \-v
+-prints version information to standard output, then exits.
++prints version information to stderr, then exits.
+ .SH USAGE
+ .SS Status bar
+ .TP

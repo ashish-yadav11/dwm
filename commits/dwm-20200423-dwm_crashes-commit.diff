@@ -1,0 +1,32 @@
+commit f09418bbb6651ab4c299cfefbe1d18de401f630e
+parent ed3ab6b4fceded0e9f2d22372df49a2bbd58de66
+Author: bakkeby <bakkeby@gmail.com>
+Date:   Thu, 23 Apr 2020 09:50:54 +0200
+
+dwm crashes when opening 50+ clients (tile layout)
+
+Many users new to dwm find themselves caught out by being kicked out to the login manager (dwm crashing) when they open 50+ clients for demonstration purposes. The number of clients reported varies depending on the resolution of the monitor.
+
+The cause of this is due to how the default tile layout calculates the height of the next client based on the position of the previous client. Because clients have a minimum size the (ty) position can exceed that of the window height, resulting in (m->wh - ty) becoming negative. The negative height stored as an unsigned int results in a very large height ultimately resulting in dwm crashing.
+
+This patch adds safeguards to prevent the ty and my positions from exceeding that of the window height.
+
+Diffstat:
+M	dwm.c	|	6	++++--
+1 file changed, 4 insertions(+), 2 deletions(-)
+diff --git a/dwm.c b/dwm.c
+@@ -1689,11 +1689,13 @@ tile(Monitor *m)
+ 		if (i < m->nmaster) {
+ 			h = (m->wh - my) / (MIN(n, m->nmaster) - i);
+ 			resize(c, m->wx, m->wy + my, mw - (2*c->bw), h - (2*c->bw), 0);
+-			my += HEIGHT(c);
++			if (my + HEIGHT(c) < m->wh)
++				my += HEIGHT(c);
+ 		} else {
+ 			h = (m->wh - ty) / (n - i);
+ 			resize(c, m->wx + mw, m->wy + ty, m->ww - mw - (2*c->bw), h - (2*c->bw), 0);
+-			ty += HEIGHT(c);
++			if (ty + HEIGHT(c) < m->wh)
++				ty += HEIGHT(c);
+ 		}
+ }
