@@ -597,6 +597,7 @@ hideclient(const Arg *arg)
                 selmon->sel->isfloating = 1;
                 resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
                        selmon->sel->sfw, selmon->sel->sfh, False);
+		XRaiseWindow(dpy, selmon->sel->win);
         }
         selmon->sel->ishidden = 1;
         updateclientdesktop(selmon->sel);
