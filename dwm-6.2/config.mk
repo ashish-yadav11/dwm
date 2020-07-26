@@ -27,7 +27,8 @@ CPPFLAGS = -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L -DVERSION=\"${VERSION}\" 
 #CFLAGS   = -g -std=c99 -pedantic -Wall -O0 ${INCS} ${CPPFLAGS}
 #CFLAGS   = -std=c99 -pedantic -Wall -Wno-deprecated-declarations -Os ${INCS} ${CPPFLAGS}
 #CFLAGS   = -std=gnu99 -Wall -Wextra -Wno-unused-parameter -Wno-deprecated-declarations -Os ${INCS} ${CPPFLAGS}
-CFLAGS   = -std=gnu99 -Wall -Wno-deprecated-declarations -Os ${INCS} ${CPPFLAGS}
+#CFLAGS   = -std=gnu99 -Wall -Wno-deprecated-declarations -Os ${INCS} ${CPPFLAGS}
+CFLAGS   = -g -std=gnu99 -Wall -Wno-deprecated-declarations -Os ${INCS} ${CPPFLAGS}
 LDFLAGS  = ${LIBS}
 
 # compiler and linker

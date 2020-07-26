@@ -1,7 +1,5 @@
 /* See LICENSE file for copyright and license details. */
 
-#define DEBUG /* comment this if debugging is not required */
-
 typedef struct {
         const Arg cmd;
         const unsigned int tag;
@@ -349,10 +347,6 @@ static Signal signals[] = {
 void
 floatmovex(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("floatmovex");
-        fflush(stdout);
-#endif
         if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
                 int nx, ptrx, ptry;
                 int restoreptr = 0;
@@ -378,10 +372,6 @@ floatmovex(const Arg *arg)
 void
 floatmovey(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("floatmovey");
-        fflush(stdout);
-#endif
         if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
                 int ny, ptrx, ptry;
                 int restoreptr = 0;
@@ -407,10 +397,6 @@ floatmovey(const Arg *arg)
 void
 floatresizeh(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("floatresizeh");
-        fflush(stdout);
-#endif
         if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
                 int nh, ptrx, ptry;
                 int restoreptr = 0;
@@ -439,10 +425,6 @@ floatresizeh(const Arg *arg)
 void
 floatresizew(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("floatresizew");
-        fflush(stdout);
-#endif
         if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
                 int nw, ptrx, ptry;
                 int restoreptr = 0;
@@ -471,10 +453,6 @@ floatresizew(const Arg *arg)
 void
 focuslast(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("focuslast");
-        fflush(stdout);
-#endif
 	Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
 
         if (arg->i)
@@ -488,10 +466,6 @@ focuslast(const Arg *arg)
 void
 focusmaster(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("focusmaster");
-        fflush(stdout);
-#endif
         Client *c;
 
 	if (selmon->nmaster < 1)
@@ -505,10 +479,6 @@ focusmaster(const Arg *arg)
 void
 focusstackalt(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("focusstackalt");
-        fflush(stdout);
-#endif
 	Client *c;
 
 	if (!selmon->sel)
@@ -570,10 +540,6 @@ focusstackalt(const Arg *arg)
 void
 focusurgent(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("focusurgent");
-        fflush(stdout);
-#endif
 	for (Monitor *m = mons; m; m = m->next)
                 for (Client *c = selmon->stack; c; c = c->snext)
                         if (c && c->isurgent) {
@@ -585,10 +551,6 @@ focusurgent(const Arg *arg)
 void
 hideclient(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("hideclient");
-        fflush(stdout);
-#endif
         if (!selmon->sel)
                 return;
         if (selmon->sel->isfullscreen)
@@ -608,10 +570,6 @@ hideclient(const Arg *arg)
 void
 hidefloating(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("hidefloating");
-        fflush(stdout);
-#endif
         for (Client *c = selmon->clients; c; c = c->next) {
                 if (c->isfullscreen)
                         continue;
@@ -627,10 +585,6 @@ hidefloating(const Arg *arg)
 void
 hidescratch(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("hidescratch");
-        fflush(stdout);
-#endif
         unsigned long t = 0;
 
 	for (Client *c = selmon->clients; c; c = c->next)
@@ -647,10 +601,6 @@ hidescratch(const Arg *arg)
 Client *
 nextprevsamefloat(int next)
 {
-#ifdef DEBUG
-        puts("nextprevsamefloat");
-        fflush(stdout);
-#endif
         Client *c = NULL;
 
         if (next > 0) {
@@ -678,10 +628,6 @@ nextprevsamefloat(int next)
 Client *
 nextprevvisible(int next)
 {
-#ifdef DEBUG
-        puts("nextprevvisible");
-        fflush(stdout);
-#endif
         Client *c = NULL;
 
 	if (next > 0) {
@@ -705,10 +651,6 @@ nextprevvisible(int next)
 void
 push(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("push");
-        fflush(stdout);
-#endif
         Client *c;
 	Client *ps = NULL, *pc = NULL;
         Client *i, *tmp;
@@ -747,10 +689,6 @@ push(const Arg *arg)
 void
 showfloating(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("showfloating");
-        fflush(stdout);
-#endif
         Client *f = NULL; /* last focused hidden floating client */
 
 	for (Client *c = selmon->stack; c; c = c->snext)
@@ -769,10 +707,6 @@ showfloating(const Arg *arg)
 void
 tagandview(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("tagandview");
-        fflush(stdout);
-#endif
         if (selmon->sel && (1 << arg->ui) != selmon->tagset[selmon->seltags]) {
                 unsigned long t = arg->ui + 1;
 
@@ -786,10 +720,6 @@ tagandview(const Arg *arg)
 void
 togglefocus(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("togglefocus");
-        fflush(stdout);
-#endif
 	Client *c;
 
 	if (!selmon->sel)
@@ -806,10 +736,6 @@ togglefocus(const Arg *arg)
 void
 togglefullscr(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("togglefullscr");
-        fflush(stdout);
-#endif
         int found = 0;
 	Client *c;
 
@@ -825,10 +751,6 @@ togglefullscr(const Arg *arg)
 void
 togglestkpos(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("togglestkpos");
-        fflush(stdout);
-#endif
         int curidx, inrel;
         Client *c, *i;
 
@@ -854,10 +776,6 @@ togglestkpos(const Arg *arg)
 void
 togglewin(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("togglewin");
-        fflush(stdout);
-#endif
 	Client *c;
 
         if (selmon->sel && selmon->sel->scratchkey == ((Win*)(arg->v))->scratchkey) {
@@ -884,20 +802,12 @@ togglewin(const Arg *arg)
 void
 vieworprev(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("vieworprev");
-        fflush(stdout);
-#endif
 	view(((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) ? &((Arg){0}) : arg);
 }
 
 void
 windowswitcher(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("windowswitcher");
-        fflush(stdout);
-#endif
 	XDeleteProperty(dpy, root, netatom[NetClientList]);
         for (Client *c = selmon->stack; c; c = c->snext)
                 XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
@@ -915,10 +825,6 @@ windowswitcher(const Arg *arg)
 void
 zoomswap(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("zoomswap");
-        fflush(stdout);
-#endif
 	Client *c;
         Client *master, *at;
 
@@ -959,10 +865,6 @@ zoomswap(const Arg *arg)
 void
 zoomvar(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("zoomvar");
-        fflush(stdout);
-#endif
         if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1)
                 arg->i ? zoomswap(&((Arg){0})) : zoom(&((Arg){0}));
         else

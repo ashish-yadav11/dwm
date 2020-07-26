@@ -1,10 +1,6 @@
 static void
 insertclient(Client *item, Client *insertitem, int after)
 {
-#ifdef DEBUG
-        puts("insertclient");
-        fflush(stdout);
-#endif
 	Client *c;
 
 	if (item == NULL || insertitem == NULL || item == insertitem)
@@ -28,10 +24,6 @@ insertclient(Client *item, Client *insertitem, int after)
 static void
 inplacerotate(const Arg *arg)
 {
-#ifdef DEBUG
-        puts("inplacerotate");
-        fflush(stdout);
-#endif
 	int selidx = 0, i = 0;
 	Client *c = NULL, *stail = NULL, *mhead = NULL, *mtail = NULL, *shead = NULL;
 
@@ -39,7 +31,7 @@ inplacerotate(const Arg *arg)
 	if(!selmon->sel || selmon->sel->isfloating)
                 return;
 
-	// Determine positionings for insertclient
+	/* Determine positionings for insertclient */
 	for (mhead = c = nexttiled(selmon->clients); c; c = nexttiled(c->next), i++) {
 		if (selmon->sel == c)
                         selidx = i;
@@ -51,14 +43,14 @@ inplacerotate(const Arg *arg)
 	}
 
         switch (selmon->lt[selmon->sellt]->arrange == deck ? -arg->i : arg->i) {
-                // All clients rotate
+                /* All clients rotate */
                 case 1:
                         insertclient(stail, selmon->clients, 1);
                         break;
                 case 2:
                         insertclient(selmon->clients, stail, 0);
                         break;
-                // Stack xor master rotate
+                /* Stack xor master rotate */
                 case -1:
                         if (selidx >= selmon->nmaster)
                                 insertclient(stail, shead, 1);
@@ -73,7 +65,7 @@ inplacerotate(const Arg *arg)
                         break;
         }
 
-	// Restore focus position
+	/* Restore focus position */
 	for (i = 0, c = nexttiled(selmon->clients); c; c = nexttiled(c->next), i++) {
 		if (i == selidx) {
                         focus(c);
