@@ -3,7 +3,7 @@
 typedef struct {
         const Arg cmd;
         const unsigned int tag;
-        const char scratchkey;
+        const int scratchkey;
 } Win;
 
 /* appearance */
@@ -89,18 +89,18 @@ static const Rule rules[] = {
 	 */
 	{ "Brave-browser",
 			"brave-browser",
-					NULL,		0,	0,	-1,	'' },
+					NULL,		0,	0,	-1,	-1 },
 	{ "TelegramDesktop",
-			NULL,		NULL,		0,	1,	-1,	'3' },
+			NULL,		NULL,		0,	1,	-1,	 3 },
 	{ NULL,		"crx_cinhimbnkkaeohfgghhklpknlkffjgod",
-					NULL,		0,	1,	-1,	'2' },
+					NULL,		0,	1,	-1,	 2 },
 	{ NULL,		"floating_Termite",
-					NULL,		0,	1,	-1,	'1' },
+					NULL,		0,	1,	-1,	 1 },
 	{ NULL,		"neomutt_Termite",
 					NULL,		1 << 7,
-								0,	-1,	'' },
+								0,	-1,	-2 },
 	{ NULL,		"pyfzf_Termite",
-					NULL,		0,	1,	-1,	'4' },
+					NULL,		0,	1,	-1,	 4 },
 };
 
 /* layout(s) */
@@ -126,31 +126,12 @@ static const Attach attachs[] = {
         { NULL,		NULL }
 };
 
-/* custom function declarations */
-static void floatmovex(const Arg *arg);
-static void floatmovey(const Arg *arg);
-static void floatresizeh(const Arg *arg);
-static void floatresizew(const Arg *arg);
-static void focuslast(const Arg *arg);
-static void focusmaster(const Arg *arg);
-static void focusstackalt(const Arg *arg);
-static void focusurgent(const Arg *arg);
-static void hideclient(const Arg *arg);
-static void hidefloating(const Arg *arg);
-static void hidescratch(const Arg *arg);
-static Client *nextprevsamefloat(int next);
-static Client *nextprevvisible(int next);
-static void push(const Arg *arg);
-static void showfloating(const Arg *arg);
-static void tagandview(const Arg *arg);
-static void togglefocus(const Arg *arg);
-static void togglefullscr(const Arg *arg);
-static void togglestkpos(const Arg *arg);
-static void togglewin(const Arg *arg);
-static void vieworprev(const Arg *arg);
-static void windowswitcher(const Arg *arg);
-static void zoomswap(const Arg *arg);
-static void zoomvar(const Arg *arg);
+static const char *const *scratchcmds[] = {
+	(const char *[]){ "termite", "--name=floating_Termite", NULL },
+	(const char *[]){ "brave", "--profile-directory=Default", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
+	(const char *[]){ "telegram-desktop", NULL },
+	(const char *[]){ "termite", "--name=pyfzf_Termite", "--exec=/home/ashish/.local/bin/pyfzf", NULL },
+};
 
 /* key definitions */
 #define MODKEY Mod3Mask
@@ -180,14 +161,36 @@ static void zoomvar(const Arg *arg);
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
 
-static const Win browser		= { .cmd = NOARGCMD("brave"), .tag = 8, .scratchkey = '' };
-static const Win mail			= { .cmd = NOARGCMD("/home/ashish/.scripts/neomutt.sh"), .tag = 7, .scratchkey = '' };
+static const Win browser = { .cmd = NOARGCMD("brave"), .tag = 8, .scratchkey = -1 };
+static const Win mail = { .cmd = NOARGCMD("/home/ashish/.scripts/neomutt.sh"), .tag = 7, .scratchkey = -2 };
 
-/*First arg only serves to match against key in rules*/
-static const char *spcmd1[] = { "1", "termite", "--name=floating_Termite", NULL };
-static const char *spcmd2[] = { "2", "brave", "--profile-directory=Default", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL };
-static const char *spcmd3[] = { "3", "telegram-desktop", NULL };
-static const char *spcmd4[] = { "4", "termite", "--name=pyfzf_Termite", "--exec=/home/ashish/.local/bin/pyfzf", NULL };
+/* custom function declarations */
+static void floatmovex(const Arg *arg);
+static void floatmovey(const Arg *arg);
+static void floatresizeh(const Arg *arg);
+static void floatresizew(const Arg *arg);
+static void focuslast(const Arg *arg);
+static void focusmaster(const Arg *arg);
+static void focusstackalt(const Arg *arg);
+static void focusurgent(const Arg *arg);
+static void hideclient(const Arg *arg);
+static void hidefloating(const Arg *arg);
+static void hidevisscratch(const Arg *arg);
+static Client *nextprevsamefloat(int next);
+static Client *nextprevvisible(int next);
+static void push(const Arg *arg);
+static void scratchhide(const Arg *arg);
+static void scratchshow(const Arg *arg);
+static void showfloating(const Arg *arg);
+static void tagandview(const Arg *arg);
+static void togglefocus(const Arg *arg);
+static void togglefullscr(const Arg *arg);
+static void togglestkpos(const Arg *arg);
+static void togglewin(const Arg *arg);
+static void vieworprev(const Arg *arg);
+static void windowswitcher(const Arg *arg);
+static void zoomswap(const Arg *arg);
+static void zoomvar(const Arg *arg);
 
 #include "inplacerotate.c"
 #include <X11/XF86keysym.h>
@@ -265,10 +268,10 @@ static Key keys[] = {
 	{ MODKEY,                       XK_period,      shiftview,      {.i = +1 } },
 	{ MODKEY,                       XK_comma,       shiftview,      {.i = -1 } },
 	{ MODKEY|ShiftMask,             XK_period,      hideclient,     {0} },
-	{ SUPKEY,                       XK_F1,          togglescratch,  {.v = spcmd1 } },
-	{ MODRKEY,                      XK_m,           togglescratch,  {.v = spcmd2 } },
-	{ SUPKEY,                       XK_w,           togglescratch,  {.v = spcmd3 } },
-	{ SUPKEY,                       XK_p,           togglescratch,  {.v = spcmd4 } },
+	{ SUPKEY,                       XK_F1,          togglescratch,  {.i = 1 } },
+	{ MODRKEY,                      XK_m,           togglescratch,  {.i = 2 } },
+	{ SUPKEY,                       XK_w,           togglescratch,  {.i = 3 } },
+	{ SUPKEY,                       XK_p,           togglescratch,  {.i = 4 } },
 	{ MODKEY,                       XK_s,           togglestkpos,   {0} },
 	{ MODRKEY,                      XK_space,       togglewin,      {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,      {.v = &mail} },
@@ -277,7 +280,7 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_t,           spawn,          TERMCMD("htop") },
 	{ MODKEY,            XK_bracketleft,            hidefloating,   {0} },
 	{ MODKEY,            XK_bracketright,           showfloating,   {0} },
-	{ MODKEY,            XK_backslash,              hidescratch,    {0} },
+	{ MODKEY,            XK_backslash,              hidevisscratch, {0} },
         { 0,                 XF86XK_AudioMute,          spawn,          PACTLM },
         { 0,                 XF86XK_AudioLowerVolume,   spawn,          PACTLD },
         { 0,                 XF86XK_AudioRaiseVolume,   spawn,          PACTLI },
@@ -340,7 +343,8 @@ static Button buttons[] = {
 /* signal definitions */
 static Signal signals[] = {
 	/* signame		function */
-	{ "tbr",		togglebar },
+	{ "scrs",		scratchshow },
+	{ "scrh",		scratchhide },
 };
 
 /* custom function implementations */
@@ -583,12 +587,12 @@ hidefloating(const Arg *arg)
 }
 
 void
-hidescratch(const Arg *arg)
+hidevisscratch(const Arg *arg)
 {
         unsigned long t = 0;
 
 	for (Client *c = selmon->clients; c; c = c->next)
-                if ((c->scratchkey >= ' ') && ISVISIBLE(c)) {
+                if ((c->scratchkey > 0) && ISVISIBLE(c)) {
                         c->tags = 0;
                         XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                                         PropModeReplace, (unsigned char *) &t, 1);
@@ -646,6 +650,48 @@ nextprevvisible(int next)
 					c = i;
 	}
         return c;
+}
+
+void
+scratchhide(const Arg *arg)
+{
+        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
+                unsigned long t = 0;
+
+                selmon->sel->tags = 0;
+                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
+                                PropModeReplace, (unsigned char *) &t, 1);
+                focus(NULL);
+                arrange(selmon);
+        }
+}
+
+void
+scratchshow(const Arg *arg)
+{
+	Client *c;
+        Arg a;
+
+        for (Monitor *m = mons; m; m = m->next)
+                for (c = selmon->clients; c; c = c->next)
+                        if (c->scratchkey == arg->i)
+                                goto show;
+        a.v = scratchcmds[arg->i - 1];
+        spawn(&a);
+        return;
+show:
+        if (selmon->sel && c == selmon->sel)
+                return;
+        if (c->ishidden)
+                c->ishidden = 0;
+        if (c->mon != selmon) {
+                sendmon(c, selmon);
+                return;
+        }
+        c->tags = selmon->tagset[selmon->seltags];
+        updateclientdesktop(c);
+        focusalt(c);
+        arrange(selmon);
 }
 
 void
@@ -794,7 +840,7 @@ togglewin(const Arg *arg)
         if (c)
                 focusclient(c, ((Win*)(arg->v))->tag);
         else {
-                view(&((Arg) { .ui = 1 << (((Win*)(arg->v))->tag) }));
+                view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag) }));
                 spawn(&((Win*)(arg->v))->cmd);
         }
 }

@@ -125,7 +125,7 @@ struct Client {
 	int bw, oldbw;
 	unsigned int tags;
         int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, ishidden;
-	char scratchkey;
+	int scratchkey;
 	Client *next;
 	Client *snext;
 	Monitor *mon;
@@ -190,7 +190,7 @@ typedef struct {
 	unsigned int tags;
 	int isfloating;
 	int monitor;
-	const char scratchkey;
+	const int scratchkey;
 } Rule;
 
 typedef struct Systray   Systray;
@@ -298,7 +298,6 @@ static void sighup(int unused);
 static void sigterm(int unused);
 static void sigdsblocks(const Arg *arg);
 static void spawn(const Arg *arg);
-static void spawnscratch(const Arg *arg);
 static Monitor *systraytomon(Monitor *m);
 static void tabmode(const Arg *arg);
 static void tag(const Arg *arg);
@@ -411,9 +410,9 @@ applyrules(Client *c)
 	XClassHint ch = { NULL, NULL };
 
 	/* rule matching */
-	c->isfloating = 0;
-	c->tags = 0;
-	c->scratchkey = 0;
+//	c->isfloating = 0;
+//	c->tags = 0;
+//	c->scratchkey = 0;
 	XGetClassHint(dpy, c->win, &ch);
 	class    = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name  ? ch.res_name  : broken;
@@ -428,7 +427,7 @@ applyrules(Client *c)
 			c->tags |= r->tags;
 
                         if (r->scratchkey) {
-                                if (r->scratchkey < ' ') {
+                                if (r->scratchkey < 0) {
                                         for (Client *cs = selmon->clients; cs; cs = cs->next)
                                                 if (cs->scratchkey == r->scratchkey)
                                                         goto out;
@@ -2656,20 +2655,6 @@ spawn(const Arg *arg)
 }
 
 void
-spawnscratch(const Arg *arg)
-{
-	if (fork() == 0) {
-		if (dpy)
-			close(ConnectionNumber(dpy));
-		setsid();
-		execvp(((char **)arg->v)[1], ((char **)arg->v)+1);
-		fprintf(stderr, "dwm: execvp %s", ((char **)arg->v)[1]);
-		perror(" failed");
-		exit(EXIT_SUCCESS);
-	}
-}
-
-void
 swaptags(const Arg *arg)
 {
         unsigned int newtags = 1 << arg->ui;
@@ -2960,30 +2945,32 @@ togglefloating(const Arg *arg)
 void
 togglescratch(const Arg *arg)
 {
-	Client *c;
-
-        for (Monitor *m = mons; m; m = m->next)
-                for (c = selmon->clients; c; c = c->next)
-                        if (c->scratchkey == ((char**)arg->v)[0][0])
-                                goto toggle;
-        spawnscratch(arg);
-        return;
-toggle:
-        if (c->mon != selmon) {
-                sendmon(c, selmon);
-                return;
-        }
-        if (selmon->sel && c == selmon->sel) {
+        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
                 unsigned long t = 0;
 
-                c->tags = 0;
-                XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
+                selmon->sel->tags = 0;
+                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                                 PropModeReplace, (unsigned char *) &t, 1);
                 focus(NULL);
                 arrange(selmon);
         } else {
+                Client *c;
+                Arg a;
+
+                for (Monitor *m = mons; m; m = m->next)
+                        for (c = selmon->clients; c; c = c->next)
+                                if (c->scratchkey == arg->i)
+                                        goto show;
+                a.v = scratchcmds[arg->i - 1];
+                spawn(&a);
+                return;
+show:
                 if (c->ishidden)
                         c->ishidden = 0;
+                if (c->mon != selmon) {
+                        sendmon(c, selmon);
+                        return;
+                }
                 c->tags = selmon->tagset[selmon->seltags];
                 updateclientdesktop(c);
                 focusalt(c);
