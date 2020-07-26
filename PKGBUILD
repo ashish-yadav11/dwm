@@ -6,14 +6,14 @@ _pkgname=dwm
 pkgver=6.2
 pkgrel=1
 pkgdesc="Custom build of dwm"
-arch=(i686 x86_64)
+arch=('i686' 'x86_64')
 url="https://github.com/ashish-yadav11/dwm"
-license=(MIT)
-depends=(libx11 libxft freetype2)
-optdepends=(rofi)
-provides=(dwm)
-conflicts=(dwm)
-options=(zipman !strip)
+license=('MIT')
+depends=('libx11' 'libxft' 'freetype2')
+optdepends=('rofi: default app launcher and window switcher')
+provides=('dwm')
+conflicts=('dwm')
+options=('zipman' '!strip')
 
 source=("${_pkgname}-${pkgver}.tar.gz"
 	config.h
