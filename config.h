@@ -339,10 +339,8 @@ static Button buttons[] = {
 #define FSIGID "z:"
 /* without considering the terminating null byte */
 #define FSIGIDLEN 2
-#define NMAXFSIGNAMELEN 4
-#define SMAXFSIGNAMELEN "4"
-#define NMAXFSIGARGLEN 2
-#define SMAXFSIGARGLEN "2"
+#define MAXFSIGNAMELEN 4
+#define MAXFSIGARGLEN 2
 
 /* trigger signals using `xsetroot -name "FSIGNAL<signame> [<type> <value>]"` */
 /* signal definitions */

@@ -20,5 +20,8 @@
    ({ __auto_type C = A; \
        A = B; B = C; })
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+
 void die(const char *fmt, ...);
 void *ecalloc(size_t nmemb, size_t size);

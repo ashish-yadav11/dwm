@@ -3378,10 +3378,10 @@ updatestatus(void)
         /* Check if a fake signal was found, and if so handle it */
         if (strncmp(rawstext, FSIGID, 2) == 0) {
                 int len, lensig, numarg;
-                char sig[NMAXFSIGNAMELEN + 1], arg[NMAXFSIGARGLEN + 1];
+                char sig[MAXFSIGNAMELEN + 1], arg[MAXFSIGARGLEN + 1];
                 Arg a;
 
-                numarg = sscanf(rawstext + FSIGIDLEN, "%"SMAXFSIGNAMELEN"s%n%"SMAXFSIGARGLEN"s%n",
+                numarg = sscanf(rawstext + FSIGIDLEN, "%" STR(MAXFSIGNAMELEN) "s%n%" STR(MAXFSIGARGLEN) "s%n",
                                 sig, &lensig, arg, &len);
                 if (numarg == 1)
                         a = (Arg){0};
