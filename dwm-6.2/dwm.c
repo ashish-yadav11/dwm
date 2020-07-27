@@ -1006,7 +1006,7 @@ cycleattach(const Arg *arg)
                 if (a != attachs && (a - 1)->symbol)
                         r.v = a - 1;
                 else
-                        r.v = &attachs[LENGTH(attachs) - 2];
+                        r.v = attachs[LENGTH(attachs) - 2];
         }
         setattach(&r);
 }
@@ -1029,7 +1029,7 @@ cyclelayout(const Arg *arg)
 		if (l != layouts && (l - 1)->symbol)
 			r.v = l - 1;
 		else
-			r.v = &layouts[LENGTH(layouts) - 2];
+			r.v = layouts[LENGTH(layouts) - 2];
 	}
         setlayout(&r);
 }
@@ -2953,14 +2953,12 @@ togglescratch(const Arg *arg)
                 arrange(selmon);
         } else {
                 Client *c;
-                Arg a;
 
                 for (Monitor *m = mons; m; m = m->next)
                         for (c = selmon->clients; c; c = c->next)
                                 if (c->scratchkey == arg->i)
                                         goto show;
-                a.v = scratchcmds[arg->i - 1];
-                spawn(&a);
+                spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
                 return;
 show:
                 if (c->ishidden)
@@ -3378,30 +3376,31 @@ updatestatus(void)
                 return;
         }
         /* Check if a fake signal was found, and if so handle it */
-        if (!strncmp(rawstext, FSIGNAL, 2)) {
+        if (strncmp(rawstext, FSIGID, 2) == 0) {
                 int len, lensig, numarg;
-                char sig[50], arg[16];
+                char sig[NMAXFSIGNAMELEN + 1], arg[NMAXFSIGARGLEN + 1];
                 Arg a;
 
-                numarg = sscanf(rawstext + LENFSIGNAL, "%s%n%s%n", sig, &lensig, arg, &len);
+                numarg = sscanf(rawstext + FSIGIDLEN, "%"SMAXFSIGNAMELEN"s%n%"SMAXFSIGARGLEN"s%n",
+                                sig, &lensig, arg, &len);
                 if (numarg == 1)
                         a = (Arg){0};
-                else if (numarg > 2)
-                        return;
-                else if (!strncmp(arg, "i", len - lensig)) {
-                        if (sscanf(rawstext + LENFSIGNAL + len, "%i", &(a.i)) != 1)
-                                return;
-                } else if (!strncmp(arg, "ui", len - lensig)) {
-                        if (sscanf(rawstext + LENFSIGNAL + len, "%u", &(a.ui)) != 1)
-                                return;
-                } else if (!strncmp(arg, "f", len - lensig)) {
-                        if (sscanf(rawstext + LENFSIGNAL + len, "%f", &(a.f)) != 1)
+                else if (numarg == 2) {
+                        if (strncmp(arg, "i", len - lensig) == 0) {
+                                if (sscanf(rawstext + FSIGIDLEN + len, "%i", &(a.i)) != 1)
+                                        return;
+                        } else if (strncmp(arg, "ui", len - lensig) == 0) {
+                                if (sscanf(rawstext + FSIGIDLEN + len, "%u", &(a.ui)) != 1)
+                                        return;
+                        } else if (strncmp(arg, "f", len - lensig) == 0) {
+                                if (sscanf(rawstext + FSIGIDLEN + len, "%f", &(a.f)) != 1)
+                                        return;
+                        } else
                                 return;
                 } else
                         return;
-
                 for (int i = 0; i < LENGTH(signals); i++)
-                        if (!strncmp(sig, signals[i].sig, lensig) && signals[i].func)
+                        if (strncmp(sig, signals[i].sig, lensig) == 0 && signals[i].func)
                                 signals[i].func(&a);
         /* update status if there was no fake signal */
 	} else {
@@ -3665,7 +3664,6 @@ winview(const Arg* arg)
 	unsigned nc;
 	int unused;
 	Client* c;
-	Arg a;
 	Window win, win_r, win_p, *win_c;
 
 	if (!XGetInputFocus(dpy, &win, &unused))
@@ -3674,8 +3672,7 @@ winview(const Arg* arg)
                 win = win_p;
 	if (!(c = wintoclient(win)))
                 return;
-	a.ui = c->tags;
-	view(&a);
+	view(&((Arg){.ui = c->tags}));
 }
 
 /* There's no way to check accesses to destroyed windows, thus those cases are

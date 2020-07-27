@@ -336,8 +336,13 @@ static Button buttons[] = {
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
 
-#define FSIGNAL "z:"
-#define LENFSIGNAL 2
+#define FSIGID "z:"
+/* without considering the terminating null byte */
+#define FSIGIDLEN 2
+#define NMAXFSIGNAMELEN 4
+#define SMAXFSIGNAMELEN "4"
+#define NMAXFSIGARGLEN 2
+#define SMAXFSIGARGLEN "2"
 
 /* trigger signals using `xsetroot -name "FSIGNAL<signame> [<type> <value>]"` */
 /* signal definitions */
@@ -670,14 +675,12 @@ void
 scratchshow(const Arg *arg)
 {
 	Client *c;
-        Arg a;
 
         for (Monitor *m = mons; m; m = m->next)
                 for (c = selmon->clients; c; c = c->next)
                         if (c->scratchkey == arg->i)
                                 goto show;
-        a.v = scratchcmds[arg->i - 1];
-        spawn(&a);
+        spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
         return;
 show:
         if (selmon->sel && c == selmon->sel)
