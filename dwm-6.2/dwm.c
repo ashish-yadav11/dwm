@@ -349,7 +349,6 @@ static int sw, sh;           /* X display screen geometry width, height */
 static int bh, blw, stw;     /* bar geometry */
 static int th;               /* tab bar geometry */
 static int lrpad;            /* sum of left and right padding for text */
-static int hlrpad;           /* half of lrpad */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int numlockmask = 0;
 static void (*handler[LASTEvent]) (XEvent *) = {
@@ -658,8 +657,8 @@ buttonpress(XEvent *e)
 			click = ClkLtSymbol;
                 else if (ev->x < selmon->ww - stw - wstext)
                         click = ClkWinTitle;
-//                else if (ev->x < (x = selmon->ww - stw - hlrpad) && ev->x >= (x -= wstext + lrpad)) {
-                else if (ev->x < (x = selmon->ww - stw - hlrpad) && ev->x >= x - wstext + lrpad) {
+//                else if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= (x -= wstext + lrpad)) {
+                else if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= x - wstext + lrpad) {
                         click = ClkStatusText;
 //                        updatedsblockssig(x, ev->x);
 		} else
@@ -1118,7 +1117,7 @@ drawbar(Monitor *m)
                 char ctmp;
 
                 drw_setscheme(drw, scheme[SchemeStts]);
-                x = drw_text(drw, wbar - wstext, 0, hlrpad, bh, 0, "", 0); /* to keep left padding clean */
+                x = drw_text(drw, wbar - wstext, 0, lrpad / 2, bh, 0, "", 0); /* to keep left padding clean */
                 for (;;) {
                         if ((unsigned char)*ts > LENGTH(colors) + 10) {
                                 ts++;
@@ -1153,7 +1152,7 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
                 drw_setscheme(drw, scheme[urg & 1 << i ? SchemeUrg :
                                           (m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm)]);
-		drw_text(drw, x, 0, w, bh, hlrpad, tags[i], 0);
+		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], 0);
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
 				m == selmon && selmon->sel && selmon->sel->tags & 1 << i, 0);
@@ -1165,18 +1164,18 @@ drawbar(Monitor *m)
                 snprintf(mltsymbol, sizeof mltsymbol, "%s %s", ATT(m)->symbol, m->ltsymbol);
         w = blw = TEXTW(mltsymbol);
         drw_setscheme(drw, scheme[SchemeLtsm]);
-        x = drw_text(drw, x, 0, w, bh, hlrpad, mltsymbol, 0);
+        x = drw_text(drw, x, 0, w, bh, lrpad / 2, mltsymbol, 0);
 
-        if ((w = wbar - x - wstext - hlrpad) > bh) { /* - hlrpad for right padding */
+        if ((w = wbar - x - wstext - lrpad / 2) > bh) { /* - lrpad / 2 for right padding */
 		if (m->sel) {
                         drw_setscheme(drw, scheme[m == selmon ? SchemeNorm : SchemeNorm]);
-                        w = drw_text(drw, x, 0, w, bh, hlrpad, m->sel->name, 0); /* abuse of w */
+                        w = drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0); /* abuse of w */
 			if (m->sel->isfloating)
 				drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
-                        drw_rect(drw, w, 0, hlrpad, bh, 1, 1); /* to keep right padding clean */
+                        drw_rect(drw, w, 0, lrpad / 2, bh, 1, 1); /* to keep right padding clean */
 		} else {
 			drw_setscheme(drw, scheme[SchemeNorm]);
-			drw_rect(drw, x, 0, w + hlrpad, bh, 1, 1); /* + hlrpad to keep right padding clean */
+			drw_rect(drw, x, 0, w + lrpad / 2, bh, 1, 1); /* + lrpad / 2 to keep right padding clean */
 		}
         }
 	drw_map(drw, m->barwin, 0, 0, wbar, bh);
@@ -1229,16 +1228,16 @@ drawtabhelper(Monitor *m, int onlystack)
         for (i = 0; c && i < lft; c = nexttiled(c->next), i++) { /* add 1 px to first `lft` tabs */
                 drw_setscheme(drw, scheme[(c == m->sel) ? SchemeSel
                                                         : ((i % 2 == 0) ? SchemeStts : SchemeNorm)]);
-                /* hlrpad below for padding */
-                x = drw_text(drw, x, 0, tbw + 1 - hlrpad, th, hlrpad, c->name, 0);
-                x = drw_text(drw, x, 0, hlrpad, th, 0, "", 0);  /* to keep right padding clean */
+                /* lrpad / 2 below for padding */
+                x = drw_text(drw, x, 0, tbw + 1 - lrpad / 2, th, lrpad / 2, c->name, 0);
+                x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0);  /* to keep right padding clean */
         }
         for (; c && i < ntabs; c = nexttiled(c->next), i++) {
                 drw_setscheme(drw, scheme[(c == m->sel) ? SchemeSel
                                                         : ((i % 2 == 0) ? SchemeStts : SchemeNorm)]);
-                /* hlrpad below for padding */
-                x = drw_text(drw, x, 0, tbw - hlrpad, th, hlrpad, c->name, 0);
-                x = drw_text(drw, x, 0, hlrpad, th, 0, "", 0);  /* to keep right padding clean */
+                /* lrpad / 2 below for padding */
+                x = drw_text(drw, x, 0, tbw - lrpad / 2, th, lrpad / 2, c->name, 0);
+                x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0);  /* to keep right padding clean */
         }
         drw_map(drw, m->tabwin, 0, 0, m->ww, th);
 }
@@ -1798,7 +1797,7 @@ motionnotify(XEvent *e)
                 static int currentcursor = 0;
                 int x;
 
-                if (BETWEEN(ev->x, (x = selmon->ww - stw - wstext + hlrpad), x + wstext - lrpad)) {
+                if (BETWEEN(ev->x, (x = selmon->ww - stw - wstext + lrpad / 2), x + wstext - lrpad)) {
                         updatedsblockssig(x, ev->x);
                         if (currentcursor) {
                                 if (dsblockssig <= 0 || dsblockssig >= 10) {
@@ -2471,7 +2470,6 @@ setup(void)
 	if (!drw_fontset_create(drw, fonts, LENGTH(fonts)))
 		die("no fonts could be loaded.");
 	lrpad = drw->fonts->h;
-        hlrpad = lrpad / 2;
 	bh = drw->fonts->h + 2;
 	th = bh;
 	updategeom();
