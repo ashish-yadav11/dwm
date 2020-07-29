@@ -1125,7 +1125,7 @@ drawbar(Monitor *m)
                         }
                         ctmp = *ts;
                         *ts = '\0';
-                        if (*tp)
+                        if (*tp != '\0')
                                 x = drw_text(drw, x, 0, TTEXTW(tp), bh, 0, tp, 0);
                         if (ctmp == '\0')
                                 break;
@@ -3207,7 +3207,7 @@ updatedsblockssig(int x, int e)
         char *tp = stexts;
         char ctmp;
 
-        while (*ts) {
+        while (*ts != '\0') {
                 if ((unsigned char)*ts > 10) {
                         ts++;
                         continue;
@@ -3376,7 +3376,7 @@ updatestatus(void)
                 return;
         }
         /* Check if a fake signal was found, and if so handle it */
-        if (strncmp(rawstext, FSIGID, 2) == 0) {
+        if (strncmp(rawstext, FSIGID, FSIGIDLEN) == 0) {
                 int len, lensig, numarg;
                 char sig[MAXFSIGNAMELEN + 1], arg[MAXFSIGARGLEN + 1];
                 Arg a;
@@ -3404,18 +3404,18 @@ updatestatus(void)
                                 signals[i].func(&a);
         /* update status if there was no fake signal */
 	} else {
-                int i = -1, j = 0, k = 0, l = 0;
-                char stextf[256];
+                char stextt[256];
+                char *stc = stextc, *sts = stexts, *stt = stextt;
 
-                while (rawstext[++i])
-                        if ((unsigned char)rawstext[i] >= ' ')
-                                stextf[j++] = stextc[k++] = stexts[l++] = rawstext[i];
-                        else if ((unsigned char)rawstext[i] > 10)
-                                stextc[k++] = rawstext[i];
+                for (char *rt = rawstext; *rt != '\0'; rt++)
+                        if ((unsigned char)*rt >= ' ')
+                                *(stc++) = *(sts++) = *(stt++) = *rt;
+                        else if ((unsigned char)*rt > 10)
+                                *(stc++) = *rt;
                         else
-                                stexts[l++] = rawstext[i];
-                stextf[j] = stextc[k] = stexts[l] = '\0';
-                wstext = TEXTW(stextf);
+                                *(sts++) = *rt;
+                *stc = *sts = *stt = '\0';
+                wstext = TEXTW(stextt);
                 drawbar(selmon);
         }
 }
