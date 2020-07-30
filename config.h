@@ -159,6 +159,10 @@ static const char *const *scratchcmds[] = {
 #define SCRIPT1(name, arg) { .v = (const char*[]){ "/home/ashish/.scripts/"name, arg, NULL } }
 #define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-O", arg, "-P", NULL } }
 
+#define INHIBITSUSPEND { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
+        "/home/ashish/.scripts/watchlidswitch.sh", NULL } }
+#define INHIBITSUSPENDDL { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
+        "/home/ashish/.scripts/watchlidswitch_dl.sh", NULL } }
 #define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
 #define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
 #define PACTLM { .v = (const char*[]){ "pactl", "set-sink-mute", "0", "toggle", NULL } }
@@ -302,8 +306,8 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_r,           spawn,          TERMCMD("ranger --cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,          TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,          TERMCMD("htop") },
-	{ MODRKEY,                      XK_s,           spawn,          SCRIPT0("watchlidswitch.sh") },
-	{ MODRKEY|ShiftMask,            XK_s,           spawn,          SCRIPT0("watchlidswitch_dl.sh") },
+	{ MODRKEY,                      XK_s,           spawn,          INHIBITSUSPEND },
+	{ MODRKEY|ShiftMask,            XK_s,           spawn,          INHIBITSUSPENDDL },
 	{ MODRKEY,                      XK_k,           spawn,          SCRIPT1("ytmsclu.sh", "0") },
 	{ MODRKEY,                      XK_l,           spawn,          SCRIPT1("ytmsclu.sh", "1") },
 	{ MODRKEY,                      XK_semicolon,   spawn,          SCRIPT0("ytresume.sh") },
