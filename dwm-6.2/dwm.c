@@ -330,7 +330,6 @@ static void updatewmhints(Client *c);
 static void view(const Arg *arg);
 static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
-static void winview(const Arg* arg);
 static Client *wintosystrayicon(Window w);
 static int xerror(Display *dpy, XErrorEvent *ee);
 static int xerrordummy(Display *dpy, XErrorEvent *ee);
@@ -3654,25 +3653,6 @@ wintomon(Window w)
 	if ((c = wintoclient(w)))
 		return c->mon;
 	return selmon;
-}
-
-/* Selects for the view of the focused window. The list of tags */
-/* to be displayed is matched to the focused window tag list. */
-void
-winview(const Arg* arg)
-{
-	int rtr;
-	unsigned int nc;
-	Client* c;
-	Window win, winr, winp, *winc;
-
-	if (!XGetInputFocus(dpy, &win, &rtr))
-                return;
-	while (XQueryTree(dpy, win, &winr, &winp, &winc, &nc) && winp != winr)
-                win = winp;
-	if (!(c = wintoclient(win)))
-                return;
-	view(&((Arg){.ui = c->tags}));
 }
 
 /* There's no way to check accesses to destroyed windows, thus those cases are

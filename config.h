@@ -189,6 +189,7 @@ static void togglestkpos(const Arg *arg);
 static void togglewin(const Arg *arg);
 static void vieworprev(const Arg *arg);
 static void windowswitcher(const Arg *arg);
+static void winview(const Arg* arg);
 static void zoomswap(const Arg *arg);
 static void zoomvar(const Arg *arg);
 
@@ -867,6 +868,13 @@ windowswitcher(const Arg *arg)
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
         }
         spawn(&((Arg) ROFIWIN));
+}
+
+void
+winview(const Arg* arg)
+{
+        if (selmon->sel)
+                view(&((Arg){.ui = selmon->sel->tags}));
 }
 
 void
