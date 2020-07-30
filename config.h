@@ -95,6 +95,8 @@ static const Rule rules[] = {
 	{ NULL,		"crx_cinhimbnkkaeohfgghhklpknlkffjgod",
 					NULL,		0,	1,	-1,	 2 },
 	{ NULL,		"floating_Termite",
+					NULL,		0,	1,	-1,	 0 },
+	{ NULL,		"scratch_Termite",
 					NULL,		0,	1,	-1,	 1 },
 	{ NULL,		"neomutt_Termite",
 					NULL,		1 << 7,
@@ -127,7 +129,7 @@ static const Attach attachs[] = {
 };
 
 static const char *const *scratchcmds[] = {
-	(const char *[]){ "termite", "--name=floating_Termite", NULL },
+	(const char *[]){ "termite", "--name=scratch_Termite", NULL },
 	(const char *[]){ "brave", "--profile-directory=Default", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
 	(const char *[]){ "telegram-desktop", NULL },
 	(const char *[]){ "termite", "--name=pyfzf_Termite", "--exec=/home/ashish/.local/bin/pyfzf", NULL },
@@ -147,22 +149,26 @@ static const char *const *scratchcmds[] = {
 
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/usr/bin/dash", "-c", cmd, NULL } }
-/* helpler for commands with no argument */
-#define NOARGCMD(cmd) { .v = (const char*[]){ cmd, NULL } }
 /* helpler for commands with no argument to be executed within a terminal */
 #define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
-/* commands */
-#define REDSHIFT(val) { .v = (const char*[]){ "redshift", "-O", val, "-P", NULL } }
+#define FTERMCMD(cmd) { .v = (const char*[]){ "termite", "--name=floating_Termite", "-e", cmd, NULL } }
+
+#define CMD0(cmd) { .v = (const char*[]){ cmd, NULL } }
+#define CMD1(cmd, arg) { .v = (const char*[]){ cmd, arg, NULL } }
+#define SCRIPT0(name) { .v = (const char*[]){ "/home/ashish/.scripts/"name, NULL } }
+#define SCRIPT1(name, arg) { .v = (const char*[]){ "/home/ashish/.scripts/"name, arg, NULL } }
+#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-O", arg, "-P", NULL } }
+
 #define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
 #define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
 #define PACTLM { .v = (const char*[]){ "pactl", "set-sink-mute", "0", "toggle", NULL } }
-#define REDSHIFTDEF { .v = (const char*[]){ "redshift", "-x", NULL } }
+#define REDSHIFTDEFAULT { .v = (const char*[]){ "redshift", "-x", NULL } }
 #define ROFIDRUN { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
 
-static const Win browser = { .cmd = NOARGCMD("brave"), .tag = 8, .scratchkey = -1 };
-static const Win mail = { .cmd = NOARGCMD("/home/ashish/.scripts/neomutt.sh"), .tag = 7, .scratchkey = -2 };
+static const Win browser = { .cmd = CMD0("brave"), .tag = 8, .scratchkey = -1 };
+static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 7, .scratchkey = -2 };
 
 /* custom function declarations */
 static void floatmovex(const Arg *arg);
@@ -199,7 +205,7 @@ static Key keys[] = {
 	/* modifier                     key             function        argument */
 	{ MODKEY,                       XK_d,           spawn,          ROFIDRUN },
 	{ MODKEY|ShiftMask,             XK_d,           spawn,          ROFIRUN },
-	{ MODKEY,                       XK_Return,      spawn,          NOARGCMD("termite") },
+	{ MODKEY,                       XK_Return,      spawn,          CMD0("termite") },
 	{ MODKEY,                       XK_b,           togglebar,      {0} },
 	{ MODKEY|ShiftMask,             XK_b,           tabmode,        {-1} },
 	{ MODKEY,                       XK_j,           focusstackalt,  {.i = +1 } },
@@ -276,20 +282,44 @@ static Key keys[] = {
 	{ MODKEY,                       XK_s,           togglestkpos,   {0} },
 	{ MODRKEY,                      XK_space,       togglewin,      {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,      {.v = &mail} },
+	{ 0,                            XK_Print,       spawn,          CMD1("gnome-screenshot", "-i") },
+	{ MODKEY,                       XK_c,           spawn,          SCRIPT0("color_under_cursor.sh") },
+	{ MODKEY,                       XK_i,           spawn,          SCRIPT1("f6.sh", "i") },
+	{ MODKEY,                       XK_u,           spawn,          SCRIPT1("f6.sh", "u") },
+	{ MODKEY,                       XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "sel") },
+	{ MODKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("dictionary.sh") },
+	{ MODKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "last") },
+	{ MODKEY|ShiftMask|ControlMask, XK_semicolon,   spawn,          FTERMCMD("dictionary_history.sh") },
+	{ SUPKEY,                       XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "sel") },
+	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("espeak.sh") },
+	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "last") },
+	{ MODKEY|ShiftMask,             XK_q,           spawn,          SCRIPT0("quit.sh") },
+        { MODKEY|ControlMask,           XK_h,           spawn,          SCRIPT0("hotspot_launch.sh") },
+        { MODKEY|ControlMask,           XK_m,           spawn,          SCRIPT0("toggletouchpad.sh") },
+        { MODKEY|ControlMask,           XK_r,           spawn,          SCRIPT0("reflector_launch.sh") },
+        { MODKEY,                       XK_F10,         spawn,          SCRIPT1("systemctl_timeout", "toggle") },
+        { MODKEY|ShiftMask,             XK_F10,         spawn,          SCRIPT1("systemctl_timeout", "status") },
 	{ SUPKEY,                       XK_r,           spawn,          TERMCMD("ranger --cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,          TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,          TERMCMD("htop") },
+	{ MODRKEY,                      XK_s,           spawn,          SCRIPT0("watchlidswitch.sh") },
+	{ MODRKEY|ShiftMask,            XK_s,           spawn,          SCRIPT0("watchlidswitch_dl.sh") },
+	{ MODRKEY,                      XK_k,           spawn,          SCRIPT1("ytmsclu.sh", "0") },
+	{ MODRKEY,                      XK_l,           spawn,          SCRIPT1("ytmsclu.sh", "1") },
+	{ MODRKEY,                      XK_semicolon,   spawn,          SCRIPT0("ytresume.sh") },
+	{ MODRKEY,                      XK_Delete,      spawn,          SCRIPT0("usbmount.sh") },
+
 	{ MODKEY,            XK_bracketleft,            hidefloating,   {0} },
 	{ MODKEY,            XK_bracketright,           showfloating,   {0} },
 	{ MODKEY,            XK_backslash,              hidevisscratch, {0} },
         { 0,                 XF86XK_AudioMute,          spawn,          PACTLM },
         { 0,                 XF86XK_AudioLowerVolume,   spawn,          PACTLD },
         { 0,                 XF86XK_AudioRaiseVolume,   spawn,          PACTLI },
-        { 0,                 XF86XK_MonBrightnessDown,  spawn,          NOARGCMD("/home/ashish/.scripts/btnsd.sh") },
-        { 0,                 XF86XK_MonBrightnessUp,    spawn,          NOARGCMD("/home/ashish/.scripts/btnsi.sh") },
-        { ShiftMask,         XK_F2,                     spawn,          NOARGCMD("/home/ashish/.scripts/btnsds.sh") },
-        { ShiftMask,         XK_F3,                     spawn,          NOARGCMD("/home/ashish/.scripts/btnsis.sh") },
-        { MODRKEY,           XK_Escape,                 spawn,          REDSHIFTDEF },
+        { 0,                 XF86XK_MonBrightnessDown,  spawn,          SCRIPT0("btnsd.sh") },
+        { 0,                 XF86XK_MonBrightnessUp,    spawn,          SCRIPT0("btnsi.sh") },
+        { ShiftMask,         XK_F2,                     spawn,          SCRIPT0("btnsds.sh") },
+        { ShiftMask,         XK_F3,                     spawn,          SCRIPT0("btnsis.sh") },
+        { MODRKEY,           XK_Escape,                 spawn,          REDSHIFTDEFAULT },
         { MODRKEY,           XK_F1,                     spawn,          REDSHIFT("5500") },
         { MODRKEY,           XK_F2,                     spawn,          REDSHIFT("4500") },
         { MODRKEY,           XK_F3,                     spawn,          REDSHIFT("3500") },
@@ -315,7 +345,6 @@ static Key keys[] = {
 	TAGKEYS(                        XK_8,                           7)
 	TAGKEYS(                        XK_9,                           8)
 	{ MODKEY|ShiftMask,             XK_r,           quit,           {1} },
-	{ MODKEY|ShiftMask,             XK_q,           quit,           {0} },
 };
 
 /* button definitions */
@@ -349,6 +378,7 @@ static Signal signals[] = {
 	/* signame		function */
 	{ "scrs",		scratchshow },
 	{ "scrh",		scratchhide },
+	{ "quit",		quit },
 };
 
 /* custom function implementations */
