@@ -76,35 +76,6 @@ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int def_layouts[1 + LENGTH(tags)]  = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
 static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 
-static const Rule rules[] = {
-	/* xprop(1):
-	 *	WM_CLASS(STRING) = instance, class
-	 *	WM_NAME(STRING) = title
-	 */
-
-	/* class	instance	title		tags mask
-	 *							isfloating
-	 *								monitor
-	 *									scratch key
-	 */
-	{ "Brave-browser",
-			"brave-browser",
-					NULL,		0,	0,	-1,	-1 },
-	{ "TelegramDesktop",
-			NULL,		NULL,		0,	1,	-1,	 3 },
-	{ NULL,		"crx_cinhimbnkkaeohfgghhklpknlkffjgod",
-					NULL,		0,	1,	-1,	 2 },
-	{ NULL,		"floating_Termite",
-					NULL,		0,	1,	-1,	 0 },
-	{ NULL,		"scratch_Termite",
-					NULL,		0,	1,	-1,	 1 },
-	{ NULL,		"neomutt_Termite",
-					NULL,		1 << 7,
-								0,	-1,	-2 },
-	{ NULL,		"pyfzf_Termite",
-					NULL,		0,	1,	-1,	 4 },
-};
-
 /* layout(s) */
 static const float mfact	= 0.60; /* factor of master area size [0.05..0.95] */
 static const int nmaster	= 1;    /* number of clients in master area */
@@ -958,4 +929,103 @@ zoomvar(const Arg *arg)
                 arg->i ? zoomswap(&((Arg){0})) : zoom(&((Arg){0}));
         else
                 arg->i ? zoom(&((Arg){0})) : zoomswap(&((Arg){0}));
+}
+
+/* Window rules */
+static void center(Client *c);
+static void marknegscratch(Client *c, int scratchkey);
+static void markposscratch(Client *c, int scratchkey);
+
+static void
+applyrules(Client *c)
+{
+	const char *class, *instance;
+	XClassHint ch = { NULL, NULL };
+
+	XGetClassHint(dpy, c->win, &ch);
+	class = ch.res_class ? ch.res_class : broken;
+	instance = ch.res_name ? ch.res_name : broken;
+
+        if (strcmp(instance, "scratch_Termite") == 0) {
+                c->isfloating = 1;
+                markposscratch(c, 1);
+                c->w = 750;
+                c->h = 450;
+                center(c);
+        } else if (strcmp(instance, "neomutt_Termite") == 0) {
+                c->tags = 1 << 7;
+                marknegscratch(c, -2);
+        } else if (strcmp(instance, "pyfzf_Termite") == 0) {
+                c->isfloating = 1;
+                markposscratch(c, 4);
+                c->w = 750;
+                c->h = 450;
+                center(c);
+        } else if (strcmp(instance, "floating_Termite") == 0) {
+                c->isfloating = 1;
+                c->w = 750;
+                c->h = 450;
+                center(c);
+        /* windows to be made floating */
+        } else if (strstr(class, "Yad") ||
+                   strcmp(class, "Sxiv") == 0 ||
+                   strcmp(c->name, "Event Tester") == 0 ||
+                   strcmp(class, "Matplotlib") == 0 ||
+                   strcmp(class, "Ristretto") == 0 ||
+                   strcmp(class, "Woeusbgui") == 0) {
+                c->isfloating = 1;
+        /* windows to be made floating and have 0 border */
+        } else if (strcmp(class, "Gnome-screenshot") == 0) {
+                c->isfloating = 1;
+                c->bw = 0;
+        /* windows generally opened once */
+        } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
+                c->isfloating = 1;
+                markposscratch(c, 2);
+                c->bw = 0;
+                c->w = 950;
+                c->h = 626;
+                center(c);
+        } else if (strcmp(instance, "brave-browser") == 0) {
+                marknegscratch(c, -1);
+        } else if (strcmp(class, "TelegramDesktop") == 0) {
+                c->isfloating = 1;
+                markposscratch(c, 3);
+                c->w = 770;
+                c->h = 555;
+                center(c);
+        }
+
+	if (ch.res_class)
+		XFree(ch.res_class);
+	if (ch.res_name)
+		XFree(ch.res_name);
+
+	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
+}
+
+void
+center(Client *c)
+{
+        c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
+        c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
+}
+
+void
+marknegscratch(Client *c, int scratchkey)
+{
+        for (Client *i = selmon->clients; i; i = i->next)
+                if (i->scratchkey == scratchkey)
+                        return;
+        c->scratchkey = scratchkey;
+}
+
+void
+markposscratch(Client *c, int scratchkey)
+{
+        for (Monitor *m = mons; m; m = m->next)
+                for (Client *i = selmon->clients; i; i = i->next)
+                        if (i->scratchkey == scratchkey)
+                                return;
+        c->scratchkey = scratchkey;
 }

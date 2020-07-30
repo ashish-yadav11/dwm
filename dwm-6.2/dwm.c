@@ -183,16 +183,6 @@ struct Monitor {
 	Pertag *pertag;
 };
 
-typedef struct {
-	const char *class;
-	const char *instance;
-	const char *title;
-	unsigned int tags;
-	int isfloating;
-	int monitor;
-	const int scratchkey;
-} Rule;
-
 typedef struct Systray   Systray;
 struct Systray {
 	Window win;
@@ -200,7 +190,7 @@ struct Systray {
 };
 
 /* function declarations */
-static void applyrules(Client *c);
+static void applyrules(Client *c); /* defined in config.h */
 static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void arrange(Monitor *m);
 static void arrangemon(Monitor *m);
@@ -398,78 +388,6 @@ struct Pertag {
 struct NumTags { char limitexceeded[LENGTH(tags) > 31 ? -1 : 1]; };
 
 /* function implementations */
-void
-applyrules(Client *c)
-{
-	const char *class, *instance;
-	unsigned int i;
-	const Rule *r;
-	Monitor *m;
-	XClassHint ch = { NULL, NULL };
-
-	/* rule matching */
-//	c->isfloating = 0;
-//	c->tags = 0;
-//	c->scratchkey = 0;
-	XGetClassHint(dpy, c->win, &ch);
-	class    = ch.res_class ? ch.res_class : broken;
-	instance = ch.res_name  ? ch.res_name  : broken;
-
-	for (i = 0; i < LENGTH(rules); i++) {
-		r = &rules[i];
-		if ((!r->title || strstr(c->name, r->title))
-		&& (!r->class || strstr(class, r->class))
-		&& (!r->instance || strstr(instance, r->instance)))
-		{
-			c->isfloating = r->isfloating;
-			c->tags |= r->tags;
-
-                        if (r->scratchkey) {
-                                if (r->scratchkey < 0) {
-                                        for (Client *cs = selmon->clients; cs; cs = cs->next)
-                                                if (cs->scratchkey == r->scratchkey)
-                                                        goto out;
-                                        c->scratchkey = r->scratchkey;
-                                } else {
-                                        for (m = mons; m; m = m->next)
-                                                for (Client *cs = selmon->clients; cs; cs = cs->next)
-                                                        if (cs->scratchkey == r->scratchkey)
-                                                                goto out;
-                                        c->scratchkey = r->scratchkey;
-                                }
-                        }
-out:
-			for (m = mons; m && m->num != r->monitor; m = m->next);
-			if (m)
-				c->mon = m;
-		}
-	}
-        if (strcmp(instance, "floating_Termite") == 0 ||
-            strcmp(instance, "pyfzf_Termite") == 0) {
-                c->w = 750;
-                c->h = 450;
-                c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
-                c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
-        } else if (strcmp(class, "TelegramDesktop") == 0) {
-                c->w = 770;
-                c->h = 555;
-                c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
-                c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
-        } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
-                c->bw = c->oldbw = 0;
-                c->w = 950;
-                c->h = 626;
-                c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
-                c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
-        }
-	if (ch.res_class)
-		XFree(ch.res_class);
-	if (ch.res_name)
-		XFree(ch.res_name);
-
-	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
-}
-
 int
 applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 {
