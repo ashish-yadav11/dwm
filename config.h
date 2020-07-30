@@ -966,7 +966,7 @@ applyrules(Client *c)
                 c->w = 750;
                 c->h = 450;
                 center(c);
-        /* windows to be made floating */
+        /* windows to be made floating and centered */
         } else if (strstr(class, "Yad") ||
                    strcmp(class, "Sxiv") == 0 ||
                    strcmp(c->name, "Event Tester") == 0 ||
@@ -974,6 +974,7 @@ applyrules(Client *c)
                    strcmp(class, "Ristretto") == 0 ||
                    strcmp(class, "Woeusbgui") == 0) {
                 c->isfloating = 1;
+                center(c);
         /* windows to be made floating and have 0 border */
         } else if (strcmp(class, "Gnome-screenshot") == 0) {
                 c->isfloating = 1;
