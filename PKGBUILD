@@ -16,17 +16,10 @@ conflicts=('dwm')
 options=('zipman' '!strip')
 
 source=("${_pkgname}-${pkgver}.tar.gz"
-	config.h
         "${_pkgname}.desktop")
 
 sha256sums=('SKIP'
-            'SKIP'
             'SKIP')
-
-prepare() {
-  cd "${srcdir}/${_pkgname}-${pkgver}"
-  cp "${srcdir}/config.h" config.h
-}
 
 build() {
   cd "${srcdir}/${_pkgname}-${pkgver}"
