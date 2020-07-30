@@ -3661,15 +3661,15 @@ wintomon(Window w)
 void
 winview(const Arg* arg)
 {
-	unsigned nc;
-	int unused;
+	int rtr;
+	unsigned int nc;
 	Client* c;
-	Window win, win_r, win_p, *win_c;
+	Window win, winr, winp, *winc;
 
-	if (!XGetInputFocus(dpy, &win, &unused))
+	if (!XGetInputFocus(dpy, &win, &rtr))
                 return;
-	while (XQueryTree(dpy, win, &win_r, &win_p, &win_c, &nc) && win_p != win_r)
-                win = win_p;
+	while (XQueryTree(dpy, win, &winr, &winp, &winc, &nc) && winp != winr)
+                win = winp;
 	if (!(c = wintoclient(win)))
                 return;
 	view(&((Arg){.ui = c->tags}));
