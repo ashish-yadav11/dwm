@@ -142,8 +142,8 @@ static const char *const *scratchcmds[] = {
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
 
-static const Win browser = { .cmd = CMD0("brave"), .tag = 8, .scratchkey = -1 };
-static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 7, .scratchkey = -2 };
+static const Win browser = { .cmd = CMD0("brave"), .tag = 7, .scratchkey = -1 };
+static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 8, .scratchkey = -2 };
 
 /* custom function declarations */
 static void floatmovex(const Arg *arg);
@@ -954,7 +954,6 @@ applyrules(Client *c)
                 c->h = 450;
                 center(c);
         } else if (strcmp(instance, "neomutt_Termite") == 0) {
-                c->tags = 1 << 7;
                 marknegscratch(c, -2);
         } else if (strcmp(instance, "pyfzf_Termite") == 0) {
                 c->isfloating = 1;
