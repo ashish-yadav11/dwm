@@ -86,9 +86,10 @@
 
 /* enums */
 enum { CurNormal, CurHand, CurResize, CurMove, CurLast }; /* cursor */
-enum { SchemeNorm, SchemeSel, SchemeUrg, SchemeLtsm, SchemeStts, SchemeTray,
-       SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
-       SchemeCol5, SchemeCol6, SchemeCol7, SchemeCol8 }; /* color schemes */
+enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
+       SchemeCol5, SchemeCol6, SchemeCol7, SchemeCol8, SchemeCol9,
+       SchemeCol10, SchemeCol11, SchemeCol12, SchemeNorm, SchemeSel,
+       SchemeUrg, SchemeLtSm, SchemeTray }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetSystemTray, NetSystemTrayOP, NetSystemTrayOrientation, NetSystemTrayOrientationHorz,
        NetWMFullscreen, NetActiveWindow, NetWMWindowType, NetWMWindowTypeDialog,
@@ -1080,7 +1081,7 @@ drawbar(Monitor *m)
         else
                 snprintf(mltsymbol, sizeof mltsymbol, "%s %s", ATT(m)->symbol, m->ltsymbol);
         w = blw = TEXTW(mltsymbol);
-        drw_setscheme(drw, scheme[SchemeLtsm]);
+        drw_setscheme(drw, scheme[SchemeLtSm]);
         x = drw_text(drw, x, 0, w, bh, lrpad / 2, mltsymbol, 0);
 
         if ((w = wbar - x - wstext - lrpad / 2) > bh) { /* - lrpad / 2 for right padding */
