@@ -42,9 +42,13 @@ static const char col_white2[]		= "#dddddd";
 static const char col_red[]		= "#b21e19";
 static const char col1[]		= "#8fb4a6"; /* default */
 static const char col2[]		= "#d2806f"; /* cputemp block - warn; mail block - syncing */
-static const char col3[]		= "#5daebe"; /* mail block - frozen */
+static const char col3[]		= "#5fa2c3"; /* mail block - frozen */
 static const char col4[]		= "#b181c8"; /* mail block - MAILSYNC started */
 static const char col5[]		= "#beb65d"; /* mail block - last sync failed */
+
+enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
+       SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm,
+       SchemeTray }; /* color schemes */
 
 static const char *colors[][3]		= {
 	/*			fg		bg		border   */
