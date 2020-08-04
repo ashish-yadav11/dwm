@@ -87,13 +87,13 @@
 /* enums */
 enum { CurNormal, CurHand, CurResize, CurMove, CurLast }; /* cursor */
 enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
-       SchemeCol5, SchemeCol6, SchemeCol7, SchemeCol8, SchemeCol9,
-       SchemeCol10, SchemeCol11, SchemeCol12, SchemeNorm, SchemeSel,
-       SchemeUrg, SchemeLtSm, SchemeTray }; /* color schemes */
+       SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm,
+       SchemeTray }; /* color schemes */
 enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
-       NetSystemTray, NetSystemTrayOP, NetSystemTrayOrientation, NetSystemTrayOrientationHorz,
-       NetWMFullscreen, NetActiveWindow, NetWMWindowType, NetWMWindowTypeDialog,
-       NetDesktopNames, NetWMDesktop, NetClientList, NetLast }; /* EWMH atoms */
+       NetSystemTray, NetSystemTrayOP, NetSystemTrayOrientation,
+       NetSystemTrayOrientationHorz, NetWMFullscreen, NetActiveWindow,
+       NetWMWindowType, NetWMWindowTypeDialog, NetDesktopNames, NetWMDesktop,
+       NetClientList, NetLast }; /* EWMH atoms */
 enum { Manager, Xembed, XembedInfo, XLast }; /* Xembed atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMLast }; /* default atoms */
 enum { ClkTagBar, ClkTabBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
