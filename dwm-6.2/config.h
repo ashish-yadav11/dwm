@@ -40,15 +40,16 @@ static const char col_gray2[]		= "#4e4e4e";
 static const char col_white1[]		= "#eeeeee";
 static const char col_white2[]		= "#dddddd";
 static const char col_red[]		= "#b21e19";
-static const char col1[]		= "#8fb4a6"; /* default */
-static const char col2[]		= "#d2806f"; /* cputemp block - warn; mail block - syncing */
+static const char col1[]		= "#8fb4a6"; /* default block icon color */
+static const char col2[]		= "#c8c061"; /* cputemp block - warn */
 static const char col3[]		= "#5fa2c3"; /* mail block - frozen */
 static const char col4[]		= "#b181c8"; /* mail block - MAILSYNC started */
-static const char col5[]		= "#beb65d"; /* mail block - last sync failed */
+static const char col5[]		= "#d2806f"; /* mail block - syncing */
+static const char col6[]		= "#beb65d"; /* mail block - last sync failed */
 
 enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
-       SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm,
-       SchemeTray }; /* color schemes */
+       SchemeCol5, SchemeCol6, SchemeNorm, SchemeSel, SchemeUrg,
+       SchemeLtSm, SchemeTray }; /* color schemes */
 
 static const char *colors[][3]		= {
 	/*			fg		bg		border   */
@@ -58,6 +59,7 @@ static const char *colors[][3]		= {
 	[SchemeCol3]	=	{ col3,		col_black,	col_gray2 },
 	[SchemeCol4]	=	{ col4,		col_black,	col_gray2 },
 	[SchemeCol5]	=	{ col5,		col_black,	col_gray2 },
+	[SchemeCol6]	=	{ col6,		col_black,	col_gray2 },
 	[SchemeNorm]	=	{ col_white1,	col_gray1,	col_gray2 },
 	[SchemeSel]	=	{ col_white1,	col_cyan,	col_cyan },
 	[SchemeUrg]	=	{ col_white1,	col_red,	col_red },
