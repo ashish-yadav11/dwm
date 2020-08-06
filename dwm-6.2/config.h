@@ -130,6 +130,8 @@ static const char *const *scratchcmds[] = {
 #define SCRIPT1(name, arg) { .v = (const char*[]){ "/home/ashish/.scripts/"name, arg, NULL } }
 #define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-O", arg, "-P", NULL } }
 
+#define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de && dunstify -r 4120 -t 0 'data entry mode activated'")
+#define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_ude && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
 #define INHIBITSUSPEND { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
         "/home/ashish/.scripts/watchlidswitch.sh", NULL } }
 #define INHIBITSUSPENDDL { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
@@ -284,6 +286,8 @@ static Key keys[] = {
 	{ MODRKEY,                      XK_l,           spawn,          SCRIPT1("ytmsclu.sh", "1") },
 	{ MODRKEY,                      XK_semicolon,   spawn,          SCRIPT0("ytresume.sh") },
 	{ MODRKEY,                      XK_Delete,      spawn,          SCRIPT0("usbmount.sh") },
+	{ MODRKEY,                      XK_Sys_Req,     spawn,          ENABLEDEMODE },
+	{ MODRKEY,                      XK_Insert,      spawn,          DISABLEDEMODE },
 
 	{ MODKEY,            XK_bracketleft,            hidefloating,   {0} },
 	{ MODKEY,            XK_bracketright,           showfloating,   {0} },
