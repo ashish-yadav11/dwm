@@ -160,6 +160,7 @@ static void hidevisscratch(const Arg *arg);
 static Client *nextprevsamefloat(int next);
 static Client *nextprevvisible(int next);
 static void push(const Arg *arg);
+static void scratchfocus(const Arg *arg);
 static void scratchhide(const Arg *arg);
 static void scratchshow(const Arg *arg);
 static void showfloating(const Arg *arg);
@@ -352,9 +353,10 @@ static Button buttons[] = {
 /* signal definitions */
 static Signal signals[] = {
 	/* signame		function */
-	{ "scrs",		scratchshow },
-	{ "scrh",		scratchhide },
 	{ "quit",		quit },
+        { "scrf",		scratchfocus },
+	{ "scrh",		scratchhide },
+	{ "scrs",		scratchshow },
 };
 
 /* custom function implementations */
@@ -660,6 +662,20 @@ nextprevvisible(int next)
 					c = i;
 	}
         return c;
+}
+
+void
+scratchfocus(const Arg *arg)
+{
+        Client *c;
+
+        for (c = selmon->clients; c; c = c->next)
+                if (c->scratchkey == arg->i)
+                        goto focus;
+        return;
+focus:
+        focusalt(c);
+        restack(selmon, 0);
 }
 
 void
