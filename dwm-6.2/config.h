@@ -261,8 +261,6 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_m,           togglewin,      {.v = &mail} },
 	{ 0,                            XK_Print,       spawn,          CMD1("gnome-screenshot", "-i") },
 	{ MODKEY,                       XK_c,           spawn,          SCRIPT0("color_under_cursor.sh") },
-	{ MODKEY,                       XK_i,           spawn,          SCRIPT1("f6.sh", "i") },
-	{ MODKEY,                       XK_u,           spawn,          SCRIPT1("f6.sh", "u") },
 	{ MODKEY,                       XK_F7,          spawn,          DISABLEDEMODE },
 	{ MODKEY,                       XK_F8,          spawn,          ENABLEDEMODE },
 	{ MODKEY,                       XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "sel") },
