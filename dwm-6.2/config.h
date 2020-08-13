@@ -118,13 +118,14 @@ static const char *const *scratchcmds[] = {
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
 
-#define SCRIPT(name) "/home/ashish/.scripts/"name
-
-/* helper for spawning shell commands in the pre dwm-5.0 fashion */
+/* helper for spawning shell commands in pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/usr/bin/dash", "-c", cmd, NULL } }
+
 /* helpler for commands with no argument to be executed within a terminal */
-#define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
 #define FTERMCMD(cmd) { .v = (const char*[]){ "termite", "--name=floating_Termite", "-e", cmd, NULL } }
+#define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
+
+#define SCRIPT(name) "/home/ashish/.scripts/"name
 
 #define CMD0(cmd) { .v = (const char*[]){ cmd, NULL } }
 #define CMD1(cmd, arg) { .v = (const char*[]){ cmd, arg, NULL } }
@@ -134,10 +135,10 @@ static const char *const *scratchcmds[] = {
 
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_ude && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de && dunstify -r 4120 -t 0 'data entry mode activated'")
-#define INHIBITSUSPEND { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("watchlidswitch.sh"), NULL } }
-#define INHIBITSUSPENDDL { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("watchlidswitch_dl.sh"), NULL } }
+#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
+        SCRIPT("watchlidswitch0.sh"), NULL } }
+#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
+        SCRIPT("watchlidswitch1.sh"), NULL } }
 #define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
 #define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
 #define PACTLM { .v = (const char*[]){ "pactl", "set-sink-mute", "0", "toggle", NULL } }
@@ -268,10 +269,10 @@ static Key keys[] = {
 	{ MODKEY,                       XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "sel") },
 	{ MODKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("dictionary.sh") },
 	{ MODKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "last") },
-	{ MODKEY|ShiftMask|ControlMask, XK_semicolon,   spawn,          FTERMCMD(SCRIPT("dictionary_history.sh")) },
 	{ SUPKEY,                       XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "sel") },
 	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("espeak.sh") },
 	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "last") },
+	{ MODKEY|ControlMask,           XK_apostrophe,  spawn,          FTERMCMD(SCRIPT("dictionary_history.sh")) },
 	{ MODKEY|ShiftMask,             XK_q,           spawn,          SCRIPT0("quit.sh") },
 	{ MODKEY|ControlMask,           XK_h,           spawn,          SCRIPT0("hotspot_launch.sh") },
 	{ MODKEY|ControlMask,           XK_m,           spawn,          SCRIPT0("toggletouchpad.sh") },
@@ -283,8 +284,8 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_r,           spawn,          TERMCMD("ranger --cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,          TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,          TERMCMD("htop") },
-	{ MODRKEY,                      XK_s,           spawn,          INHIBITSUSPEND },
-	{ MODRKEY|ShiftMask,            XK_s,           spawn,          INHIBITSUSPENDDL },
+	{ MODRKEY,                      XK_s,           spawn,          INHIBITSUSPEND1 },
+	{ MODRKEY|ShiftMask,            XK_s,           spawn,          INHIBITSUSPEND0 },
 	{ MODRKEY,                      XK_k,           spawn,          SCRIPT1("ytmsclu.sh", "0") },
 	{ MODRKEY,                      XK_l,           spawn,          SCRIPT1("ytmsclu.sh", "1") },
 	{ MODRKEY,                      XK_semicolon,   spawn,          SCRIPT0("ytresume.sh") },
