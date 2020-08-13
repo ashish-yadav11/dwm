@@ -131,12 +131,13 @@ static const char *const *scratchcmds[] = {
 #define SCRIPT1(name, arg) { .v = (const char*[]){ SCRIPT(name), arg, NULL } }
 #define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-O", arg, "-P", NULL } }
 
-#define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_ude && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
-#define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de && dunstify -r 4120 -t 0 'data entry mode activated'")
+#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", \
+        "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
 #define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
         SCRIPT("watchlidswitch0.sh"), NULL } }
 #define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
         SCRIPT("watchlidswitch1.sh"), NULL } }
+
 #define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
 #define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
 #define PACTLM { .v = (const char*[]){ "pactl", "set-sink-mute", "0", "toggle", NULL } }
@@ -144,6 +145,9 @@ static const char *const *scratchcmds[] = {
 #define ROFIDRUN { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
+
+#define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_ude && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
+#define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de && dunstify -r 4120 -t 0 'data entry mode activated'")
 
 static const Win browser = { .cmd = CMD0("brave"), .tag = 7, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 8, .scratchkey = -2 };
@@ -270,7 +274,7 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "sel") },
 	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("espeak.sh") },
 	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "last") },
-	{ MODKEY|ControlMask,           XK_apostrophe,  spawn,          SCRIPT0("dictionary_history.sh") },
+	{ MODKEY|ControlMask,           XK_apostrophe,  spawn,          DICTIONARYHISTORY },
 	{ MODKEY|ShiftMask,             XK_q,           spawn,          SCRIPT0("quit.sh") },
 	{ MODKEY|ControlMask,           XK_h,           spawn,          SCRIPT0("hotspot_launch.sh") },
 	{ MODKEY|ControlMask,           XK_m,           spawn,          SCRIPT0("toggletouchpad.sh") },
