@@ -118,6 +118,8 @@ static const char *const *scratchcmds[] = {
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
 
+#define SCRIPT(name) "/home/ashish/.scripts/"name
+
 /* helper for spawning shell commands in the pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/usr/bin/dash", "-c", cmd, NULL } }
 /* helpler for commands with no argument to be executed within a terminal */
@@ -126,16 +128,16 @@ static const char *const *scratchcmds[] = {
 
 #define CMD0(cmd) { .v = (const char*[]){ cmd, NULL } }
 #define CMD1(cmd, arg) { .v = (const char*[]){ cmd, arg, NULL } }
-#define SCRIPT0(name) { .v = (const char*[]){ "/home/ashish/.scripts/"name, NULL } }
-#define SCRIPT1(name, arg) { .v = (const char*[]){ "/home/ashish/.scripts/"name, arg, NULL } }
+#define SCRIPT0(name) { .v = (const char*[]){ SCRIPT(name), NULL } }
+#define SCRIPT1(name, arg) { .v = (const char*[]){ SCRIPT(name), arg, NULL } }
 #define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-O", arg, "-P", NULL } }
 
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_ude && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de && dunstify -r 4120 -t 0 'data entry mode activated'")
 #define INHIBITSUSPEND { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        "/home/ashish/.scripts/watchlidswitch.sh", NULL } }
+        SCRIPT("watchlidswitch.sh"), NULL } }
 #define INHIBITSUSPENDDL { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        "/home/ashish/.scripts/watchlidswitch_dl.sh", NULL } }
+        SCRIPT("watchlidswitch_dl.sh"), NULL } }
 #define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
 #define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
 #define PACTLM { .v = (const char*[]){ "pactl", "set-sink-mute", "0", "toggle", NULL } }
@@ -266,7 +268,7 @@ static Key keys[] = {
 	{ MODKEY,                       XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "sel") },
 	{ MODKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("dictionary.sh") },
 	{ MODKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "last") },
-	{ MODKEY|ShiftMask|ControlMask, XK_semicolon,   spawn,          FTERMCMD("dictionary_history.sh") },
+	{ MODKEY|ShiftMask|ControlMask, XK_semicolon,   spawn,          FTERMCMD(SCRIPT("dictionary_history.sh")) },
 	{ SUPKEY,                       XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "sel") },
 	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("espeak.sh") },
 	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "last") },
