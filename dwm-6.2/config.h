@@ -120,9 +120,7 @@ static const char *const *scratchcmds[] = {
 
 /* helper for spawning shell commands in pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "/usr/bin/dash", "-c", cmd, NULL } }
-
 /* helpler for commands with no argument to be executed within a terminal */
-#define FTERMCMD(cmd) { .v = (const char*[]){ "termite", "--name=floating_Termite", "-e", cmd, NULL } }
 #define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
 
 #define SCRIPT(name) "/home/ashish/.scripts/"name
@@ -272,7 +270,7 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "sel") },
 	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("espeak.sh") },
 	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "last") },
-	{ MODKEY|ControlMask,           XK_apostrophe,  spawn,          FTERMCMD(SCRIPT("dictionary_history.sh")) },
+	{ MODKEY|ControlMask,           XK_apostrophe,  spawn,          SCRIPT0("dictionary_history.sh") },
 	{ MODKEY|ShiftMask,             XK_q,           spawn,          SCRIPT0("quit.sh") },
 	{ MODKEY|ControlMask,           XK_h,           spawn,          SCRIPT0("hotspot_launch.sh") },
 	{ MODKEY|ControlMask,           XK_m,           spawn,          SCRIPT0("toggletouchpad.sh") },
