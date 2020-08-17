@@ -1052,7 +1052,6 @@ drawbar(Monitor *m)
                 drw_setscheme(drw, scheme[SchemeStts]);
                 drw_text(drw, x, 0, wbar - x, bh, 0, "", 0); /* to keep right padding clean */
 	}
-
         XMoveResizeWindow(dpy, m->barwin, m->wx, m->by, wbar, bh);
 
 	for (c = m->clients; c; c = c->next) {
