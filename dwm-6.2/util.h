@@ -13,12 +13,10 @@
 //#define BETWEEN(X, A, B)        ((A) <= (X) && (X) <= (B))
 #define BETWEEN(X, A, B) \
    ({ __auto_type __X = (X); \
-       __auto_type __A = (A); \
-        __auto_type __B = (B); \
-     __A <= __X && __X <= __B; })
+       A <= __X && __X <= B; })
 #define SWAP(A, B) \
-   ({ __auto_type C = A; \
-       A = B; B = C; })
+   ({ __auto_type __A = (A); \
+       A = B; B = __A; })
 
 #define STR_HELPER(x) #x
 #define STR(x) STR_HELPER(x)
