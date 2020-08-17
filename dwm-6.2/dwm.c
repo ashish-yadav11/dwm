@@ -64,7 +64,7 @@
 #define ATT(M)                  (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
 #define SPLUS(M)                (M->pertag->splus[M->pertag->curtag])
 
-#define DSBLOCKSLOCKFILE       "/tmp/dsblocks.pid"
+#define DSBLOCKSLOCKFILE        "/tmp/dsblocks.pid"
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
 #define SW                          16 /* systray icon height; change to bh to keep them equal to font height */
@@ -330,7 +330,7 @@ static const char broken[] = "";
 static char stextc[256];
 static char stexts[256];
 static int wstext;
-static int dsblockssig;
+static unsigned int dsblockssig;
 static int screen;
 static int sw, sh;           /* X display screen geometry width, height */
 static int bh, blw, stw;     /* bar geometry */
@@ -572,7 +572,7 @@ buttonpress(XEvent *e)
 			click = ClkLtSymbol;
                 else if (ev->x < selmon->ww - stw - wstext)
                         click = ClkWinTitle;
-//                else if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= (x -= wstext + lrpad)) {
+//                else if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= (x -= wstext - lrpad)) {
                 else if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= x - wstext + lrpad) {
                         click = ClkStatusText;
 //                        updatedsblockssig(x, ev->x);
@@ -1045,7 +1045,7 @@ drawbar(Monitor *m)
                         if (ctmp == '\0')
                                 break;
                         /* - 11 to compensate for + 10 above */
-                        drw_setscheme(drw, scheme[(unsigned char)ctmp - 11]);
+                        drw_setscheme(drw, scheme[ctmp - 11]);
                         *ts = ctmp;
                         tp = ++ts;
                 }
@@ -1711,15 +1711,15 @@ motionnotify(XEvent *e)
                 static int currentcursor = 0;
                 int x;
 
-                if (BETWEEN(ev->x, (x = selmon->ww - stw - wstext + lrpad / 2), x + wstext - lrpad)) {
+                if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= (x -= wstext - lrpad)) {
                         updatedsblockssig(x, ev->x);
                         if (currentcursor) {
-                                if (dsblockssig <= 0 || dsblockssig >= 10) {
+                                if (!dsblockssig) {
                                         currentcursor = 0;
                                         XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
                                 }
                         } else {
-                                if (dsblockssig > 0 && dsblockssig < 10) {
+                                if (dsblockssig) {
                                         currentcursor = 1;
                                         XDefineCursor(dpy, selmon->barwin, cursor[CurHand]->cursor);
                                 }
@@ -2521,7 +2521,7 @@ sigdsblocks(const Arg *arg)
         struct flock fl;
 	union sigval sv;
 
-        if (dsblockssig <= 0 || dsblockssig >= 10)
+        if (!dsblockssig)
                 return;
 	sv.sival_int = (dsblockssig << 8) | arg->i;
         fd = open(DSBLOCKSLOCKFILE, O_RDONLY);
@@ -3131,7 +3131,10 @@ updatedsblockssig(int x, int e)
                 x += TTEXTW(tp);
                 *ts = ctmp;
                 if (x >= e) {
-                        dsblockssig = (unsigned char)ctmp;
+                        if (ctmp != 10)
+                                dsblockssig = ctmp;
+                        else
+                                dsblockssig = 0;
                         return;
                 }
                 tp = ++ts;
