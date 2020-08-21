@@ -60,7 +60,7 @@
 #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
 #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
-#define TTEXTW(X)               drw_fontset_getwidth(drw, (X))
+#define TTEXTW(X)               (drw_fontset_getwidth(drw, (X)))
 #define ATT(M)                  (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
 #define SPLUS(M)                (M->pertag->splus[M->pertag->curtag])
 
