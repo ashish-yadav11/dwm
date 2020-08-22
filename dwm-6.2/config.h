@@ -43,7 +43,7 @@ static const char col_red[]             = "#b21e19";
 static const char col1[]                = "#8fb4a6"; /* default icon color */
 static const char col2[]                = "#c8c061"; /* warning icon color */
 static const char col3[]                = "#5fa2c3"; /* mail block - frozen */
-static const char col4[]                = "#b181c8"; /* mail block - MAILSYNC started */
+static const char col4[]                = "#ac90c8"; /* mail block - MAILSYNC started */
 static const char col5[]                = "#d28777"; /* mail block - syncing */
 static const char col6[]                = "#beb65d"; /* mail block - last sync failed */
 
