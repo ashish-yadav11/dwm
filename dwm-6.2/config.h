@@ -7,24 +7,24 @@ typedef struct {
 } Win;
 
 /* appearance */
-static const unsigned int borderpx		= 2;	/* border pixel of windows */
-static const unsigned int snap			= 10;	/* snap pixel */
-static const int gappih				= 1;	/* horiz inner gap between windows */
-static const int gappiv				= 1;	/* vert inner gap between windows */
-static const int gappoh				= 1;	/* horiz outer gap between windows and screen edge */
-static const int gappov				= 1;	/* vert outer gap between windows and screen edge */
-static const unsigned int systraypinning	= 0;	/* 0: sloppy systray follows selected monitor, >0:pin systray to monitor X */
-static const unsigned int systrayspacing	= 4;	/* systray spacing */
-static const int systraypinningfailfirst	= 1;	/* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
-static const int showsystray			= 1;	/* 0 means no systray */
-static const int showbar			= 1;	/* 0 means no bar */
-static const int topbar				= 1;	/* 0 means bottom bar */
+static const unsigned int borderpx              = 2;    /* border pixel of windows */
+static const unsigned int snap                  = 10;   /* snap pixel */
+static const int gappih                         = 1;    /* horiz inner gap between windows */
+static const int gappiv                         = 1;    /* vert inner gap between windows */
+static const int gappoh                         = 1;    /* horiz outer gap between windows and screen edge */
+static const int gappov                         = 1;    /* vert outer gap between windows and screen edge */
+static const unsigned int systraypinning        = 0;    /* 0: sloppy systray follows selected monitor, >0:pin systray to monitor X */
+static const unsigned int systrayspacing        = 4;    /* systray spacing */
+static const int systraypinningfailfirst        = 1;    /* 1: if pinning fails, display systray on the first monitor, False: display systray on the last monitor*/
+static const int showsystray                    = 1;    /* 0 means no systray */
+static const int showbar                        = 1;    /* 0 means no bar */
+static const int topbar                         = 1;    /* 0 means bottom bar */
 /*  Display modes of the tab bar: never shown, always shown, shown only in  */
 /*  monocle mode in the presence of several windows.                        */
 /*  Modes after showtab_nmodes are disabled.                                */
 enum showtab_modes { showtab_never, showtab_auto, showtab_nmodes, showtab_always};
-static const int showtab			= showtab_auto;        /* Default tab bar show mode */
-static const int toptab				= False;               /* False means bottom tab bar */
+static const int showtab                        = showtab_auto;        /* Default tab bar show mode */
+static const int toptab                         = False;               /* False means bottom tab bar */
 
 static const char *fonts[] = { "Fira Sans:size=12",
 //                               "Font Awesome 5 Brands Regular:size=12",
@@ -33,38 +33,38 @@ static const char *fonts[] = { "Fira Sans:size=12",
                                "Siji:pixelsize=12",
                                "Noto Color Emoji:pixelsize=12" };
 
-static const char col_black[]		= "#222222";
-static const char col_cyan[]		= "#005577";
-static const char col_gray1[]		= "#333333";
-static const char col_gray2[]		= "#4e4e4e";
-static const char col_white1[]		= "#eeeeee";
-static const char col_white2[]		= "#dddddd";
-static const char col_red[]		= "#b21e19";
-static const char col1[]		= "#8fb4a6"; /* default icon color */
-static const char col2[]		= "#c8c061"; /* warning icon color */
-static const char col3[]		= "#5fa2c3"; /* mail block - frozen */
-static const char col4[]		= "#b181c8"; /* mail block - MAILSYNC started */
-static const char col5[]		= "#d28777"; /* mail block - syncing */
-static const char col6[]		= "#beb65d"; /* mail block - last sync failed */
+static const char col_black[]           = "#222222";
+static const char col_cyan[]            = "#005577";
+static const char col_gray1[]           = "#333333";
+static const char col_gray2[]           = "#4e4e4e";
+static const char col_white1[]          = "#eeeeee";
+static const char col_white2[]          = "#dddddd";
+static const char col_red[]             = "#b21e19";
+static const char col1[]                = "#8fb4a6"; /* default icon color */
+static const char col2[]                = "#c8c061"; /* warning icon color */
+static const char col3[]                = "#5fa2c3"; /* mail block - frozen */
+static const char col4[]                = "#b181c8"; /* mail block - MAILSYNC started */
+static const char col5[]                = "#d28777"; /* mail block - syncing */
+static const char col6[]                = "#beb65d"; /* mail block - last sync failed */
 
 enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
        SchemeCol5, SchemeCol6, SchemeNorm, SchemeSel, SchemeUrg,
        SchemeLtSm, SchemeTray }; /* color schemes */
 
-static const char *colors[][3]		= {
-	/*			fg		bg		border   */
-	[SchemeStts]	=	{ col_white1,	col_black,	col_gray2 },
-	[SchemeCol1]	=	{ col1,		col_black,	col_gray2 },
-	[SchemeCol2]	=	{ col2,		col_black,	col_gray2 },
-	[SchemeCol3]	=	{ col3,		col_black,	col_gray2 },
-	[SchemeCol4]	=	{ col4,		col_black,	col_gray2 },
-	[SchemeCol5]	=	{ col5,		col_black,	col_gray2 },
-	[SchemeCol6]	=	{ col6,		col_black,	col_gray2 },
-	[SchemeNorm]	=	{ col_white1,	col_gray1,	col_gray2 },
-	[SchemeSel]	=	{ col_white1,	col_cyan,	col_cyan },
-	[SchemeUrg]	=	{ col_white1,	col_red,	col_red },
-	[SchemeLtSm]	=	{ col_white2,	col_black,	col_gray2 },
-	[SchemeTray]	=	{ col_white2,	col_gray1,	col_gray2 },
+static const char *colors[][3] = {
+        /*                  fg            bg              border   */
+	[SchemeStts]    = { col_white1,   col_black,      col_gray2 },
+	[SchemeCol1]    = { col1,         col_black,      col_gray2 },
+	[SchemeCol2]    = { col2,         col_black,      col_gray2 },
+	[SchemeCol3]    = { col3,         col_black,      col_gray2 },
+	[SchemeCol4]    = { col4,         col_black,      col_gray2 },
+	[SchemeCol5]    = { col5,         col_black,      col_gray2 },
+	[SchemeCol6]    = { col6,         col_black,      col_gray2 },
+	[SchemeNorm]    = { col_white1,   col_gray1,      col_gray2 },
+	[SchemeSel]     = { col_white1,   col_cyan,       col_cyan },
+	[SchemeUrg]     = { col_white1,   col_red,        col_red },
+	[SchemeLtSm]    = { col_white2,   col_black,      col_gray2 },
+	[SchemeTray]    = { col_white2,   col_gray1,      col_gray2 },
 };
 
 /* tagging */
@@ -77,26 +77,26 @@ static int def_layouts[1 + LENGTH(tags)]  = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
 static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 
 /* layout(s) */
-static const float mfact	= 0.60; /* factor of master area size [0.05..0.95] */
-static const int nmaster	= 1;    /* number of clients in master area */
-static const int resizehints	= 0;    /* 1 means respect size hints in tiled resizals */
+static const float mfact        = 0.60; /* factor of master area size [0.05..0.95] */
+static const int nmaster        = 1;    /* number of clients in master area */
+static const int resizehints    = 0;    /* 1 means respect size hints in tiled resizals */
 
 static const Layout layouts[] = {
-	/* symbol	arrange function */
-	{ "[ ]=",	tile },
-	{ "[ . ]",	NULL },    /* no layout function means floating behavior */
-	{ "[M]",	monocle },
-	{ "[D]",	deck },
-        { NULL,		NULL }
+	/* symbol       arrange function */
+	{ "[ ]=",       tile },
+	{ "[ . ]",      NULL },    /* no layout function means floating behavior */
+	{ "[M]",        monocle },
+	{ "[D]",        deck },
+        { NULL,         NULL }
 };
 
 static const Attach attachs[] = {
-	/* symbol	attach function */
-	{ "M",		attach },
-	{ "D",		attachbelow },
-	{ "S",		attachaside },
-	{ "B",		attachbottom },
-        { NULL,		NULL }
+	/* symbol       attach function */
+	{ "M",          attach },
+	{ "D",          attachbelow },
+	{ "S",          attachaside },
+	{ "B",          attachbottom },
+        { NULL,         NULL }
 };
 
 static const char *const *scratchcmds[] = {
@@ -358,10 +358,10 @@ static Button buttons[] = {
 /* trigger signals using `xsetroot -name "FSIGNAL<signame> [<type> <value>]"` */
 /* signal definitions */
 static Signal signals[] = {
-	/* signame		function */
-	{ "quit",		quit },
-	{ "scrh",		scratchhide },
-	{ "scrs",		scratchshow },
+	/* signame              function */
+	{ "quit",               quit },
+	{ "scrh",               scratchhide },
+	{ "scrs",               scratchshow },
 };
 
 /* custom function implementations */
@@ -474,14 +474,14 @@ floatresizew(const Arg *arg)
 void
 focuslast(const Arg *arg)
 {
-	Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
+        Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
 
         if (arg->i)
                 for (; c && (c->ishidden || !c->tags); c = c->snext);
         else
                 for (; c && !ISVISIBLE(c); c = c->snext);
-	if (c)
-		focusclient(c, 0);
+        if (c)
+                focusclient(c, 0);
 }
 
 void
@@ -561,7 +561,7 @@ focusstackalt(const Arg *arg)
 void
 focusurgent(const Arg *arg)
 {
-	for (Monitor *m = mons; m; m = m->next)
+        for (Monitor *m = mons; m; m = m->next)
                 for (Client *c = selmon->stack; c; c = c->snext)
                         if (c && c->isurgent) {
                                 focusclient(c, 0);
@@ -608,7 +608,7 @@ hidevisscratch(const Arg *arg)
 {
         unsigned long t = 0;
 
-	for (Client *c = selmon->clients; c; c = c->next)
+        for (Client *c = selmon->clients; c; c = c->next)
                 if ((c->scratchkey > 0) && ISVISIBLE(c)) {
                         c->tags = 0;
                         XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
@@ -686,7 +686,7 @@ scratchhide(const Arg *arg)
 void
 scratchshow(const Arg *arg)
 {
-	Client *c;
+        Client *c;
 
         for (Monitor *m = mons; m; m = m->next)
                 for (c = selmon->clients; c; c = c->next)
@@ -752,7 +752,7 @@ showfloating(const Arg *arg)
 {
         Client *f = NULL; /* last focused hidden floating client */
 
-	for (Client *c = selmon->stack; c; c = c->snext)
+        for (Client *c = selmon->stack; c; c = c->snext)
                 if (c->ishidden && (c->tags & selmon->tagset[selmon->seltags])) {
                         if (!f)
                                 f = c;
@@ -781,29 +781,29 @@ tagandview(const Arg *arg)
 void
 togglefocus(const Arg *arg)
 {
-	Client *c;
+        Client *c;
 
-	if (!selmon->sel)
-		return;
+        if (!selmon->sel)
+                return;
         if (selmon->sel->isfloating) {
                 if (selmon->sel->isfullscreen)
                         return;
                 for (c = selmon->sel; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
         } else
                 for (c = selmon->sel; c && (!ISVISIBLE(c) || !c->isfloating); c = c->snext);
-	if (c) {
-		focusalt(c);
-		restack(selmon, 0);
-	}
+        if (c) {
+                focusalt(c);
+                restack(selmon, 0);
+        }
 }
 
 void
 togglefullscr(const Arg *arg)
 {
         int found = 0;
-	Client *c;
+        Client *c;
 
-	for (c = selmon->clients; c; c = c->next)
+        for (c = selmon->clients; c; c = c->next)
                 if (ISVISIBLE(c) && c->isfullscreen) {
                         found = 1;
                         setfullscreen(c, 0);
@@ -840,7 +840,7 @@ togglestkpos(const Arg *arg)
 void
 togglewin(const Arg *arg)
 {
-	Client *c;
+        Client *c;
 
         if (selmon->sel && selmon->sel->scratchkey == ((Win*)(arg->v))->scratchkey) {
                 for (c = selmon->sel->snext;
@@ -852,7 +852,7 @@ togglewin(const Arg *arg)
                         view(&((Arg){0}));
                 return;
         }
-	for (c = selmon->clients;
+        for (c = selmon->clients;
              c && c->scratchkey != ((Win*)(arg->v))->scratchkey;
              c = c->next);
         if (c)
