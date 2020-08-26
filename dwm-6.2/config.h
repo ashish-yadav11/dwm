@@ -7,22 +7,18 @@ typedef struct {
 } Win;
 
 /* appearance */
-static const unsigned int borderpx              = 2;    /* border pixel of windows */
-static const unsigned int snap                  = 10;   /* snap pixel */
-static const int gappih                         = 1;    /* horiz inner gap between windows */
-static const int gappiv                         = 1;    /* vert inner gap between windows */
-static const int gappoh                         = 1;    /* horiz outer gap between windows and screen edge */
-static const int gappov                         = 1;    /* vert outer gap between windows and screen edge */
-
-/* 0 means systray follows selected monitor; n other than 0 means pin systray to nth monitor */
-static const unsigned int systraypinning        = 0;
-static const unsigned int systrayspacing        = 4;    /* systray spacing */
-
-/* 1 means if pinning fails, display systray on the first monitor; 0 means display systray on the last monitory */
-static const int systraypinningfailfirst        = 1;
-static const int showsystray                    = 1; /* 0 means no systray */
-static const int showbar                        = 1; /* 0 means no bar */
-static const int topbar                         = 1; /* 0 means bottom bar */
+static const unsigned int borderpx              = 2;  /* border pixel of windows */
+static const unsigned int snap                  = 10; /* snap pixel */
+static const int gappih                         = 1;  /* horiz inner gap between windows */
+static const int gappiv                         = 1;  /* vert inner gap between windows */
+static const int gappoh                         = 1;  /* horiz outer gap between windows and screen edge */
+static const int gappov                         = 1;  /* vert outer gap between windows and screen edge */
+static const unsigned int systraypinning        = 0;  /* 0 means systray follows selected monitor; n other than 0 means pin systray to nth monitor */
+static const unsigned int systrayspacing        = 4;  /* systray spacing */
+static const int systraypinningfailfirst        = 1;  /* 1 means if pinning fails, display systray on the first monitor; 0 means display systray on the last monitory */
+static const int showsystray                    = 1;  /* 0 means no systray */
+static const int showbar                        = 1;  /* 0 means no bar */
+static const int topbar                         = 1;  /* 0 means bottom bar */
 /*  Display modes of the tab bar: never shown, always shown, shown only in  */
 /*  monocle mode in the presence of several windows.                        */
 /*  Modes after showtab_nmodes are disabled.                                */
@@ -45,7 +41,7 @@ static const char col_white1[]          = "#eeeeee";
 static const char col_white2[]          = "#dddddd";
 static const char col_red[]             = "#b21e19";
 static const char col1[]                = "#8fb4a6"; /* default icon color */
-static const char col2[]                = "#beb873"; /* warning icon color */
+static const char col2[]                = "#c3c26f"; /* warning icon color */
 static const char col3[]                = "#8d97cd"; /* mail block - frozen */
 static const char col4[]                = "#b399cd"; /* mail block - MAILSYNC started */
 static const char col5[]                = "#d29b88"; /* mail block - syncing */
