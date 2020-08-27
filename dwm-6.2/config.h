@@ -998,7 +998,7 @@ applyrules(Client *c)
                 center(c);
         } else if (strcmp(instance, "brave-browser") == 0) {
                 marknegscratch(c, -1);
-        } else if (strcmp(class, "Singal") == 0) {
+        } else if (strcmp(class, "Signal") == 0) {
                 c->isfloating = 1;
                 markposscratch(c, 4);
                 c->w = 880;
