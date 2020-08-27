@@ -99,8 +99,9 @@ static const Attach attachs[] = {
 static const char *const *scratchcmds[] = {
 	(const char *[]){ "termite", "--name=scratch_Termite", NULL },
 	(const char *[]){ "brave", "--profile-directory=Default", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
-	(const char *[]){ "telegram-desktop", NULL },
 	(const char *[]){ "termite", "--name=pyfzf_Termite", "-e", "/home/ashish/.local/bin/pyfzf", NULL },
+	(const char *[]){ "signal-desktop", NULL },
+	(const char *[]){ "telegram-desktop", NULL },
 };
 
 /* key definitions */
@@ -256,8 +257,9 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_period,      hideclient,     {0} },
 	{ SUPKEY,                       XK_F1,          togglescratch,  {.i = 1 } },
 	{ MODRKEY,                      XK_m,           togglescratch,  {.i = 2 } },
-	{ SUPKEY,                       XK_w,           togglescratch,  {.i = 3 } },
-	{ SUPKEY,                       XK_p,           togglescratch,  {.i = 4 } },
+	{ SUPKEY,                       XK_p,           togglescratch,  {.i = 3 } },
+	{ SUPKEY,                       XK_s,           togglescratch,  {.i = 4 } },
+	{ SUPKEY,                       XK_w,           togglescratch,  {.i = 5 } },
 	{ MODKEY,                       XK_s,           togglestkpos,   {0} },
 	{ MODRKEY,                      XK_space,       togglewin,      {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,      {.v = &mail} },
@@ -964,7 +966,7 @@ applyrules(Client *c)
                 marknegscratch(c, -2);
         } else if (strcmp(instance, "pyfzf_Termite") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 4);
+                markposscratch(c, 3);
                 c->w = 750;
                 c->h = 450;
                 center(c);
@@ -996,9 +998,15 @@ applyrules(Client *c)
                 center(c);
         } else if (strcmp(instance, "brave-browser") == 0) {
                 marknegscratch(c, -1);
+        } else if (strcmp(class, "Singal") == 0) {
+                c->isfloating = 1;
+                markposscratch(c, 4);
+                c->w = 880;
+                c->h = 620;
+                center(c);
         } else if (strcmp(class, "TelegramDesktop") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 3);
+                markposscratch(c, 5);
                 c->w = 770;
                 c->h = 555;
                 center(c);
