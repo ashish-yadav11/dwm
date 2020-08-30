@@ -48,41 +48,39 @@
 #include "util.h"
 
 /* macros */
-#define BUTTONMASK              (ButtonPressMask|ButtonReleaseMask)
-#define CLEANMASK(mask)         (mask & ~(numlockmask|LockMask) & \
-                                 (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
-#define INTERSECT(x,y,w,h,m)    (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
-                               * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
-#define ISVISIBLE(C)            ((C->tags & C->mon->tagset[C->mon->seltags]) && !C->ishidden)
-#define LENGTH(X)               (sizeof X / sizeof X[0])
-#define MOUSEMASK               (BUTTONMASK|PointerMotionMask)
-#define WIDTH(X)                ((X)->w + 2 * (X)->bw)
-#define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
-#define TAGMASK                 ((1 << LENGTH(tags)) - 1)
-#define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
-#define TTEXTW(X)               (drw_fontset_getwidth(drw, (X)))
-#define ATT(M)                  (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
-#define SPLUS(M)                (M->pertag->splus[M->pertag->curtag])
+#define BUTTONMASK                  (ButtonPressMask|ButtonReleaseMask)
+#define CLEANMASK(mask)             (mask & ~(numlockmask|LockMask) & \
+                                     (ShiftMask|ControlMask|Mod1Mask|Mod2Mask|Mod3Mask|Mod4Mask|Mod5Mask))
+#define INTERSECT(x,y,w,h,m)        (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
+                                   * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
+#define ISVISIBLE(C)                ((C->tags & C->mon->tagset[C->mon->seltags]) && !C->ishidden)
+#define LENGTH(X)                   (sizeof X / sizeof X[0])
+#define MOUSEMASK                   (BUTTONMASK|PointerMotionMask)
+#define WIDTH(X)                    ((X)->w + 2 * (X)->bw)
+#define HEIGHT(X)                   ((X)->h + 2 * (X)->bw)
+#define TAGMASK                     ((1 << LENGTH(tags)) - 1)
+#define TEXTW(X)                    (drw_fontset_getwidth(drw, (X)) + lrpad)
+#define TTEXTW(X)                   (drw_fontset_getwidth(drw, (X)))
+#define ATT(M)                      (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
+#define SPLUS(M)                    (M->pertag->splus[M->pertag->curtag])
 
-#define DSBLOCKSLOCKFILE        "/tmp/dsblocks.pid"
+#define DSBLOCKSLOCKFILE            "/tmp/dsblocks.pid"
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
-#define SW                          16 /* systray icon height; change to bh to keep them equal to font height */
-#define MINSIZE                     26
 
 /* XEMBED messages */
 #define XEMBED_EMBEDDED_NOTIFY      0
 #define XEMBED_WINDOW_ACTIVATE      1
 #define XEMBED_FOCUS_IN             4
-#define XEMBED_MODALITY_ON         10
+#define XEMBED_MODALITY_ON          10
 
-#define XEMBED_MAPPED              (1 << 0)
+#define XEMBED_MAPPED               (1 << 0)
 #define XEMBED_WINDOW_ACTIVATE      1
 #define XEMBED_WINDOW_DEACTIVATE    2
 
 #define VERSION_MAJOR               0
 #define VERSION_MINOR               0
-#define XEMBED_EMBEDDED_VERSION (VERSION_MAJOR << 16) | VERSION_MINOR
+#define XEMBED_EMBEDDED_VERSION     ((VERSION_MAJOR << 16) | VERSION_MINOR)
 
 /* enums */
 enum { CurNormal, CurHand, CurResize, CurMove, CurLast }; /* cursor */
@@ -711,8 +709,8 @@ clientmessage(XEvent *e)
 			systray->icons = c;
 			if (!XGetWindowAttributes(dpy, c->win, &wa)) {
 				/* use sane defaults */
-				wa.width = SW;
-				wa.height = SW;
+				wa.width = SH;
+				wa.height = SH;
 				wa.border_width = 0;
 			}
 			c->x = c->oldx = c->y = c->oldy = 0;
@@ -2716,7 +2714,7 @@ tiledeck(Monitor *m, int deck)
                         hleft = wh - gappih * (r - 1);
                         h = hleft / r; /* height without including splus */
                         h1 = h + SPLUS(m)[0]; /* provisional height after including splus */
-                        h2 = MAX(h, hleft - MINSIZE * (r - 1)); /* maximum allowed height */
+                        h2 = MAX(h, hleft - MINWINHEIGHT * (r - 1)); /* maximum allowed height */
                         if (h1 > h2) {
                                 SPLUS(m)[0] = h2 - h;
                                 h = h2;
@@ -2769,7 +2767,7 @@ tiledeck(Monitor *m, int deck)
                                         hleft = wh - y - gappih * (r - 1);
                                         h = hleft / r; /* height without including splus */
                                         h1 = h + SPLUS(m)[i]; /* provisional height after including splus */
-                                        h2 = MAX(h, hleft - MINSIZE * (r - 1)); /* maximum allowed height */
+                                        h2 = MAX(h, hleft - MINWINHEIGHT * (r - 1)); /* maximum allowed height */
                                         if (h1 > h2) {
                                                 SPLUS(m)[i] = h2 - h;
                                                 h = h2;
@@ -2789,7 +2787,7 @@ tiledeck(Monitor *m, int deck)
                                 hleft = wh - gappih;
                                 h = hleft / 2; /* height without including splus */
                                 h1 = h + SPLUS(m)[1]; /* provisional height after including splus */
-                                h2 = MAX(h, hleft - MINSIZE); /* maximum allowed height */
+                                h2 = MAX(h, hleft - MINWINHEIGHT); /* maximum allowed height */
                                 if (h1 > h2) {
                                         SPLUS(m)[1] = h2 - h;
                                         h = h2;
@@ -3381,7 +3379,7 @@ updatesystray(void)
 		XMapRaised(dpy, i->win);
 		w += systrayspacing;
 		i->x = w;
-		XMoveResizeWindow(dpy, i->win, i->x, (bh - SW) / 2, i->w, i->h);
+		XMoveResizeWindow(dpy, i->win, i->x, (bh - SH) / 2, i->w, i->h);
 		w += i->w;
 		if (i->mon != m)
 			i->mon = m;
@@ -3404,21 +3402,21 @@ updatesystray(void)
 void
 updatesystrayicongeom(Client *i, int w, int h)
 {
-        i->h = SW;
+        i->h = SH;
         if (w == h)
-                i->w = SW;
-        else if (h == SW)
+                i->w = SH;
+        else if (h == SH)
                 i->w = w;
         else
-                i->w = (int) ((float)SW * ((float)w / (float)h));
+                i->w = (int) ((float)SH * ((float)w / (float)h));
         applysizehints(i, &(i->x), &(i->y), &(i->w), &(i->h), False);
         /* force icons into the systray dimensions if they don't want to */
-        if (i->h > SW) {
+        if (i->h > SH) {
                 if (i->w == i->h)
-                        i->w = SW;
+                        i->w = SH;
                 else
-                        i->w = (int) ((float)SW * ((float)i->w / (float)i->h));
-                i->h = SW;
+                        i->w = (int) ((float)SH * ((float)i->w / (float)i->h));
+                i->h = SH;
         }
 }
 

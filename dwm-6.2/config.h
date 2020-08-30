@@ -1,5 +1,10 @@
 /* See LICENSE file for copyright and license details. */
 
+/* systray icon height, change to bh to keep it equal to font height */
+#define SH                          16
+/* minimum allowed vertical height of a window when resizing with setsplus */
+#define MINWINHEIGHT                26
+
 typedef struct {
         const Arg cmd;
         const unsigned int tag;
