@@ -132,7 +132,7 @@ static const char *const *scratchcmds[] = {
 #define CMD1(cmd, arg) { .v = (const char*[]){ cmd, arg, NULL } }
 #define SCRIPT0(name) { .v = (const char*[]){ SCRIPT(name), NULL } }
 #define SCRIPT1(name, arg) { .v = (const char*[]){ SCRIPT(name), arg, NULL } }
-#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-O", arg, "-P", NULL } }
+#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO", arg, NULL } }
 
 #define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", \
         "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
