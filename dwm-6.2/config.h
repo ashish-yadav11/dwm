@@ -978,7 +978,11 @@ applyrules(Client *c)
                 c->h = 450;
                 center(c);
         } else if (strcmp(instance, "calcurse_Termite") == 0) {
+                c->isfloating = 1;
                 markposscratch(c, 4);
+                c->w = 950;
+                c->h = 650;
+                center(c);
         } else if (strcmp(instance, "floating_Termite") == 0) {
                 c->isfloating = 1;
                 c->w = 750;
