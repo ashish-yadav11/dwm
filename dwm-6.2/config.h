@@ -105,6 +105,7 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "termite", "--name=scratch_Termite", NULL },
 	(const char *[]){ "brave", "--profile-directory=Default", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
 	(const char *[]){ "termite", "--name=pyfzf_Termite", "-e", "/home/ashish/.local/bin/pyfzf", NULL },
+	(const char *[]){ "termite", "--name=calcurse_Termite", "-e", "calcurse", NULL },
 	(const char *[]){ "signal-desktop", NULL },
 	(const char *[]){ "telegram-desktop", NULL },
 };
@@ -263,8 +264,9 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_F1,          togglescratch,  {.i = 1 } },
 	{ MODRKEY,                      XK_m,           togglescratch,  {.i = 2 } },
 	{ SUPKEY,                       XK_p,           togglescratch,  {.i = 3 } },
-	{ SUPKEY,                       XK_s,           togglescratch,  {.i = 4 } },
-	{ SUPKEY,                       XK_w,           togglescratch,  {.i = 5 } },
+	{ SUPKEY,                       XK_c,           togglescratch,  {.i = 4 } },
+	{ SUPKEY,                       XK_s,           togglescratch,  {.i = 5 } },
+	{ SUPKEY,                       XK_w,           togglescratch,  {.i = 6 } },
 	{ MODLKEY,                      XK_s,           togglestkpos,   {0} },
 	{ MODRKEY,                      XK_space,       togglewin,      {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,      {.v = &mail} },
@@ -286,7 +288,6 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_F10,         spawn,          SCRIPT1("systemctl_timeout.sh", "toggle") },
 	{ MODLKEY|ShiftMask,            XK_F10,         spawn,          SCRIPT1("systemctl_timeout.sh", "status") },
 	{ SUPKEY,                       XK_b,           spawn,          SCRIPT0("btns.sh") },
-	{ SUPKEY,                       XK_c,           spawn,          TERMCMD("calcurse") },
 	{ SUPKEY,                       XK_n,           spawn,          TERMCMD("newsboat -q") },
 	{ SUPKEY,                       XK_r,           spawn,          TERMCMD("ranger --cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,          TERMCMD("ranger") },
@@ -976,6 +977,8 @@ applyrules(Client *c)
                 c->w = 750;
                 c->h = 450;
                 center(c);
+        } else if (strcmp(instance, "calcurse_Termite") == 0) {
+                markposscratch(c, 4);
         } else if (strcmp(instance, "floating_Termite") == 0) {
                 c->isfloating = 1;
                 c->w = 750;
@@ -1006,13 +1009,13 @@ applyrules(Client *c)
                 marknegscratch(c, -1);
         } else if (strcmp(class, "Signal") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 4);
+                markposscratch(c, 5);
                 c->w = 880;
                 c->h = 620;
                 center(c);
         } else if (strcmp(class, "TelegramDesktop") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 5);
+                markposscratch(c, 6);
                 c->w = 770;
                 c->h = 555;
                 center(c);
