@@ -292,6 +292,7 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_r,           spawn,          TERMCMD("ranger --cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,          TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,          TERMCMD("htop") },
+	{ SUPKEY|ShiftMask,             XK_t,           spawn,          TERMCMD("htop -s PERCENT_CPU") },
 	{ MODRKEY,                      XK_s,           spawn,          INHIBITSUSPEND1 },
 	{ MODRKEY|ShiftMask,            XK_s,           spawn,          INHIBITSUSPEND0 },
 	{ MODRKEY,                      XK_k,           spawn,          SCRIPT1("ytmsclu.sh", "0") },
