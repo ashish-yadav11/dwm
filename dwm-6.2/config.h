@@ -113,7 +113,7 @@ static const char *const *scratchcmds[] = {
 /* key definitions */
 #define MODLKEY Mod3Mask
 #define MODRKEY Mod1Mask
-#define SUPKEY Mod4Mask
+#define SUPKEY  Mod4Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODLKEY,                      KEY,      vieworprev,     {.ui = 1 << TAG} }, \
 	{ MODLKEY|ShiftMask,            KEY,      tag,            {.ui = 1 << TAG} }, \
@@ -123,7 +123,7 @@ static const char *const *scratchcmds[] = {
 	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
 
 /* helper for spawning shell commands in pre dwm-5.0 fashion */
-#define SHCMD(cmd) { .v = (const char*[]){ "/usr/bin/dash", "-c", cmd, NULL } }
+#define SHCMD(cmd) { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
 /* helpler for commands with no argument to be executed within a terminal */
 #define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
 
