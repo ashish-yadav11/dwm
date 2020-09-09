@@ -261,6 +261,8 @@ static void resizerequest(XEvent *e);
 static void restack(Monitor *m, int dbr);
 static void run(void);
 static void scan(void);
+static void scratchhide(const Arg *arg);
+static void scratchshow(const Arg *arg);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
 static void sendmon(Client *c, Monitor *m);
 static void setattach(const Arg *arg);
@@ -293,6 +295,7 @@ static void tiledeck(Monitor *m, int deck);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglescratch(const Arg *arg);
+static void togglescratchf(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
@@ -508,15 +511,15 @@ attachaside(Client *c)
 void
 attachbelow(Client *c)
 {
-	//If there is nothing on the monitor or the selected client is floating, attach as normal
+	/* if there is nothing on the monitor or the selected client is floating, attach as normal */
 	if (c->mon->sel == NULL || c->mon->sel->isfloating) {
 		attach(c);
 		return;
 	}
 
-	//Set the new client's next property to the same as the currently selected clients next
+	/* set the new client's next property to the same as the currently selected clients next */
 	c->next = c->mon->sel->next;
-	//Set the currently selected clients next property to the new client
+	/* set the currently selected clients next property to the new client */
 	c->mon->sel->next = c;
 }
 
@@ -2134,6 +2137,48 @@ scan(void)
 	}
 }
 
+void
+scratchhide(const Arg *arg)
+{
+        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
+                unsigned long t = 0;
+
+                selmon->sel->tags = 0;
+                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
+                                PropModeReplace, (unsigned char *) &t, 1);
+                focus(NULL);
+                arrange(selmon);
+        }
+}
+
+void
+scratchshow(const Arg *arg)
+{
+        Client *c;
+
+        for (Monitor *m = mons; m; m = m->next)
+                for (c = m->clients; c; c = c->next)
+                        if (c->scratchkey == arg->i)
+                                goto show;
+        spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
+        return;
+show:
+        if (selmon->sel && c == selmon->sel)
+                return;
+        if (c->ishidden)
+                c->ishidden = 0;
+        if (c->mon != selmon) {
+                sendmon(c, selmon);
+                return;
+        }
+        c->tags = selmon->tagset[selmon->seltags];
+        updateclientdesktop(c);
+        detach(c);
+        ATT(c->mon)->attach(c);
+        focusalt(c);
+        arrange(selmon);
+}
+
 int
 sendevent(Window w, Atom proto, int mask, long d0, long d1, long d2, long d3, long d4)
 {
@@ -2867,7 +2912,7 @@ togglescratch(const Arg *arg)
                 Client *c;
 
                 for (Monitor *m = mons; m; m = m->next)
-                        for (c = selmon->clients; c; c = c->next)
+                        for (c = m->clients; c; c = c->next)
                                 if (c->scratchkey == arg->i)
                                         goto show;
                 spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
@@ -2881,6 +2926,50 @@ show:
                 }
                 c->tags = selmon->tagset[selmon->seltags];
                 updateclientdesktop(c);
+                detach(c);
+                ATT(c->mon)->attach(c);
+                focusalt(c);
+                arrange(selmon);
+        }
+}
+
+void
+togglescratchf(const Arg *arg)
+{
+        int key = arg->i + NUMSCRATCH;
+
+        if (selmon->sel && selmon->sel->scratchkey == key) {
+hide:;
+                unsigned long t = 0;
+
+                selmon->sel->tags = 0;
+                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
+                                PropModeReplace, (unsigned char *) &t, 1);
+                focus(NULL);
+                arrange(selmon);
+        } else {
+                Client *c;
+
+                for (Monitor *m = mons; m; m = m->next)
+                        for (c = m->clients; c; c = c->next)
+                                if (c->scratchkey == key)
+                                        goto show;
+                if (selmon->sel) {
+                        selmon->sel->scratchkey = key;
+                        goto hide;
+                }
+                return;
+show:
+                if (c->ishidden)
+                        c->ishidden = 0;
+                if (c->mon != selmon) {
+                        sendmon(c, selmon);
+                        return;
+                }
+                c->tags = selmon->tagset[selmon->seltags];
+                updateclientdesktop(c);
+                detach(c);
+                ATT(c->mon)->attach(c);
                 focusalt(c);
                 arrange(selmon);
         }

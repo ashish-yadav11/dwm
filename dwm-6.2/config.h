@@ -109,6 +109,7 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "signal-desktop", NULL },
 	(const char *[]){ "telegram-desktop", NULL },
 };
+#define NUMSCRATCH                  (sizeof scratchcmds / sizeof(char *))
 
 /* key definitions */
 #define MODLKEY Mod3Mask
@@ -171,8 +172,6 @@ static void hidevisscratch(const Arg *arg);
 static Client *nextprevsamefloat(int next);
 static Client *nextprevvisible(int next);
 static void push(const Arg *arg);
-static void scratchhide(const Arg *arg);
-static void scratchshow(const Arg *arg);
 static void showfloating(const Arg *arg);
 static void tagandview(const Arg *arg);
 static void togglefocus(const Arg *arg);
@@ -247,10 +246,10 @@ static Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,    {.v = &layouts[1]} },
 	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,    {.v = &layouts[2]} },
 	{ MODLKEY,                      XK_w,           setltorprev,    {.v = &layouts[3]} },
-	{ MODLKEY,                      XK_F1,          setattorprev,   {.v = &attachs[0]} },
-	{ MODLKEY,                      XK_F2,          setattorprev,   {.v = &attachs[1]} },
-	{ MODLKEY,                      XK_F3,          setattorprev,   {.v = &attachs[2]} },
-	{ MODLKEY,                      XK_F4,          setattorprev,   {.v = &attachs[3]} },
+	{ MODLKEY,                      XK_Home,        setattorprev,   {.v = &attachs[0]} },
+	{ MODLKEY,                      XK_Prior,       setattorprev,   {.v = &attachs[1]} },
+	{ MODLKEY,                      XK_Next,        setattorprev,   {.v = &attachs[2]} },
+	{ MODLKEY,                      XK_End,         setattorprev,   {.v = &attachs[3]} },
 
 	{ MODLKEY,                      XK_Tab,         focuslast,      {.i = 1} },
 	{ SUPKEY,                       XK_Tab,         focuslast,      {.i = 0} },
@@ -267,6 +266,10 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_c,           togglescratch,  {.i = 4 } },
 	{ SUPKEY,                       XK_s,           togglescratch,  {.i = 5 } },
 	{ SUPKEY,                       XK_w,           togglescratch,  {.i = 6 } },
+	{ MODLKEY,                      XK_F1,          togglescratchf, {.i = 1 + NUMSCRATCH } },
+	{ MODLKEY,                      XK_F2,          togglescratchf, {.i = 2 + NUMSCRATCH } },
+	{ MODLKEY,                      XK_F3,          togglescratchf, {.i = 3 + NUMSCRATCH } },
+	{ MODLKEY,                      XK_F4,          togglescratchf, {.i = 4 + NUMSCRATCH } },
 	{ MODLKEY,                      XK_s,           togglestkpos,   {0} },
 	{ MODRKEY,                      XK_space,       togglewin,      {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,      {.v = &mail} },
@@ -362,7 +365,7 @@ static Button buttons[] = {
 #define MAXFSIGNAMELEN 4
 #define MAXFSIGARGLEN 2
 
-/* trigger signals using `xsetroot -name "FSIGNAL<signame> [<type> <value>]"` */
+/* trigger signals using `xsetroot -name "FSIGID<signame> [<type> <value>]"` */
 /* signal definitions */
 static Signal signals[] = {
 	/* signame              function */
@@ -569,7 +572,7 @@ void
 focusurgent(const Arg *arg)
 {
         for (Monitor *m = mons; m; m = m->next)
-                for (Client *c = selmon->stack; c; c = c->snext)
+                for (Client *c = m->stack; c; c = c->snext)
                         if (c && c->isurgent) {
                                 focusclient(c, 0);
                                 return;
@@ -677,46 +680,6 @@ nextprevvisible(int next)
 }
 
 void
-scratchhide(const Arg *arg)
-{
-        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
-                unsigned long t = 0;
-
-                selmon->sel->tags = 0;
-                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) &t, 1);
-                focus(NULL);
-                arrange(selmon);
-        }
-}
-
-void
-scratchshow(const Arg *arg)
-{
-        Client *c;
-
-        for (Monitor *m = mons; m; m = m->next)
-                for (c = selmon->clients; c; c = c->next)
-                        if (c->scratchkey == arg->i)
-                                goto show;
-        spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
-        return;
-show:
-        if (selmon->sel && c == selmon->sel)
-                return;
-        if (c->ishidden)
-                c->ishidden = 0;
-        if (c->mon != selmon) {
-                sendmon(c, selmon);
-                return;
-        }
-        c->tags = selmon->tagset[selmon->seltags];
-        updateclientdesktop(c);
-        focusalt(c);
-        arrange(selmon);
-}
-
-void
 push(const Arg *arg)
 {
         Client *c;
@@ -808,9 +771,8 @@ void
 togglefullscr(const Arg *arg)
 {
         int found = 0;
-        Client *c;
 
-        for (c = selmon->clients; c; c = c->next)
+        for (Client *c = selmon->clients; c; c = c->next)
                 if (ISVISIBLE(c) && c->isfullscreen) {
                         found = 1;
                         setfullscreen(c, 0);
@@ -1042,20 +1004,20 @@ center(Client *c)
 }
 
 void
-marknegscratch(Client *c, int scratchkey)
+marknegscratch(Client *c, int key)
 {
         for (Client *i = selmon->clients; i; i = i->next)
-                if (i->scratchkey == scratchkey)
+                if (i->scratchkey == key)
                         return;
-        c->scratchkey = scratchkey;
+        c->scratchkey = key;
 }
 
 void
-markposscratch(Client *c, int scratchkey)
+markposscratch(Client *c, int key)
 {
         for (Monitor *m = mons; m; m = m->next)
-                for (Client *i = selmon->clients; i; i = i->next)
-                        if (i->scratchkey == scratchkey)
+                for (Client *i = m->clients; i; i = i->next)
+                        if (i->scratchkey == key)
                                 return;
-        c->scratchkey = scratchkey;
+        c->scratchkey = key;
 }
