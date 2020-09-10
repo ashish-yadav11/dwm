@@ -295,7 +295,6 @@ static void tiledeck(Monitor *m, int deck);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void togglescratch(const Arg *arg);
-static void togglescratchf(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
@@ -2916,48 +2915,6 @@ togglescratch(const Arg *arg)
                                 if (c->scratchkey == arg->i)
                                         goto show;
                 spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
-                return;
-show:
-                if (c->ishidden)
-                        c->ishidden = 0;
-                if (c->mon != selmon) {
-                        sendmon(c, selmon);
-                        return;
-                }
-                c->tags = selmon->tagset[selmon->seltags];
-                updateclientdesktop(c);
-                detach(c);
-                ATT(c->mon)->attach(c);
-                focusalt(c);
-                arrange(selmon);
-        }
-}
-
-void
-togglescratchf(const Arg *arg)
-{
-        int key = arg->i + NUMSCRATCH;
-
-        if (selmon->sel && selmon->sel->scratchkey == key) {
-hide:;
-                unsigned long t = 0;
-
-                selmon->sel->tags = 0;
-                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) &t, 1);
-                focus(NULL);
-                arrange(selmon);
-        } else {
-                Client *c;
-
-                for (Monitor *m = mons; m; m = m->next)
-                        for (c = m->clients; c; c = c->next)
-                                if (c->scratchkey == key)
-                                        goto show;
-                if (selmon->sel) {
-                        selmon->sel->scratchkey = key;
-                        goto hide;
-                }
                 return;
 show:
                 if (c->ishidden)
