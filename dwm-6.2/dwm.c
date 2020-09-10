@@ -2509,23 +2509,23 @@ void
 shiftview(const Arg *arg)
 {
         if (selmon->pertag->curtag) {
-                unsigned int acttags = 0;
+                unsigned int activetags = 0;
                 Client *c;
                 Arg shifted;
 
                 for (c = selmon->clients; c; c = c->next)
-                        acttags |= c->tags;
-                if (!acttags)
+                        activetags |= c->tags;
+                if (!activetags)
                         return;
                 shifted.ui = 1 << (selmon->pertag->curtag - 1);
                 if (arg->i > 0)
                         do
                                 shifted.ui = shifted.ui << 1 | (shifted.ui >> (LENGTH(tags) - 1));
-                        while (!(shifted.ui & acttags));
+                        while (!(shifted.ui & activetags));
                 else
                         do
                                 shifted.ui = shifted.ui >> 1 | (shifted.ui << (LENGTH(tags) - 1));
-                        while (!(shifted.ui & acttags));
+                        while (!(shifted.ui & activetags));
                 view(&shifted);
         }
 }
