@@ -168,15 +168,15 @@ static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
 static void hidefloating(const Arg *arg);
-static void hidevisscratch(const Arg *arg);
+static void hidevisiblescratch(const Arg *arg);
 static Client *nextprevsamefloat(int next);
 static Client *nextprevvisible(int next);
 static void push(const Arg *arg);
 static void showfloating(const Arg *arg);
 static void tagandview(const Arg *arg);
 static void togglefocus(const Arg *arg);
-static void togglefullscr(const Arg *arg);
-static void togglestkpos(const Arg *arg);
+static void togglefocusfield(const Arg *arg);
+static void togglefullscreen(const Arg *arg);
 static void togglewin(const Arg *arg);
 static void vieworprev(const Arg *arg);
 static void windowswitcher(const Arg *arg);
@@ -187,153 +187,153 @@ static void zoomvar(const Arg *arg);
 #include "inplacerotate.c"
 #include <X11/XF86keysym.h>
 static Key keys[] = {
-	/* modifier                     key             function        argument */
-	{ MODLKEY,                      XK_d,           spawn,          ROFIDRUN },
-	{ MODLKEY|ShiftMask,            XK_d,           spawn,          ROFIRUN },
-	{ MODLKEY,                      XK_Return,      spawn,          CMD0("termite") },
-	{ MODLKEY,                      XK_b,           togglebar,      {0} },
-	{ MODLKEY|ShiftMask,            XK_b,           tabmode,        {-1} },
-	{ MODLKEY,                      XK_j,           focusstackalt,  {.i = +1 } },
-	{ MODLKEY,                      XK_Down,        focusstackalt,  {.i = +1 } },
-	{ MODLKEY,                      XK_k,           focusstackalt,  {.i = -1 } },
-	{ MODLKEY,                      XK_Up,          focusstackalt,  {.i = -1 } },
-	{ MODLKEY,                      XK_h,           setmfact,       {.f = -0.05} },
-	{ MODLKEY,                      XK_Left,        setmfact,       {.f = -0.05} },
-	{ MODLKEY,                      XK_l,           setmfact,       {.f = +0.05} },
-	{ MODLKEY,                      XK_Right,       setmfact,       {.f = +0.05} },
-	{ MODLKEY,                      XK_equal,       setsplus,       {.i = +40} },
-	{ MODLKEY,                      XK_minus,       setsplus,       {.i = -40} },
-	{ MODLKEY|ShiftMask,            XK_equal,       setsplus,       {.i = +20} },
-	{ MODLKEY|ShiftMask,            XK_minus,       setsplus,       {.i = -20} },
-	{ MODLKEY,                      XK_BackSpace,   setsplus,       {.i = 0} },
-	{ MODLKEY|ShiftMask,            XK_BackSpace,   resetsplus,     {0} },
-	{ MODLKEY|ShiftMask,            XK_j,           push,           {.i = +1} },
-	{ MODLKEY|ShiftMask,            XK_Down,        push,           {.i = +1} },
-	{ MODLKEY|ShiftMask,            XK_k,           push,           {.i = -1} },
-	{ MODLKEY|ShiftMask,            XK_Up,          push,           {.i = -1} },
-	{ SUPKEY,                       XK_period,      inplacerotate,  {.i = +2 } },
-	{ SUPKEY,                       XK_comma,       inplacerotate,  {.i = +1 } },
-	{ SUPKEY|ShiftMask,             XK_greater,     inplacerotate,  {.i = -2 } },
-	{ SUPKEY|ShiftMask,             XK_less,        inplacerotate,  {.i = -1 } },
-	{ SUPKEY,                       XK_j,           floatmovey,     {.i = +20} },
-	{ SUPKEY,                       XK_Down,        floatmovey,     {.i = +20} },
-	{ SUPKEY,                       XK_k,           floatmovey,     {.i = -20} },
-	{ SUPKEY,                       XK_Up,          floatmovey,     {.i = -20} },
-	{ SUPKEY,                       XK_h,           floatmovex,     {.i = -20} },
-	{ SUPKEY,                       XK_Left,        floatmovex,     {.i = -20} },
-	{ SUPKEY,                       XK_l,           floatmovex,     {.i = +20} },
-	{ SUPKEY,                       XK_Right,       floatmovex,     {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_j,           floatresizeh,   {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_Down,        floatresizeh,   {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_k,           floatresizeh,   {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_Up,          floatresizeh,   {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_h,           floatresizew,   {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_Left,        floatresizew,   {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_l,           floatresizew,   {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_Right,       floatresizew,   {.i = +20} },
-	{ MODLKEY,                      XK_i,           incnmaster,     {.i = +1 } },
-	{ MODLKEY|ShiftMask,            XK_i,           incnmaster,     {.i = -1 } },
-	{ MODLKEY,                      XK_space,       zoomvar,        {.i = 1} },
-	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,        {.i = 0} },
-	{ SUPKEY,                       XK_space,       view,           {0} },
-	{ SUPKEY|ShiftMask,             XK_space,       moveprevtag,    {0} },
-	{ MODLKEY,                      XK_f,           togglefocus,    {0} },
-	{ MODLKEY|ShiftMask,            XK_f,           togglefullscr,  {0} },
-	{ SUPKEY,                       XK_f,           togglefloating, {.i = 1} },
-	{ SUPKEY|ShiftMask,             XK_f,           togglefloating, {.i = 0} },
-	{ MODLKEY,                      XK_Escape,      killclient,     {0} },
-	{ MODLKEY,                      XK_e,           setltorprev,    {.v = &layouts[0]} },
-	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,    {.v = &layouts[1]} },
-	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,    {.v = &layouts[2]} },
-	{ MODLKEY,                      XK_w,           setltorprev,    {.v = &layouts[3]} },
-	{ MODLKEY,                      XK_F1,          setattorprev,   {.v = &attachs[0]} },
-	{ MODLKEY,                      XK_F2,          setattorprev,   {.v = &attachs[1]} },
-	{ MODLKEY,                      XK_F3,          setattorprev,   {.v = &attachs[2]} },
-	{ MODLKEY,                      XK_F4,          setattorprev,   {.v = &attachs[3]} },
+	/* modifier                     key             function                argument */
+	{ MODLKEY,                      XK_d,           spawn,                  ROFIDRUN },
+	{ MODLKEY|ShiftMask,            XK_d,           spawn,                  ROFIRUN },
+	{ MODLKEY,                      XK_Return,      spawn,                  CMD0("termite") },
+	{ MODLKEY,                      XK_b,           togglebar,              {0} },
+	{ MODLKEY|ShiftMask,            XK_b,           tabmode,                {-1} },
+	{ MODLKEY,                      XK_j,           focusstackalt,          {.i = +1 } },
+	{ MODLKEY,                      XK_Down,        focusstackalt,          {.i = +1 } },
+	{ MODLKEY,                      XK_k,           focusstackalt,          {.i = -1 } },
+	{ MODLKEY,                      XK_Up,          focusstackalt,          {.i = -1 } },
+	{ MODLKEY,                      XK_h,           setmfact,               {.f = -0.05} },
+	{ MODLKEY,                      XK_Left,        setmfact,               {.f = -0.05} },
+	{ MODLKEY,                      XK_l,           setmfact,               {.f = +0.05} },
+	{ MODLKEY,                      XK_Right,       setmfact,               {.f = +0.05} },
+	{ MODLKEY,                      XK_equal,       setsplus,               {.i = +40} },
+	{ MODLKEY,                      XK_minus,       setsplus,               {.i = -40} },
+	{ MODLKEY|ShiftMask,            XK_equal,       setsplus,               {.i = +20} },
+	{ MODLKEY|ShiftMask,            XK_minus,       setsplus,               {.i = -20} },
+	{ MODLKEY,                      XK_BackSpace,   setsplus,               {.i = 0} },
+	{ MODLKEY|ShiftMask,            XK_BackSpace,   resetsplus,             {0} },
+	{ MODLKEY|ShiftMask,            XK_j,           push,                   {.i = +1} },
+	{ MODLKEY|ShiftMask,            XK_Down,        push,                   {.i = +1} },
+	{ MODLKEY|ShiftMask,            XK_k,           push,                   {.i = -1} },
+	{ MODLKEY|ShiftMask,            XK_Up,          push,                   {.i = -1} },
+	{ SUPKEY,                       XK_period,      inplacerotate,          {.i = +2 } },
+	{ SUPKEY,                       XK_comma,       inplacerotate,          {.i = +1 } },
+	{ SUPKEY|ShiftMask,             XK_greater,     inplacerotate,          {.i = -2 } },
+	{ SUPKEY|ShiftMask,             XK_less,        inplacerotate,          {.i = -1 } },
+	{ SUPKEY,                       XK_j,           floatmovey,             {.i = +20} },
+	{ SUPKEY,                       XK_Down,        floatmovey,             {.i = +20} },
+	{ SUPKEY,                       XK_k,           floatmovey,             {.i = -20} },
+	{ SUPKEY,                       XK_Up,          floatmovey,             {.i = -20} },
+	{ SUPKEY,                       XK_h,           floatmovex,             {.i = -20} },
+	{ SUPKEY,                       XK_Left,        floatmovex,             {.i = -20} },
+	{ SUPKEY,                       XK_l,           floatmovex,             {.i = +20} },
+	{ SUPKEY,                       XK_Right,       floatmovex,             {.i = +20} },
+	{ SUPKEY|ShiftMask,             XK_j,           floatresizeh,           {.i = +20} },
+	{ SUPKEY|ShiftMask,             XK_Down,        floatresizeh,           {.i = +20} },
+	{ SUPKEY|ShiftMask,             XK_k,           floatresizeh,           {.i = -20} },
+	{ SUPKEY|ShiftMask,             XK_Up,          floatresizeh,           {.i = -20} },
+	{ SUPKEY|ShiftMask,             XK_h,           floatresizew,           {.i = -20} },
+	{ SUPKEY|ShiftMask,             XK_Left,        floatresizew,           {.i = -20} },
+	{ SUPKEY|ShiftMask,             XK_l,           floatresizew,           {.i = +20} },
+	{ SUPKEY|ShiftMask,             XK_Right,       floatresizew,           {.i = +20} },
+	{ MODLKEY,                      XK_i,           incnmaster,             {.i = +1 } },
+	{ MODLKEY|ShiftMask,            XK_i,           incnmaster,             {.i = -1 } },
+	{ MODLKEY,                      XK_space,       zoomvar,                {.i = 1} },
+	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = 0} },
+	{ SUPKEY,                       XK_space,       view,                   {0} },
+	{ SUPKEY|ShiftMask,             XK_space,       moveprevtag,            {0} },
+	{ MODLKEY,                      XK_f,           togglefocus,            {0} },
+	{ MODLKEY|ShiftMask,            XK_f,           togglefullscreen,       {0} },
+	{ SUPKEY,                       XK_f,           togglefloating,         {.i = 1} },
+	{ SUPKEY|ShiftMask,             XK_f,           togglefloating,         {.i = 0} },
+	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
+	{ MODLKEY,                      XK_e,           setltorprev,            {.v = &layouts[0]} },
+	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,            {.v = &layouts[1]} },
+	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.v = &layouts[2]} },
+	{ MODLKEY,                      XK_w,           setltorprev,            {.v = &layouts[3]} },
+	{ MODLKEY,                      XK_F1,          setattorprev,           {.v = &attachs[0]} },
+	{ MODLKEY,                      XK_F2,          setattorprev,           {.v = &attachs[1]} },
+	{ MODLKEY,                      XK_F3,          setattorprev,           {.v = &attachs[2]} },
+	{ MODLKEY,                      XK_F4,          setattorprev,           {.v = &attachs[3]} },
 
-	{ MODLKEY,                      XK_Tab,         focuslast,      {.i = 1} },
-	{ SUPKEY,                       XK_Tab,         focuslast,      {.i = 0} },
-	{ MODLKEY,                      XK_m,           focusmaster,    {0} },
-	{ MODLKEY,                      XK_g,           focusurgent,    {0} },
-	{ MODLKEY,                      XK_o,           winview,        {0} },
-	{ MODLKEY,                      XK_q,           windowswitcher, {0} },
-	{ MODLKEY,                      XK_period,      shiftview,      {.i = +1 } },
-	{ MODLKEY,                      XK_comma,       shiftview,      {.i = -1 } },
-	{ MODLKEY|ShiftMask,            XK_period,      hideclient,     {0} },
-	{ SUPKEY,                       XK_F1,          togglescratch,  {.i = 1 } },
-	{ MODRKEY,                      XK_m,           togglescratch,  {.i = 2 } },
-	{ SUPKEY,                       XK_p,           togglescratch,  {.i = 3 } },
-	{ SUPKEY,                       XK_c,           togglescratch,  {.i = 4 } },
-	{ SUPKEY,                       XK_s,           togglescratch,  {.i = 5 } },
-	{ SUPKEY,                       XK_w,           togglescratch,  {.i = 6 } },
-	{ MODLKEY,                      XK_s,           togglestkpos,   {0} },
-	{ MODRKEY,                      XK_space,       togglewin,      {.v = &browser} },
-	{ SUPKEY,                       XK_m,           togglewin,      {.v = &mail} },
-	{ 0,                            XK_Print,       spawn,          CMD1("gnome-screenshot", "-i") },
-	{ MODLKEY,                      XK_c,           spawn,          SCRIPT0("color_under_cursor.sh") },
-	{ MODLKEY,                      XK_F7,          spawn,          DISABLEDEMODE },
-	{ MODLKEY,                      XK_F8,          spawn,          ENABLEDEMODE },
-	{ MODLKEY,                      XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "sel") },
-	{ MODLKEY|ShiftMask,            XK_semicolon,   spawn,          SCRIPT0("dictionary.sh") },
-	{ MODLKEY|ControlMask,          XK_semicolon,   spawn,          SCRIPT1("dictionary.sh", "last") },
-	{ SUPKEY,                       XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "sel") },
-	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,          SCRIPT0("espeak.sh") },
-	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,          SCRIPT1("espeak.sh", "last") },
-	{ MODLKEY|ControlMask,          XK_apostrophe,  spawn,          DICTIONARYHISTORY },
-	{ MODLKEY|ShiftMask,            XK_q,           spawn,          SCRIPT0("quit.sh") },
-	{ MODLKEY|ControlMask,          XK_h,           spawn,          SCRIPT0("hotspot_launch.sh") },
-	{ MODLKEY|ControlMask,          XK_m,           spawn,          SCRIPT0("toggletouchpad.sh") },
-	{ MODLKEY|ControlMask,          XK_r,           spawn,          SCRIPT0("reflector_launch.sh") },
-	{ MODLKEY,                      XK_F10,         spawn,          SCRIPT1("systemctl_timeout.sh", "toggle") },
-	{ MODLKEY|ShiftMask,            XK_F10,         spawn,          SCRIPT1("systemctl_timeout.sh", "status") },
-	{ SUPKEY,                       XK_b,           spawn,          SCRIPT0("btns.sh") },
-	{ SUPKEY,                       XK_n,           spawn,          TERMCMD("newsboat -q") },
-	{ SUPKEY,                       XK_r,           spawn,          TERMCMD("ranger --cmd='set show_hidden=false'") },
-	{ SUPKEY|ShiftMask,             XK_r,           spawn,          TERMCMD("ranger") },
-	{ SUPKEY,                       XK_t,           spawn,          TERMCMD("htop") },
-	{ SUPKEY|ShiftMask,             XK_t,           spawn,          TERMCMD("htop -s PERCENT_CPU") },
-	{ MODRKEY,                      XK_s,           spawn,          INHIBITSUSPEND1 },
-	{ MODRKEY|ShiftMask,            XK_s,           spawn,          INHIBITSUSPEND0 },
-	{ MODRKEY,                      XK_k,           spawn,          SCRIPT1("ytmsclu.sh", "0") },
-	{ MODRKEY,                      XK_l,           spawn,          SCRIPT1("ytmsclu.sh", "1") },
-	{ MODRKEY,                      XK_semicolon,   spawn,          SCRIPT0("ytresume.sh") },
-	{ MODRKEY,                      XK_Delete,      spawn,          SCRIPT0("usbmount.sh") },
+	{ MODLKEY,                      XK_Tab,         focuslast,              {.i = 1} },
+	{ SUPKEY,                       XK_Tab,         focuslast,              {.i = 0} },
+	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
+	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
+	{ MODLKEY,                      XK_o,           winview,                {0} },
+	{ MODLKEY,                      XK_q,           windowswitcher,         {0} },
+	{ MODLKEY,                      XK_period,      shiftview,              {.i = +1 } },
+	{ MODLKEY,                      XK_comma,       shiftview,              {.i = -1 } },
+	{ MODLKEY|ShiftMask,            XK_period,      hideclient,             {0} },
+	{ SUPKEY,                       XK_F1,          togglescratch,          {.i = 1 } },
+	{ MODRKEY,                      XK_m,           togglescratch,          {.i = 2 } },
+	{ SUPKEY,                       XK_p,           togglescratch,          {.i = 3 } },
+	{ SUPKEY,                       XK_c,           togglescratch,          {.i = 4 } },
+	{ SUPKEY,                       XK_s,           togglescratch,          {.i = 5 } },
+	{ SUPKEY,                       XK_w,           togglescratch,          {.i = 6 } },
+	{ MODLKEY,                      XK_s,           togglefocusfield,       {0} },
+	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
+	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
+	{ 0,                            XK_Print,       spawn,                  CMD1("gnome-screenshot", "-i") },
+	{ MODLKEY,                      XK_c,           spawn,                  SCRIPT0("color_under_cursor.sh") },
+	{ MODLKEY,                      XK_F7,          spawn,                  DISABLEDEMODE },
+	{ MODLKEY,                      XK_F8,          spawn,                  ENABLEDEMODE },
+	{ MODLKEY,                      XK_semicolon,   spawn,                  SCRIPT1("dictionary.sh", "sel") },
+	{ MODLKEY|ShiftMask,            XK_semicolon,   spawn,                  SCRIPT0("dictionary.sh") },
+	{ MODLKEY|ControlMask,          XK_semicolon,   spawn,                  SCRIPT1("dictionary.sh", "last") },
+	{ SUPKEY,                       XK_semicolon,   spawn,                  SCRIPT1("espeak.sh", "sel") },
+	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,                  SCRIPT0("espeak.sh") },
+	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,                  SCRIPT1("espeak.sh", "last") },
+	{ MODLKEY|ControlMask,          XK_apostrophe,  spawn,                  DICTIONARYHISTORY },
+	{ MODLKEY|ShiftMask,            XK_q,           spawn,                  SCRIPT0("quit.sh") },
+	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPT0("hotspot_launch.sh") },
+	{ MODLKEY|ControlMask,          XK_m,           spawn,                  SCRIPT0("toggletouchpad.sh") },
+	{ MODLKEY|ControlMask,          XK_r,           spawn,                  SCRIPT0("reflector_launch.sh") },
+	{ MODLKEY,                      XK_F10,         spawn,                  SCRIPT1("systemctl_timeout.sh", "toggle") },
+	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPT1("systemctl_timeout.sh", "status") },
+	{ SUPKEY,                       XK_b,           spawn,                  SCRIPT0("btns.sh") },
+	{ SUPKEY,                       XK_n,           spawn,                  TERMCMD("newsboat -q") },
+	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger --cmd='set show_hidden=false'") },
+	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
+	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
+	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop -s PERCENT_CPU") },
+	{ MODRKEY,                      XK_s,           spawn,                  INHIBITSUSPEND1 },
+	{ MODRKEY|ShiftMask,            XK_s,           spawn,                  INHIBITSUSPEND0 },
+	{ MODRKEY,                      XK_k,           spawn,                  SCRIPT1("ytmsclu.sh", "0") },
+	{ MODRKEY,                      XK_l,           spawn,                  SCRIPT1("ytmsclu.sh", "1") },
+	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPT0("ytresume.sh") },
+	{ MODRKEY,                      XK_Delete,      spawn,                  SCRIPT0("usbmount.sh") },
 
-	{ MODLKEY,           XK_bracketleft,            hidefloating,   {0} },
-	{ MODLKEY,           XK_bracketright,           showfloating,   {0} },
-	{ MODLKEY,           XK_backslash,              hidevisscratch, {0} },
-	{ 0,                 XF86XK_AudioMute,          spawn,          PACTLM },
-	{ 0,                 XF86XK_AudioLowerVolume,   spawn,          PACTLD },
-	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,          PACTLI },
-	{ 0,                 XF86XK_MonBrightnessDown,  spawn,          SCRIPT0("btnsd.sh") },
-	{ 0,                 XF86XK_MonBrightnessUp,    spawn,          SCRIPT0("btnsi.sh") },
-	{ ShiftMask,         XK_F2,                     spawn,          SCRIPT0("btnsds.sh") },
-	{ ShiftMask,         XK_F3,                     spawn,          SCRIPT0("btnsis.sh") },
-	{ MODRKEY,           XK_Escape,                 spawn,          REDSHIFTDEFAULT },
-	{ MODRKEY,           XK_F1,                     spawn,          REDSHIFT("5500") },
-	{ MODRKEY,           XK_F2,                     spawn,          REDSHIFT("5000") },
-	{ MODRKEY,           XK_F3,                     spawn,          REDSHIFT("4500") },
-	{ MODRKEY,           XK_F4,                     spawn,          REDSHIFT("4100") },
-	{ MODRKEY,           XK_F5,                     spawn,          REDSHIFT("3800") },
-	{ MODRKEY,           XK_F6,                     spawn,          REDSHIFT("3500") },
-	{ MODRKEY,           XK_F7,                     spawn,          REDSHIFT("3200") },
-	{ MODRKEY,           XK_F8,                     spawn,          REDSHIFT("2900") },
-	{ MODRKEY,           XK_F9,                     spawn,          REDSHIFT("2600") },
-	{ MODRKEY,           XK_F10,                    spawn,          REDSHIFT("2400") },
-	{ MODRKEY,           XK_F11,                    spawn,          REDSHIFT("2200") },
-	{ MODRKEY,           XK_F12,                    spawn,          REDSHIFT("2000") },
+	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
+	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
+	{ MODLKEY,           XK_backslash,              hidevisiblescratch,     {0} },
+	{ 0,                 XF86XK_AudioMute,          spawn,                  PACTLM },
+	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  PACTLD },
+	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  PACTLI },
+	{ 0,                 XF86XK_MonBrightnessDown,  spawn,                  SCRIPT0("btnsd.sh") },
+	{ 0,                 XF86XK_MonBrightnessUp,    spawn,                  SCRIPT0("btnsi.sh") },
+	{ ShiftMask,         XK_F2,                     spawn,                  SCRIPT0("btnsds.sh") },
+	{ ShiftMask,         XK_F3,                     spawn,                  SCRIPT0("btnsis.sh") },
+	{ MODRKEY,           XK_Escape,                 spawn,                  REDSHIFTDEFAULT },
+	{ MODRKEY,           XK_F1,                     spawn,                  REDSHIFT("5500") },
+	{ MODRKEY,           XK_F2,                     spawn,                  REDSHIFT("5000") },
+	{ MODRKEY,           XK_F3,                     spawn,                  REDSHIFT("4500") },
+	{ MODRKEY,           XK_F4,                     spawn,                  REDSHIFT("4100") },
+	{ MODRKEY,           XK_F5,                     spawn,                  REDSHIFT("3800") },
+	{ MODRKEY,           XK_F6,                     spawn,                  REDSHIFT("3500") },
+	{ MODRKEY,           XK_F7,                     spawn,                  REDSHIFT("3200") },
+	{ MODRKEY,           XK_F8,                     spawn,                  REDSHIFT("2900") },
+	{ MODRKEY,           XK_F9,                     spawn,                  REDSHIFT("2600") },
+	{ MODRKEY,           XK_F10,                    spawn,                  REDSHIFT("2400") },
+	{ MODRKEY,           XK_F11,                    spawn,                  REDSHIFT("2200") },
+	{ MODRKEY,           XK_F12,                    spawn,                  REDSHIFT("2000") },
 
-	{ MODLKEY,                      XK_0,           vieworprev,     {.ui = ~0 } },
-	{ MODLKEY|ShiftMask,            XK_0,           tag,            {.ui = ~0 } },
-	TAGKEYS(                        XK_1,                           0)
-	TAGKEYS(                        XK_2,                           1)
-	TAGKEYS(                        XK_3,                           2)
-	TAGKEYS(                        XK_4,                           3)
-	TAGKEYS(                        XK_5,                           4)
-	TAGKEYS(                        XK_6,                           5)
-	TAGKEYS(                        XK_7,                           6)
-	TAGKEYS(                        XK_8,                           7)
-	TAGKEYS(                        XK_9,                           8)
+	{ MODLKEY,                      XK_0,           vieworprev,             {.ui = ~0 } },
+	{ MODLKEY|ShiftMask,            XK_0,           tag,                    {.ui = ~0 } },
+	TAGKEYS(                        XK_1,                                   0)
+	TAGKEYS(                        XK_2,                                   1)
+	TAGKEYS(                        XK_3,                                   2)
+	TAGKEYS(                        XK_4,                                   3)
+	TAGKEYS(                        XK_5,                                   4)
+	TAGKEYS(                        XK_6,                                   5)
+	TAGKEYS(                        XK_7,                                   6)
+	TAGKEYS(                        XK_8,                                   7)
+	TAGKEYS(                        XK_9,                                   8)
 };
 
 /* button definitions */
@@ -610,7 +610,7 @@ hidefloating(const Arg *arg)
 }
 
 void
-hidevisscratch(const Arg *arg)
+hidevisiblescratch(const Arg *arg)
 {
         unsigned long t = 0;
 
@@ -764,21 +764,7 @@ togglefocus(const Arg *arg)
 }
 
 void
-togglefullscr(const Arg *arg)
-{
-        int found = 0;
-
-        for (Client *c = selmon->clients; c; c = c->next)
-                if (ISVISIBLE(c) && c->isfullscreen) {
-                        found = 1;
-                        setfullscreen(c, 0);
-                }
-        if (!found && selmon->sel)
-                setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
-}
-
-void
-togglestkpos(const Arg *arg)
+togglefocusfield(const Arg *arg)
 {
         int curidx, inrel;
         Client *c, *i;
@@ -800,6 +786,20 @@ togglestkpos(const Arg *arg)
         } while ((curidx < selmon->nmaster) == inrel);
         focusalt(c);
         restack(selmon, 0);
+}
+
+void
+togglefullscreen(const Arg *arg)
+{
+        int found = 0;
+
+        for (Client *c = selmon->clients; c; c = c->next)
+                if (ISVISIBLE(c) && c->isfullscreen) {
+                        found = 1;
+                        setfullscreen(c, 0);
+                }
+        if (!found && selmon->sel)
+                setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
 }
 
 void
