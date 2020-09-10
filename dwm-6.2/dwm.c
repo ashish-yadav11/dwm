@@ -1018,7 +1018,7 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, nhid = 0, occ = 0, urg = 0;
-        char mltsymbol[32];
+        char mltsymbol[28];
 	Client *c;
 
 	if (showsystray && m == systraytomon(m))
@@ -1073,7 +1073,7 @@ drawbar(Monitor *m)
 		x += w;
 	}
         if (nhid)
-                snprintf(mltsymbol, sizeof mltsymbol, "%uH %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
+                snprintf(mltsymbol, sizeof mltsymbol, "%u %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
         else
                 snprintf(mltsymbol, sizeof mltsymbol, "%s %s", ATT(m)->symbol, m->ltsymbol);
         w = blw = TEXTW(mltsymbol);
