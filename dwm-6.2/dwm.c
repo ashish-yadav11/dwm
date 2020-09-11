@@ -162,7 +162,7 @@ struct Monitor {
 	int by;               /* bar geometry */
 	int ty;               /* tab bar geometry */
 	int mx, my, mw, mh;   /* screen size */
-	int wx, wy, ww, wh;   /* window area  */
+	int wx, wy, ww, wh;   /* window area */
 	unsigned int seltags;
 	unsigned int sellt;
 	unsigned int tagset[2];
@@ -179,7 +179,7 @@ struct Monitor {
 	Pertag *pertag;
 };
 
-typedef struct Systray   Systray;
+typedef struct Systray Systray;
 struct Systray {
 	Window win;
 	Client *icons;
@@ -298,6 +298,7 @@ static void togglefloating(const Arg *arg);
 static void togglescratch(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
+static void togglewin(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
@@ -326,7 +327,7 @@ static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 
 /* variables */
-static Systray *systray =  NULL;
+static Systray *systray = NULL;
 static const char broken[] = "";
 static char stextc[256];
 static char stexts[256];
@@ -1145,14 +1146,14 @@ drawtabhelper(Monitor *m, int onlystack)
                                                         : ((i % 2 == 0) ? SchemeStts : SchemeNorm)]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, tbw + 1 - lrpad / 2, th, lrpad / 2, c->name, 0);
-                x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0);  /* to keep right padding clean */
+                x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0); /* to keep right padding clean */
         }
         for (; c && i < ntabs; c = nexttiled(c->next), i++) {
                 drw_setscheme(drw, scheme[(c == m->sel) ? SchemeSel
                                                         : ((i % 2 == 0) ? SchemeStts : SchemeNorm)]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, tbw - lrpad / 2, th, lrpad / 2, c->name, 0);
-                x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0);  /* to keep right padding clean */
+                x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0); /* to keep right padding clean */
         }
         drw_map(drw, m->tabwin, 0, 0, m->ww, th);
 }
@@ -1262,7 +1263,7 @@ focusclient(Client *c, unsigned int tag)
                 }
                 return;
         }
-        if (!tag || !(1 << tag & c->tags)) {
+        if (!tag || !(1 << (tag -= 1) & c->tags)) {
                 for (tag = 0; tag < LENGTH(tags) && !(1 << tag & c->tags); tag++);
                 if (tag >= LENGTH(tags)) {
                         c->tags = selmon->tagset[selmon->seltags];
@@ -3019,6 +3020,28 @@ toggleview(const Arg *arg)
 }
 
 void
+togglewin(const Arg *arg)
+{
+        Client *c;
+
+        if (selmon->sel && selmon->sel->scratchkey == ((Win*)(arg->v))->scratchkey) {
+                for (c = selmon->sel->snext; c && (c->ishidden || !c->tags); c = c->snext);
+                if (c)
+                        focusclient(c, selmon->pertag->prevtag);
+                else
+                        view(&((Arg){0}));
+                return;
+        }
+        for (c = selmon->clients; c && c->scratchkey != ((Win*)(arg->v))->scratchkey; c = c->next);
+        if (c)
+                focusclient(c, ((Win*)(arg->v))->tag);
+        else {
+                view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag) }));
+                spawn(&((Win*)(arg->v))->cmd);
+        }
+}
+
+void
 unfocus(Client *c, int setfocus)
 {
 	if (!c)
@@ -3414,10 +3437,10 @@ updatesystray(void)
 		systray = ecalloc(1, sizeof(Systray));
 //		systray->win = XCreateSimpleWindow(dpy, root, x, m->by, w, bh, 0, 0, scheme[SchemeSel][ColBg].pixel);
 		systray->win = XCreateSimpleWindow(dpy, root, x, m->by, w, bh, 0, 0, scheme[SchemeStts][ColBg].pixel);
-		wa.event_mask        = ButtonPressMask | ExposureMask;
+		wa.event_mask = ButtonPressMask | ExposureMask;
 		wa.override_redirect = True;
-//		wa.background_pixel  = scheme[SchemeNorm][ColBg].pixel;
-		wa.background_pixel  = scheme[SchemeStts][ColBg].pixel;
+//		wa.background_pixel = scheme[SchemeNorm][ColBg].pixel;
+		wa.background_pixel = scheme[SchemeStts][ColBg].pixel;
 		XSelectInput(dpy, systray->win, SubstructureNotifyMask);
 		XChangeProperty(dpy, systray->win, netatom[NetSystemTrayOrientation], XA_CARDINAL, 32,
 				PropModeReplace, (unsigned char *)&netatom[NetSystemTrayOrientationHorz], 1);
@@ -3438,8 +3461,8 @@ updatesystray(void)
 	}
 	for (w = 0, i = systray->icons; i; i = i->next) {
 		/* make sure the background color stays the same */
-//		wa.background_pixel  = scheme[SchemeNorm][ColBg].pixel;
-                wa.background_pixel  = scheme[SchemeTray][ColBg].pixel;
+//		wa.background_pixel = scheme[SchemeNorm][ColBg].pixel;
+                wa.background_pixel = scheme[SchemeTray][ColBg].pixel;
 		XChangeWindowAttributes(dpy, i->win, CWBackPixel, &wa);
 		XMapRaised(dpy, i->win);
 		w += systrayspacing;

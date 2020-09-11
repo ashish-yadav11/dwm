@@ -154,8 +154,8 @@ static const char *const *scratchcmds[] = {
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && dunstify -r 4120 -t 0 'data entry mode activated'")
 
-static const Win browser = { .cmd = CMD0("brave"), .tag = 7, .scratchkey = -1 };
-static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 8, .scratchkey = -2 };
+static const Win browser = { .cmd = CMD0("brave"), .tag = 8, .scratchkey = -1 };
+static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 9, .scratchkey = -2 };
 
 /* custom function declarations */
 static void floatmovex(const Arg *arg);
@@ -176,7 +176,6 @@ static void tagandview(const Arg *arg);
 static void togglefocus(const Arg *arg);
 static void togglefocusfield(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
-static void togglewin(const Arg *arg);
 static void vieworprev(const Arg *arg);
 static void windowswitcher(const Arg *arg);
 static void winview(const Arg* arg);
@@ -726,7 +725,7 @@ tagandview(const Arg *arg)
                 selmon->sel->tags = 1 << arg->ui;
                 XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                                 PropModeReplace, (unsigned char *) &t, 1);
-                focusclient(selmon->sel, arg->ui);
+                focusclient(selmon->sel, arg->ui + 1);
         }
 }
 
@@ -786,32 +785,6 @@ togglefullscreen(const Arg *arg)
                 }
         if (!found && selmon->sel)
                 setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
-}
-
-void
-togglewin(const Arg *arg)
-{
-        Client *c;
-
-        if (selmon->sel && selmon->sel->scratchkey == ((Win*)(arg->v))->scratchkey) {
-                for (c = selmon->sel->snext;
-                     c && (c->ishidden || !c->tags);
-                     c = c->snext);
-                if (c)
-                        focusclient(c, 0);
-                else
-                        view(&((Arg){0}));
-                return;
-        }
-        for (c = selmon->clients;
-             c && c->scratchkey != ((Win*)(arg->v))->scratchkey;
-             c = c->next);
-        if (c)
-                focusclient(c, ((Win*)(arg->v))->tag);
-        else {
-                view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag) }));
-                spawn(&((Win*)(arg->v))->cmd);
-        }
 }
 
 void
