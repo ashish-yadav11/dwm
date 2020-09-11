@@ -162,7 +162,6 @@ static void floatmovex(const Arg *arg);
 static void floatmovey(const Arg *arg);
 static void floatresizeh(const Arg *arg);
 static void floatresizew(const Arg *arg);
-static void focuslast(const Arg *arg);
 static void focusmaster(const Arg *arg);
 static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
@@ -475,19 +474,6 @@ floatresizew(const Arg *arg)
                         XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
                 }
         }
-}
-
-void
-focuslast(const Arg *arg)
-{
-        Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
-
-        if (arg->i)
-                for (; c && (c->ishidden || !c->tags); c = c->snext);
-        else
-                for (; c && !ISVISIBLE(c); c = c->snext);
-        if (c)
-                focusclient(c, 0);
 }
 
 void
