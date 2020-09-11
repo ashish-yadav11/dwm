@@ -3036,7 +3036,7 @@ togglewin(const Arg *arg)
         if (c)
                 focusclient(c, ((Win*)(arg->v))->tag);
         else {
-                view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag) }));
+                view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
                 spawn(&((Win*)(arg->v))->cmd);
         }
 }
