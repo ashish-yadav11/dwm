@@ -283,8 +283,6 @@ static void seturgent(Client *c, int urg);
 static void shiftview(const Arg *arg);
 static void showhide(Client *c);
 static void sigchld(int unused);
-static void sighup(int unused);
-static void sigterm(int unused);
 static void sigdsblocks(const Arg *arg);
 static void spawn(const Arg *arg);
 static Monitor *systraytomon(Monitor *m);
@@ -329,6 +327,7 @@ static void zoom(const Arg *arg);
 /* variables */
 static Systray *systray = NULL;
 static const char broken[] = "";
+static char stext[256];
 static char stextc[256];
 static char stexts[256];
 static int wstext;
@@ -2431,9 +2430,6 @@ setup(void)
 	/* clean up any zombies immediately */
 	sigchld(0);
 
-	signal(SIGHUP, sighup);
-	signal(SIGTERM, sigterm);
-
         /* be the child subreaper */
         if (prctl(PR_SET_CHILD_SUBREAPER, 1) == -1)
 		fputs("warning: could not set dwm as the subreaper\n", stderr);
@@ -2597,20 +2593,6 @@ sigdsblocks(const Arg *arg)
         if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
                 return;
         sigqueue(fl.l_pid, SIGRTMIN, sv);
-}
-
-void
-sighup(int unused)
-{
-	Arg a = {.i = 1};
-	quit(&a);
-}
-
-void
-sigterm(int unused)
-{
-	Arg a = {.i = 0};
-	quit(&a);
 }
 
 void
@@ -3373,6 +3355,7 @@ updatestatus(void)
 	char rawstext[256];
 
 	if (!gettextprop(root, XA_WM_NAME, rawstext, sizeof rawstext)) {
+                *stext = '\0';
                 strcpy(stextc, "dwm-"VERSION);
                 strcpy(stexts, stextc);
                 wstext = TEXTW(stextc);
@@ -3409,16 +3392,18 @@ updatestatus(void)
         /* update status if there was no fake signal */
 	} else {
                 char stextt[256];
-                char *stc = stextc, *sts = stexts, *stt = stextt;
+                char *st = stext, *stc = stextc, *sts = stexts, *stt = stextt;
 
-                for (char *rt = rawstext; *rt != '\0'; rt++)
+                for (char *rt = rawstext; *rt != '\0'; rt++) {
+                        *(st++) = *rt;
                         if ((unsigned char)*rt >= ' ')
                                 *(stc++) = *(sts++) = *(stt++) = *rt;
                         else if ((unsigned char)*rt > 10)
                                 *(stc++) = *rt;
                         else
                                 *(sts++) = *rt;
-                *stc = *sts = *stt = '\0';
+                }
+                *st = *stc = *sts = *stt = '\0';
                 wstext = TEXTW(stextt);
                 drawbar(selmon);
         }
@@ -3732,9 +3717,10 @@ main(int argc, char *argv[])
 	setup();
 	scan();
 	run();
+	cleanup();
+        XStoreName(dpy, DefaultRootWindow(dpy), stext);
+	XCloseDisplay(dpy);
 	if (restart)
                 execvp(argv[0], argv);
-	cleanup();
-	XCloseDisplay(dpy);
 	return EXIT_SUCCESS;
 }
