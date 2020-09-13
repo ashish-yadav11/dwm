@@ -652,8 +652,8 @@ cleanup(void)
 	view(&a);
 	selmon->lt[selmon->sellt] = &foo;
 	for (m = mons; m; m = m->next)
-                while (m->stack) {
-                        for (c = m->stack; c->snext; c = c->snext);
+                while (m->clients) {
+                        for (c = m->clients; c->next; c = c->next);
                         unmanage(c, 0);
                 }
 	XUngrabKey(dpy, AnyKey, AnyModifier, root);
