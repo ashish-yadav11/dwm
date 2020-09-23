@@ -366,13 +366,14 @@ static Signal signals[] = {
 	{ "quit",               quit },
 	{ "scrh",               scratchhide },
 	{ "scrs",               scratchshow },
+	{ "tscr",               togglescratch },
 };
 
 /* custom function implementations */
 void
 floatmovex(const Arg *arg)
 {
-        if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
+        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int nx, ptrx, ptry;
                 int restoreptr = 0;
                 int vselcw = WIDTH(selmon->sel);
@@ -397,7 +398,7 @@ floatmovex(const Arg *arg)
 void
 floatmovey(const Arg *arg)
 {
-        if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
+        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int ny, ptrx, ptry;
                 int restoreptr = 0;
                 int vselch = HEIGHT(selmon->sel);
@@ -422,7 +423,7 @@ floatmovey(const Arg *arg)
 void
 floatresizeh(const Arg *arg)
 {
-        if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
+        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int nh, ptrx, ptry;
                 int restoreptr = 0;
                 int vselcy = selmon->sel->y + 2 * selmon->sel->bw;
@@ -450,7 +451,7 @@ floatresizeh(const Arg *arg)
 void
 floatresizew(const Arg *arg)
 {
-        if (selmon->sel && arg->i && (!selmon->lt[selmon->sellt]->arrange || selmon->sel->isfloating)) {
+        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int nw, ptrx, ptry;
                 int restoreptr = 0;
                 int vselcx = selmon->sel->x + 2 * selmon->sel->bw;
