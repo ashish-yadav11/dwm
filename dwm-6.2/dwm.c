@@ -546,7 +546,7 @@ attachstack(Client *c)
 void
 buttonpress(XEvent *e)
 {
-        unsigned int i, click;
+        unsigned int click;
         int x;
 	Arg arg = {0};
 	Client *c;
@@ -561,22 +561,30 @@ buttonpress(XEvent *e)
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
-                i = 0, x = -ev->x;
-		do
-			x += TEXTW(tags[i]);
-		while (x <= 0 && ++i < LENGTH(tags));
-		if (i < LENGTH(tags)) {
-			click = ClkTagBar;
-			arg.ui = 1 << i;
-		} else if (x + blw > 0)
-			click = ClkLtSymbol;
-                else if (selmon->ww - stw - wstext > ev->x)
-                        click = ClkWinTitle;
-                else if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
+                if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
                         updatedsblockssig(x);
                         click = ClkStatusText;
-		} else
-                        return;
+                } else {
+                        unsigned int i = 0;
+
+                        if (statushandcursor) {
+                                statushandcursor = 0;
+                                XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
+                        }
+                        x = -ev->x;
+                        do
+                                x += TEXTW(tags[i]);
+                        while (x <= 0 && ++i < LENGTH(tags));
+                        if (i < LENGTH(tags)) {
+                                click = ClkTagBar;
+                                arg.ui = 1 << i;
+                        } else if (x + blw > 0)
+                                click = ClkLtSymbol;
+                        else if (selmon->ww - stw - wstext > ev->x)
+                                click = ClkWinTitle;
+                        else
+                                return;
+                }
 	}
 	if (ev->window == selmon->tabwin && selmon->ntiles > 0) {
                 int i;
@@ -620,7 +628,7 @@ clktg:
 		XAllowEvents(dpy, ReplayPointer, CurrentTime);
 		click = ClkClientWin;
 	}
-	for (i = 0; i < LENGTH(buttons); i++)
+	for (int i = 0; i < LENGTH(buttons); i++)
 		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
 		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)){
 			buttons[i].func(((click == ClkTagBar || click == ClkTabBar) &&
