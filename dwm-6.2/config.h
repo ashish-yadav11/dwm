@@ -168,13 +168,13 @@ static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
 static void hidefloating(const Arg *arg);
 static void hidevisiblescratch(const Arg *arg);
-static Client *nextprevsamefloat(int next);
-static Client *nextprevvisible(int next);
+static Client *nextsamefloat(int next);
+static Client *nextvisible(int next);
 static void push(const Arg *arg);
 static void showfloating(const Arg *arg);
 static void tagandview(const Arg *arg);
-static void togglefocus(const Arg *arg);
-static void togglefocusfield(const Arg *arg);
+static void togglefocusarea(const Arg *arg);
+static void togglefocusfloat(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
 static void vieworprev(const Arg *arg);
 static void windowswitcher(const Arg *arg);
@@ -235,7 +235,7 @@ static Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = 0} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
 	{ SUPKEY|ShiftMask,             XK_space,       moveprevtag,            {0} },
-	{ MODLKEY,                      XK_f,           togglefocus,            {0} },
+	{ MODLKEY,                      XK_f,           togglefocusfloat,       {0} },
 	{ MODLKEY|ShiftMask,            XK_f,           togglefullscreen,       {0} },
 	{ SUPKEY,                       XK_f,           togglefloating,         {.i = 1} },
 	{ SUPKEY|ShiftMask,             XK_f,           togglefloating,         {.i = 0} },
@@ -264,7 +264,7 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_c,           togglescratch,          {.i = 4 } },
 	{ SUPKEY,                       XK_s,           togglescratch,          {.i = 5 } },
 	{ SUPKEY,                       XK_w,           togglescratch,          {.i = 6 } },
-	{ MODLKEY,                      XK_s,           togglefocusfield,       {0} },
+	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
 	{ 0,                            XK_Print,       spawn,                  CMD1("gnome-screenshot", "-i") },
@@ -496,54 +496,42 @@ focusstackalt(const Arg *arg)
 
 	if (!selmon->sel)
 		return;
-        if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1
-        && !selmon->sel->isfloating) {
+        if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1 &&
+            !selmon->sel->isfloating) {
                 int n, curidx;
                 Client *i;
 
                 c = NULL;
-                for (curidx = 0, i = nexttiled(selmon->clients); i != selmon->sel; i = nexttiled(i->next), curidx++);
+                for (curidx = 1, i = nexttiled(selmon->clients);
+                     i != selmon->sel;
+                     i = nexttiled(i->next), curidx++);
                 if (arg->i > 0) {
-                        /* focus the visible slave; since selmon->ntiles > selmon->nmaster + 1, it will exist */
-                        if (curidx == selmon->nmaster - 1) {
-                                c = selmon->sel;
-                                do {
-                                        for (c = c->snext; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
-                                        for (curidx = 0, i = nexttiled(selmon->clients);
-                                             i != c;
-                                             i = nexttiled(i->next), curidx++);
-                                } while (curidx < selmon->nmaster);
-                        } else if (curidx == selmon->ntiles - 1) /* focus first slave */
+                        if (curidx == selmon->nmaster) /* focus first master client */
+                                c = nexttiled(selmon->clients);
+                        else if (curidx == selmon->ntiles) /* focus first stack client */
                                 for (n = selmon->nmaster, c = nexttiled(selmon->clients);
-                                     n;
+                                     n > 0;
                                      c = nexttiled(c->next), n--);
                         else /* focus next client */
                                 c = nexttiled(selmon->sel->next);
                 } else {
-                        /* focus the visible slave; since selmon->ntiles > selmon->nmaster + 1, it will exist */
-                        if (selmon->nmaster && curidx == 0) {
-                                c = selmon->sel;
-                                do {
-                                        for (c = c->snext; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
-                                        for (curidx = 0, i = nexttiled(selmon->clients);
-                                             i != c;
-                                             i = nexttiled(i->next), curidx++);
-                                } while (curidx < selmon->nmaster);
-                        } else if (curidx == selmon->nmaster) /* focus last slave */
-                                for (n = selmon->ntiles - 1, c = nexttiled(selmon->clients);
-                                     n;
+                        if (selmon->nmaster && curidx == 1) /* focus last master client */
+                                for (n = selmon->nmaster, c = nexttiled(selmon->clients);
+                                     n > 1;
                                      c = nexttiled(c->next), n--);
-                        else { /* focus previous client */
-                                for (i = nexttiled(selmon->clients); i != selmon->sel; i = nexttiled(i->next)) {
+                        else if (curidx == selmon->nmaster + 1) /* focus last stack client */
+                                for (n = selmon->ntiles, c = nexttiled(selmon->clients);
+                                     n > 1;
+                                     c = nexttiled(c->next), n--);
+                        else /* focus previous client */
+                                for (i = nexttiled(selmon->clients); i != selmon->sel; i = nexttiled(i->next))
                                         if (i)
                                                 c = i;
-                                }
-                        }
                 }
         } else if (selmon->lt[selmon->sellt]->arrange)
-                c = nextprevsamefloat(arg->i);
+                c = nextsamefloat(arg->i);
         else
-                c = nextprevvisible(arg->i);
+                c = nextvisible(arg->i);
 	if (c) {
 		focusalt(c);
 		restack(selmon, 0);
@@ -612,7 +600,7 @@ hidevisiblescratch(const Arg *arg)
 
 /* the following two functions assume non-NULL selmon->sel */
 Client *
-nextprevsamefloat(int next)
+nextsamefloat(int next)
 {
         Client *c = NULL;
 
@@ -639,7 +627,7 @@ nextprevsamefloat(int next)
 }
 
 Client *
-nextprevvisible(int next)
+nextvisible(int next)
 {
         Client *c = NULL;
 
@@ -671,9 +659,9 @@ push(const Arg *arg)
         if (!selmon->sel)
                 return;
         if (selmon->lt[selmon->sellt]->arrange)
-                c = nextprevsamefloat(arg->i);
+                c = nextsamefloat(arg->i);
         else
-                c = nextprevvisible(arg->i);
+                c = nextvisible(arg->i);
         if (!c || c == selmon->sel)
                 return;
 	for (i = selmon->clients; i && (!ps || !pc); i = i->next) {
@@ -731,7 +719,33 @@ tagandview(const Arg *arg)
 }
 
 void
-togglefocus(const Arg *arg)
+togglefocusarea(const Arg *arg)
+{
+        int curidx, inrel;
+        Client *c, *i;
+
+        if (!selmon->sel || selmon->sel->isfloating)
+                return;
+        for (curidx = 0, i = nexttiled(selmon->clients);
+             i != selmon->sel;
+             i = nexttiled(i->next), curidx++);
+        inrel = (curidx < selmon->nmaster);
+        c = selmon->sel;
+        do {
+                for (c = c->snext; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
+                if (c)
+                        for (curidx = 0, i = nexttiled(selmon->clients);
+                             i != c;
+                             i = nexttiled(i->next), curidx++);
+                else
+                        return;
+        } while ((curidx < selmon->nmaster) == inrel);
+        focusalt(c);
+        restack(selmon, 0);
+}
+
+void
+togglefocusfloat(const Arg *arg)
 {
         Client *c;
 
@@ -747,31 +761,6 @@ togglefocus(const Arg *arg)
                 focusalt(c);
                 restack(selmon, 0);
         }
-}
-
-void
-togglefocusfield(const Arg *arg)
-{
-        int curidx, inrel;
-        Client *c, *i;
-
-        if (!selmon->sel || selmon->sel->isfloating)
-                return;
-        for (curidx = 0, i = nexttiled(selmon->clients); i != selmon->sel; i = nexttiled(i->next), curidx++);
-        inrel = (curidx < selmon->nmaster);
-
-        c = selmon->sel;
-        do {
-                for (c = c->snext; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
-                if (c)
-                        for (curidx = 0, i = nexttiled(selmon->clients);
-                             i != c;
-                             i = nexttiled(i->next), curidx++);
-                else
-                        return;
-        } while ((curidx < selmon->nmaster) == inrel);
-        focusalt(c);
-        restack(selmon, 0);
 }
 
 void

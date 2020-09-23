@@ -380,7 +380,7 @@ struct Pertag {
         unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions */
         const Attach *attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
         int showtabs[LENGTH(tags) + 1]; /* display tab per tag */
-        int splus[LENGTH(tags) + 1][3]; /* extra size per tag - first master and first two slaves */
+        int splus[LENGTH(tags) + 1][3]; /* extra size per tag - first master and first two stack clients */
 };
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
@@ -2789,7 +2789,7 @@ tiledeck(Monitor *m, int deck)
                         }
                 }
 
-                /* slaves */
+                /* stack */
                 if (m->ntiles > m->nmaster)
                         r = m->ntiles - m->nmaster;
                 else
@@ -2812,7 +2812,7 @@ tiledeck(Monitor *m, int deck)
 
                         if (r > 2) {
                                 y = 0;
-                                /* first two slaves */
+                                /* first two stack clients */
                                 for (int i = 1; i < 3; c = nexttiled(c->next), r--, i++) {
                                         hleft = wh - y - gappih * (r - 1);
                                         h = hleft / r; /* height without including splus */
@@ -2826,14 +2826,14 @@ tiledeck(Monitor *m, int deck)
                                         resize(c, x, wy + y, w - (2*c->bw), h - (2*c->bw), 0);
                                         y += HEIGHT(c) + gappih;
                                 }
-                                /* rest of the slaves */
+                                /* rest of the stack clients */
                                 for (; r; c = nexttiled(c->next), r--) {
                                         h = (wh - y - gappih * (r - 1)) / r;
                                         resize(c, x, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
                                         y += HEIGHT(c) + gappih;
                                 }
                         } else {
-                                /* first slave */
+                                /* first stack client */
                                 hleft = wh - gappih;
                                 h = hleft / 2; /* height without including splus */
                                 h1 = h + SPLUS(m)[1]; /* provisional height after including splus */
@@ -2846,7 +2846,7 @@ tiledeck(Monitor *m, int deck)
                                 resize(c, x, wy, w - (2 * c->bw), h - (2 * c->bw), 0);
                                 y = HEIGHT(c) + gappih;
                                 c = nexttiled(c->next);
-                                /* last slave */
+                                /* last stack client */
                                 h = (wh - y);
                                 resize(c, x, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
                         }
@@ -2965,6 +2965,7 @@ toggleview(const Arg *arg)
         if (!(selmon->tagset[selmon->seltags] & arg->ui)) {
                 /* clients in the master area should be the same after we add a new tag */
                 Client **const masters = ecalloc(selmon->nmaster, sizeof(Client *));
+
                 /* collect (from last to first) references to all clients in the master area */
                 i = selmon->nmaster - 1;
                 for (Client *c = nexttiled(selmon->clients); c && i >= 0; c = nexttiled(c->next), i--)
