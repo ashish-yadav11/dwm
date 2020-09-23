@@ -304,7 +304,7 @@ static void updatebarpos(Monitor *m);
 static void updatebars(void);
 static void updateclientdesktop(Client *c);
 static void updateclientlist(void);
-static void updatedsblockssig(int x, int e);
+static void updatedsblockssig(int x);
 static int updategeom(void);
 static void updatenumlockmask(void);
 static void updatesizehints(Client *c);
@@ -332,6 +332,7 @@ static char stextc[256];
 static char stexts[256];
 static int wstext;
 static unsigned int dsblockssig;
+static int statushandcursor;
 static int screen;
 static int sw, sh;           /* X display screen geometry width, height */
 static int bh, blw, stw;     /* bar geometry */
@@ -560,53 +561,51 @@ buttonpress(XEvent *e)
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
-                i = 0;
-                x = 0;
+                i = 0, x = -ev->x;
 		do
 			x += TEXTW(tags[i]);
-		while (ev->x >= x && ++i < LENGTH(tags));
-
+		while (x <= 0 && ++i < LENGTH(tags));
 		if (i < LENGTH(tags)) {
 			click = ClkTagBar;
 			arg.ui = 1 << i;
-		} else if (ev->x < x + blw)
+		} else if (x + blw > 0)
 			click = ClkLtSymbol;
-                else if (ev->x < selmon->ww - stw - wstext)
+                else if (selmon->ww - stw - wstext > ev->x)
                         click = ClkWinTitle;
-//                else if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= (x -= wstext - lrpad)) {
-                else if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= x - wstext + lrpad) {
+                else if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
+                        updatedsblockssig(x);
                         click = ClkStatusText;
-//                        updatedsblockssig(x, ev->x);
 		} else
                         return;
 	}
 	if (ev->window == selmon->tabwin && selmon->ntiles > 0) {
-                int i, ofst;
-                int ntabs = MIN(selmon->ntiles, MAXTABS);
-                int tbw, lft;
+                int i;
+                int ntabs, ofst, tbw, lft;
 
-                if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1 &&
+                if (selmon->lt[selmon->sellt]->arrange == deck &&
                     selmon->pertag->showtabs[selmon->pertag->curtag] == showtab_auto) {
-                        ntabs -= selmon->nmaster;
+                        ntabs = MIN(selmon->ntiles - selmon->nmaster, MAXTABS);
                         ofst = selmon->nmaster;
-                        for (i = 0, c = nexttiled(selmon->clients);
-                             c && i < selmon->nmaster;
-                             c = nexttiled(c->next), i++);
+                        for (i = selmon->nmaster, c = nexttiled(selmon->clients);
+                             i > 0;
+                             c = nexttiled(c->next), i--);
                 } else {
+                        ntabs = MIN(selmon->ntiles, MAXTABS);
                         ofst = 0;
                         c = nexttiled(selmon->clients);
                 }
                 tbw = selmon->ww / ntabs;
                 lft = selmon->ww - tbw * ntabs;
 
-                for (i = 0, x = 0; c && i < lft; c = nexttiled(c->next), i++) {
+                i = 0, x = -ev->x;
+                for (; c && i < lft; c = nexttiled(c->next), i++) {
                         x += tbw + 1;
-                        if (x >= ev->x)
+                        if (x > 0)
                                 goto clktg;
                 }
                 for (; c && i < ntabs; c = nexttiled(c->next), i++) {
                         x += tbw;
-                        if (x >= ev->x)
+                        if (x > 0)
                                 goto clktg;
                 }
                 return;
@@ -1128,18 +1127,21 @@ drawtab(Monitor *m)
 void
 drawtabhelper(Monitor *m, int onlystack)
 {
-        int i, x = 0;
-        int ntabs = MIN(m->ntiles, MAXTABS);
-        int tbw, lft;
+        int i;
+        int ntabs, tbw, lft;
+        int x = 0;
         Client *c;
 
         if (onlystack) {
-                ntabs -= m->nmaster;
-                for (i = 0, c = nexttiled(m->clients);
-                     c && i < m->nmaster;
-                     c = nexttiled(c->next), i++);
-        } else
+                ntabs = MIN(m->ntiles - m->nmaster, MAXTABS);
+                /* the following loop assumes m->ntiles > m->nmaster */
+                for (i = m->nmaster, c = nexttiled(m->clients);
+                     i > 0;
+                     c = nexttiled(c->next), i--);
+        } else {
+                ntabs = MIN(m->ntiles, MAXTABS);
                 c = nexttiled(m->clients);
+        }
         tbw = m->ww / ntabs; /* provisional width of each tab */
         lft = m->ww - tbw * ntabs; /* leftover pixels */
 
@@ -1730,27 +1732,14 @@ motionnotify(XEvent *e)
         XMotionEvent *ev = &e->xmotion;
 
         if (ev->window == selmon->barwin) {
-                static int currentcursor = 0;
                 int x;
 
-                if (ev->x < (x = selmon->ww - stw - lrpad / 2) && ev->x >= (x -= wstext - lrpad)) {
-                        updatedsblockssig(x, ev->x);
-                        if (currentcursor) {
-                                if (!dsblockssig) {
-                                        currentcursor = 0;
-                                        XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
-                                }
-                        } else {
-                                if (dsblockssig) {
-                                        currentcursor = 1;
-                                        XDefineCursor(dpy, selmon->barwin, cursor[CurHand]->cursor);
-                                }
-                        }
-                } else
-                        if (currentcursor) {
-                                currentcursor = 0;
-                                XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
-                        }
+                if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0)
+                        updatedsblockssig(x);
+                else if (statushandcursor) {
+                        statushandcursor = 0;
+                        XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
+                }
         }
 }
 
@@ -3188,7 +3177,7 @@ updateclientlist(void)
 }
 
 void
-updatedsblockssig(int x, int e)
+updatedsblockssig(int x)
 {
         char *ts = stexts;
         char *tp = stexts;
@@ -3203,14 +3192,22 @@ updatedsblockssig(int x, int e)
                 *ts = '\0';
                 x += TTEXTW(tp);
                 *ts = ctmp;
-                if (x >= e) {
-                        if (ctmp != 10)
-                                dsblockssig = ctmp;
-                        else
-                                dsblockssig = 0;
+                if (x > 0) {
+                        if (ctmp == 10)
+                                goto cursorondelimiter;
+                        if (!statushandcursor) {
+                                statushandcursor = 1;
+                                XDefineCursor(dpy, selmon->barwin, cursor[CurHand]->cursor);
+                        }
+                        dsblockssig = ctmp;
                         return;
                 }
                 tp = ++ts;
+        }
+cursorondelimiter:
+        if (statushandcursor) {
+                statushandcursor = 0;
+                XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
         }
         dsblockssig = 0;
 }
