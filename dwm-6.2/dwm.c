@@ -2178,6 +2178,8 @@ scratchshow(const Arg *arg)
 {
         Client *c;
 
+        if (selmon->sel && selmon->sel->scratchkey == arg->i)
+                return;
         for (Monitor *m = mons; m; m = m->next)
                 for (c = m->clients; c; c = c->next)
                         if (c->scratchkey == arg->i)
@@ -2185,8 +2187,6 @@ scratchshow(const Arg *arg)
         spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
         return;
 show:
-        if (selmon->sel && c == selmon->sel)
-                return;
         if (c->ishidden)
                 c->ishidden = 0;
         if (c->mon != selmon) {
