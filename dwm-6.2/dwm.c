@@ -141,14 +141,15 @@ typedef struct {
 } Signal;
 
 typedef struct {
-	const char *symbol;
-	void (*arrange)(Monitor *);
-} Layout;
-
-typedef struct {
         const char *symbol;
         void (*attach)(Client *);
 } Attach;
+
+typedef struct {
+	const char *symbol;
+	void (*arrange)(Monitor *);
+        const Attach *attach;
+} Layout;
 
 #define MAXTABS 10
 
@@ -204,8 +205,6 @@ static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static Monitor *createmon(void);
-//static void cycleattach(const Arg *arg);
-//static void cyclelayout(const Arg *arg);
 static void deck(Monitor *m);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
@@ -267,14 +266,12 @@ static void scratchshow(const Arg *arg);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
 static void sendmon(Client *c, Monitor *m);
 static void setattach(const Arg *arg);
-//static void setattordef(const Arg *arg);
 static void setattorprev(const Arg *arg);
 static void setclientstate(Client *c, long state);
 static void setdesktopnames(void);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
 static void setlayout(const Arg *arg);
-//static void setltordef(const Arg *arg);
 static void setltorprev(const Arg *arg);
 static void setmfact(const Arg *arg);
 static void setsplus(const Arg *arg);
@@ -890,76 +887,25 @@ createmon(void)
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->toptab = toptab;
-	m->lt[0] = &layouts[def_layouts[1]];
-	m->lt[1] = &layouts[1];
-	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
+	m->lt[0] = m->lt[1] = &layouts[def_layouts[1]];
+	strncpy(m->ltsymbol, layouts[def_layouts[1]].symbol, sizeof m->ltsymbol);
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
 
 	for (i = 0; i <= LENGTH(tags); i++) {
 		m->pertag->nmasters[i] = m->nmaster;
 		m->pertag->mfacts[i] = m->mfact;
-
-		m->pertag->ltidxs[i][0] = &layouts[def_layouts[i]];
-		m->pertag->ltidxs[i][1] = m->lt[1];
+		m->pertag->ltidxs[i][0] = m->pertag->ltidxs[i][1] = &layouts[def_layouts[i]];
 		m->pertag->sellts[i] = m->sellt;
-
 		m->pertag->showbars[i] = m->showbar;
                 /* custom */
-                m->pertag->attidxs[i][0] = &attachs[def_attachs[i]];
-                m->pertag->attidxs[i][1] = &attachs[1];
+                m->pertag->attidxs[i][0] = m->pertag->attidxs[i][1] = &attachs[def_attachs[i]];
                 m->pertag->showtabs[i] = showtab;
                 m->pertag->splus[i][0] = m->pertag->splus[i][1] = m->pertag->splus[i][2] = 0;
 	}
 
 	return m;
 }
-
-/*
-void
-cycleattach(const Arg *arg)
-{
-        Attach *a;
-        Arg r;
-
-        for (a = (Attach *)attachs; a != ATT(selmon); a++);
-        if (arg->i > 0) {
-                if (a->symbol && (a + 1)->symbol)
-                        r.v = a + 1;
-                else
-                        r.v = attachs;
-        } else {
-                if (a != attachs && (a - 1)->symbol)
-                        r.v = a - 1;
-                else
-                        r.v = attachs[LENGTH(attachs) - 2];
-        }
-        setattach(&r);
-}
-*/
-
-/*
-void
-cyclelayout(const Arg *arg)
-{
-	Layout *l;
-        Arg r;
-
-	for (l = (Layout *)layouts; l != selmon->lt[selmon->sellt]; l++);
-	if (arg->i > 0) {
-		if (l->symbol && (l + 1)->symbol)
-			r.v = l + 1;
-		else
-			r.v = layouts;
-	} else {
-		if (l != layouts && (l - 1)->symbol)
-			r.v = l - 1;
-		else
-			r.v = layouts[LENGTH(layouts) - 2];
-	}
-        setlayout(&r);
-}
-*/
 
 void
 deck(Monitor *m)
@@ -2257,22 +2203,11 @@ void
 setattach(const Arg *arg)
 {
         if (!arg || !arg->v || arg->v != ATT(selmon))
-                /* toggle or save the previous */
-                selmon->pertag->selatts[selmon->pertag->curtag] ^= 1;
+                selmon->pertag->selatts[selmon->pertag->curtag] ^= 1; /* toggle or save the previous */
         if (arg && arg->v)
                 ATT(selmon) = (Attach *)arg->v;
-
         drawbar(selmon);
 }
-
-/*
-void
-setattordef(const Arg *arg)
-{
-	Arg a = {.v = &attachs[def_attachs[selmon->pertag->curtag]]};
-	setattach((ATT(selmon) == arg->v) ? &a : arg);
-}
-*/
 
 void
 setattorprev(const Arg *arg)
@@ -2346,25 +2281,17 @@ setlayout(const Arg *arg)
 {
 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
 		selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag] ^= 1;
-	if (arg && arg->v)
-		selmon->lt[selmon->sellt]
-                        = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt]
-                                = (Layout *)arg->v;
+	if (arg && arg->v) {
+		selmon->lt[selmon->sellt] =
+                        selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt] = (Layout *)arg->v;
+                setattach(&((Arg){ .v = ((Layout *)arg->v)->attach }));
+        }
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
 	if (selmon->sel)
 		arrange(selmon);
 	else
 		drawbar(selmon);
 }
-
-/*
-void
-setltordef(const Arg *arg)
-{
-	Arg a = {.v = &layouts[def_layouts[selmon->pertag->curtag]]};
-	setlayout((selmon->lt[selmon->sellt] == arg->v) ? &a : arg);
-}
-*/
 
 void
 setltorprev(const Arg *arg)
@@ -2598,8 +2525,6 @@ sigdsblocks(const Arg *arg)
 void
 spawn(const Arg *arg)
 {
-//	if (arg->v == dmenucmd)
-//		dmenumon[0] = '0' + selmon->num;
 	if (fork() == 0) {
 		if (dpy)
 			close(ConnectionNumber(dpy));
@@ -2641,7 +2566,6 @@ swaptags(const Arg *arg)
                 }
         selmon->seltags ^= 1; /* toggle sel tagset */
         selmon->tagset[selmon->seltags] = newtags;
-
         /* pertag swaps */
         SWAP(selmon->pertag->nmasters[newtag],
              selmon->pertag->nmasters[selmon->pertag->curtag]);
@@ -2672,7 +2596,6 @@ swaptags(const Arg *arg)
              selmon->pertag->splus[selmon->pertag->curtag][2]);
         /* change curtag */
         selmon->pertag->curtag = newtag;
-
         drawbar(selmon);
 }
 
