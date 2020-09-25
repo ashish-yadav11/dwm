@@ -603,12 +603,12 @@ buttonpress(XEvent *e)
                 lft = selmon->ww - tbw * ntabs;
 
                 i = 0, x = -ev->x;
-                for (; c && i < lft; c = nexttiled(c->next), i++) {
+                for (; i < lft; c = nexttiled(c->next), i++) {
                         x += tbw + 1;
                         if (x > 0)
                                 goto clktg;
                 }
-                for (; c && i < ntabs; c = nexttiled(c->next), i++) {
+                for (; i < ntabs; c = nexttiled(c->next), i++) {
                         x += tbw;
                         if (x > 0)
                                 goto clktg;
@@ -771,6 +771,7 @@ clientmessage(XEvent *e)
                                 seturgent(c, 1);
                                 XSetWindowBorder(dpy, c->win, scheme[SchemeUrg][ColBorder].pixel);
                                 drawbar(c->mon);
+                                drawtab(c->mon);
                         }
                 }
 }
@@ -1022,7 +1023,7 @@ drawbar(Monitor *m)
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
                 drw_setscheme(drw, scheme[urg & 1 << i ? SchemeUrg :
-                                          (m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm)]);
+                                          m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
 		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], 0);
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
@@ -1099,16 +1100,19 @@ drawtabhelper(Monitor *m, int onlystack)
         tbw = m->ww / ntabs; /* provisional width of each tab */
         lft = m->ww - tbw * ntabs; /* leftover pixels */
 
-        for (i = 0; c && i < lft; c = nexttiled(c->next), i++) { /* add 1 px to first `lft` tabs */
-                drw_setscheme(drw, scheme[(c == m->sel) ? SchemeSel
-                                                        : ((i % 2 == 0) ? SchemeStts : SchemeNorm)]);
+        i = 0;
+        for (; i < lft; c = nexttiled(c->next), i++) { /* add 1 px to first lft tabs */
+                drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
+                                          c == m->sel ? SchemeSel :
+                                          i % 2 == 0 ? SchemeStts : SchemeNorm]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, tbw + 1 - lrpad / 2, th, lrpad / 2, c->name, 0);
                 x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0); /* to keep right padding clean */
         }
-        for (; c && i < ntabs; c = nexttiled(c->next), i++) {
-                drw_setscheme(drw, scheme[(c == m->sel) ? SchemeSel
-                                                        : ((i % 2 == 0) ? SchemeStts : SchemeNorm)]);
+        for (; i < ntabs; c = nexttiled(c->next), i++) {
+                drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
+                                          c == m->sel ? SchemeSel :
+                                          i % 2 == 0 ? SchemeStts : SchemeNorm]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, tbw - lrpad / 2, th, lrpad / 2, c->name, 0);
                 x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0); /* to keep right padding clean */
@@ -1721,7 +1725,7 @@ movemouse(const Arg *arg)
 		return;
 	do {
 		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
-		switch(ev.type) {
+		switch (ev.type) {
 		case ConfigureRequest:
 		case Expose:
 		case MapRequest:
@@ -1833,7 +1837,7 @@ propertynotify(XEvent *e)
 	else if (ev->state == PropertyDelete)
 		return; /* ignore */
 	else if ((c = wintoclient(ev->window))) {
-		switch(ev->atom) {
+		switch (ev->atom) {
 		default: break;
 		case XA_WM_TRANSIENT_FOR:
 			if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) &&
@@ -1982,7 +1986,7 @@ resizemouse(const Arg *arg)
 	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
 	do {
 		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
-		switch(ev.type) {
+		switch (ev.type) {
 		case ConfigureRequest:
 		case Expose:
 		case MapRequest:
@@ -2212,7 +2216,7 @@ setattach(const Arg *arg)
 void
 setattorprev(const Arg *arg)
 {
-	setattach((ATT(selmon) == arg->v) ? NULL : arg);
+	setattach(ATT(selmon) == arg->v ? NULL : arg);
 }
 
 void
@@ -2296,7 +2300,7 @@ setlayout(const Arg *arg)
 void
 setltorprev(const Arg *arg)
 {
-	setlayout((selmon->lt[selmon->sellt] == arg->v) ? NULL : arg);
+	setlayout(selmon->lt[selmon->sellt] == arg->v ? NULL : arg);
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -2326,20 +2330,20 @@ setsplus(const Arg *arg)
         if (selmon->lt[selmon->sellt]->arrange == tile) {
                 if (selidx < selmon->nmaster) {
                         if (MIN(selmon->nmaster, selmon->ntiles) > 1)
-                                SPLUS(selmon)[0] = (arg->i == 0) ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
+                                SPLUS(selmon)[0] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
                         else
                                 return;
                 } else if ((selmon->ntiles - selmon->nmaster) > 1) {
                         if ((selmon->ntiles - selmon->nmaster) > 2 && selidx == selmon->nmaster + 1)
-                                SPLUS(selmon)[2] = (arg->i == 0) ? 0 : MAX(SPLUS(selmon)[2] + arg->i, 0);
+                                SPLUS(selmon)[2] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[2] + arg->i, 0);
                         else {
-                                SPLUS(selmon)[1] = (arg->i == 0) ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
+                                SPLUS(selmon)[1] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
                         }
                 } else
                         return;
         } else {
                 if (MIN(selmon->nmaster, selmon->ntiles) > 1)
-                        SPLUS(selmon)[0] = (arg->i == 0) ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
+                        SPLUS(selmon)[0] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
                 else
                         return;
         }
@@ -2673,7 +2677,7 @@ tiledeck(Monitor *m, int deck)
                 wh = m->wh - 2*gappov;
 
                 /* masters */
-                w = (m->ntiles > m->nmaster ? ww * m->mfact : ww);
+                w = m->ntiles > m->nmaster ? ww * m->mfact : ww;
                 r = MIN(m->ntiles, m->nmaster);
                 c = nexttiled(m->clients);
 
