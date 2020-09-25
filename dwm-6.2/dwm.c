@@ -303,6 +303,7 @@ static void updateclientdesktop(Client *c);
 static void updateclientlist(void);
 static void updatedsblockssig(int x);
 static int updategeom(void);
+static void updatentiles(Monitor *m);
 static void updatenumlockmask(void);
 static void updatesizehints(Client *c);
 static void updatestatus(void);
@@ -454,23 +455,21 @@ applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact)
 void
 arrange(Monitor *m)
 {
-	if (m)
-		showhide(m->stack);
-	else for (m = mons; m; m = m->next)
-		showhide(m->stack);
 	if (m) {
+		showhide(m->stack);
 		arrangemon(m);
-//		restack(m);
                 restack(m, 1);
-	} else for (m = mons; m; m = m->next)
-		arrangemon(m);
+        } else
+                for (m = mons; m; m = m->next) {
+		        showhide(m->stack);
+		        arrangemon(m);
+                }
 }
 
 void
 arrangemon(Monitor *m)
 {
-        m->ntiles = 0;
-        for (Client *c = nexttiled(m->clients); c; c = nexttiled(c->next), m->ntiles++);
+        updatentiles(m);
 	updatebarpos(m);
 	XMoveResizeWindow(dpy, m->tabwin, m->wx, m->ty, m->ww, th);
 	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
@@ -620,7 +619,6 @@ clktg:
         }
 	else if ((c = wintoclient(ev->window))) {
 		focus(c);
-//		restack(selmon);
                 restack(selmon, 0);
 		XAllowEvents(dpy, ReplayPointer, CurrentTime);
 		click = ClkClientWin;
@@ -737,8 +735,8 @@ clientmessage(XEvent *e)
                         XSelectInput(dpy, c->win, StructureNotifyMask|PropertyChangeMask|ResizeRedirectMask);
 			XReparentWindow(dpy, c->win, systray->win, 0, 0);
 			/* use parents background color */
-//			swa.background_pixel  = scheme[SchemeNorm][ColBg].pixel;
-                        swa.background_pixel  = scheme[SchemeTray][ColBg].pixel;
+//			swa.background_pixel = scheme[SchemeNorm][ColBg].pixel;
+                        swa.background_pixel = scheme[SchemeTray][ColBg].pixel;
 			XChangeWindowAttributes(dpy, c->win, CWBackPixel, &swa);
 			sendevent(c->win, netatom[Xembed], StructureNotifyMask, CurrentTime,
                                   XEMBED_EMBEDDED_NOTIFY, 0 , systray->win, XEMBED_EMBEDDED_VERSION);
@@ -1066,12 +1064,14 @@ void
 drawtab(Monitor *m)
 {
         if (m->pertag->showtabs[m->pertag->curtag] == showtab_always) {
+                updatentiles(m);
                 if (m->ntiles == 0) {
                         drw_text(drw, 0, 0, m->ww, th, 0, "", 0);
                         drw_map(drw, m->tabwin, 0, 0, m->ww, th);
                 } else
                         drawtabhelper(m, 0);
         } else if (m->pertag->showtabs[m->pertag->curtag] == showtab_auto) {
+                updatentiles(m);
                 if (m->lt[m->sellt]->arrange == monocle && m->ntiles > 1)
                         drawtabhelper(m, 0);
                 else if (m->lt[m->sellt]->arrange == deck && m->ntiles > m->nmaster + 1)
@@ -1189,7 +1189,7 @@ focus(Client *c)
 	drawtabs();
 }
 
-/* c must be VISIBLE and must not be NULL */
+/* c must be non-NULL, on selmon and VISIBLE */
 void
 focusalt(Client *c)
 {
@@ -1220,7 +1220,6 @@ focusclient(Client *c, unsigned int tag)
                         arrange(selmon);
                 } else {
                         focusalt(c);
-//                        restack(selmon);
                         restack(selmon, 0);
                 }
                 return;
@@ -1333,9 +1332,7 @@ focusstack(const Arg *arg)
 					c = i;
 	}
 	if (c) {
-//		focus(c);
 		focusalt(c);
-//		restack(selmon);
 		restack(selmon, 0);
 	}
 }
@@ -1350,7 +1347,6 @@ focuswin(const Arg* arg)
         for (c = nexttiled(selmon->clients); c && i; c = nexttiled(c->next), i--);
         if (c) {
                 focusalt(c);
-//                restack(selmon);
                 restack(selmon, 0);
         }
 }
@@ -1576,7 +1572,6 @@ manage(Window w, XWindowAttributes *wa)
 	/* only fix client y-offset, if the client center might cover the bar */
 	c->y = MAX(c->y, ((c->mon->by == c->mon->my) && (c->x + (c->w / 2) >= c->mon->wx)
 		&& (c->x + (c->w / 2) < c->mon->wx + c->mon->ww)) ? bh : c->mon->my);
-//	c->bw = borderpx;
 
 	wc.border_width = c->bw;
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
@@ -1595,7 +1590,6 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
 		XRaiseWindow(dpy, c->win);
-//	attach(c);
         ATT(c->mon)->attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
@@ -1714,7 +1708,6 @@ movemouse(const Arg *arg)
 		return;
 	if (c->isfullscreen) /* no support moving fullscreen windows by mouse */
 		return;
-//	restack(selmon);
         restack(selmon, 1);
 	ocx = c->x;
 	ocy = c->y;
@@ -1972,7 +1965,6 @@ resizemouse(const Arg *arg)
 		return;
 	if (c->isfullscreen) /* no support resizing fullscreen windows by mouse */
 		return;
-//	restack(selmon);
         restack(selmon, 1);
 	ocx = c->x;
 	ocy = c->y;
@@ -2011,7 +2003,6 @@ resizemouse(const Arg *arg)
 			break;
 		}
 	} while (ev.type != ButtonRelease);
-//	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
         px = c->w * fpx;
         py = c->h * fpy;
         XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, px, py);
@@ -2038,15 +2029,12 @@ resizerequest(XEvent *e)
 }
 
 void
-//restack(Monitor *m)
 restack(Monitor *m, int dbr)
 {
 	Client *c;
 	XEvent ev;
 	XWindowChanges wc;
 
-//	drawbar(m);
-//	drawtab(m);
         if (dbr) {
                 drawbar(m);
                 drawtab(m);
@@ -2196,7 +2184,6 @@ sendmon(Client *c, Monitor *m)
 	c->mon = m;
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 	updateclientdesktop(c);
-//	attach(c);
         ATT(c->mon)->attach(c);
 	attachstack(c);
 	focus(NULL);
@@ -2881,8 +2868,8 @@ toggletag(const Arg *arg)
 void
 toggleview(const Arg *arg)
 {
-	unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
         int i;
+	unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
 
         if (!newtagset)
                 return;
@@ -3197,7 +3184,6 @@ updategeom(void)
 					m->clients = c->next;
 					detachstack(c);
 					c->mon = mons;
-//					attach(c);
                                         ATT(c->mon)->attach(c);
 					attachstack(c);
 				}
@@ -3224,6 +3210,13 @@ updategeom(void)
 		selmon = wintomon(root);
 	}
 	return dirty;
+}
+
+void
+updatentiles(Monitor *m)
+{
+        m->ntiles = 0;
+        for (Client *c = nexttiled(m->clients); c; c = nexttiled(c->next), m->ntiles++);
 }
 
 void
