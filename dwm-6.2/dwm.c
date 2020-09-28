@@ -1275,17 +1275,9 @@ focuslast(const Arg *arg)
 {
         Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
 
-        if (arg->i) {
-                for (; c && (c->ishidden || !c->tags); c = c->snext);
-                if (c)
-                        focusclient(c, selmon->pertag->prevtag);
-        } else {
-                for (; c && !ISVISIBLE(c); c = c->snext);
-                if (c) {
-                        focusalt(c);
-                        restack(selmon, 0);
-                }
-        }
+        for (; c && (c->ishidden || !c->tags); c = c->snext);
+        if (c)
+                focusclient(c, selmon->pertag->prevtag);
 }
 
 /*

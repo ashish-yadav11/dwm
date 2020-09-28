@@ -113,7 +113,8 @@ static const char *const *scratchcmds[] = {
 	{ MODLKEY|ControlMask,          KEY,      toggletag,      {.ui = 1 << TAG} }, \
 	{ SUPKEY,                       KEY,      tagandview,     {.ui = TAG} }, \
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
-	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
+	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} }, \
+	{ SUPKEY|MODRKEY,               KEY,      focusnthtiled,  {.ui = TAG + 1} },
 
 /* helper for spawning shell commands in pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
@@ -154,7 +155,9 @@ static void floatmovex(const Arg *arg);
 static void floatmovey(const Arg *arg);
 static void floatresizeh(const Arg *arg);
 static void floatresizew(const Arg *arg);
+static void focuslastvisible(const Arg *arg);
 static void focusmaster(const Arg *arg);
+static void focusnthtiled(const Arg *arg);
 static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
@@ -241,8 +244,8 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.v = &attachs[2]} },
 	{ MODLKEY,                      XK_F4,          setattorprev,           {.v = &attachs[3]} },
 
-	{ MODLKEY,                      XK_Tab,         focuslast,              {.i = 1} },
-	{ SUPKEY,                       XK_Tab,         focuslast,              {.i = 0} },
+	{ MODLKEY,                      XK_Tab,         focuslast,              {0} },
+	{ SUPKEY,                       XK_Tab,         focuslastvisible,       {0} },
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
 	{ MODLKEY,                      XK_o,           winview,                {0} },
@@ -469,6 +472,18 @@ floatresizew(const Arg *arg)
 }
 
 void
+focuslastvisible(const Arg *arg)
+{
+        Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
+
+        for (; c && !ISVISIBLE(c); c = c->snext);
+        if (c) {
+                focusalt(c);
+                restack(selmon, 0);
+        }
+}
+
+void
 focusmaster(const Arg *arg)
 {
         Client *c;
@@ -476,6 +491,27 @@ focusmaster(const Arg *arg)
 	if (selmon->nmaster < 1)
 		return;
         if ((c = nexttiled(selmon->clients))) {
+                focusalt(c);
+                restack(selmon, 0);
+        }
+}
+
+void
+focusnthtiled(const Arg *arg)
+{
+        unsigned int n = arg->ui;
+        Client *c;
+        Client *i = nexttiled(selmon->clients);
+
+        do
+                c = i;
+        while (--n && (i = nexttiled(i->next)));
+        if (c) {
+                if (c == selmon->sel) {
+                        for (c = c->snext; c && !ISVISIBLE(c); c = c->snext);
+                        if (!c)
+                                return;
+                }
                 focusalt(c);
                 restack(selmon, 0);
         }
