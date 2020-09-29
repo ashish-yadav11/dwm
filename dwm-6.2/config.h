@@ -81,7 +81,6 @@ static const Attach attachs[] = {
 	{ "D",          attachbelow },
 	{ "S",          attachaside },
 	{ "B",          attachbottom },
-        { NULL }
 };
 
 static const Layout layouts[] = {
@@ -90,7 +89,6 @@ static const Layout layouts[] = {
 	{ "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
 	{ "[M]",        monocle,                &attachs[1] },
 	{ "[D]",        deck,                   &attachs[2] },
-        { NULL }
 };
 
 static const char *const *scratchcmds[] = {
@@ -101,7 +99,6 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "signal-desktop", NULL },
 	(const char *[]){ "telegram-desktop", NULL },
 };
-#define NUMSCRATCH                  (sizeof scratchcmds / sizeof(char *))
 
 /* key definitions */
 #define MODLKEY Mod3Mask
