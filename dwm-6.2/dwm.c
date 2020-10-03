@@ -1104,7 +1104,7 @@ drawtabhelper(Monitor *m, int onlystack)
         for (; i < lft; c = nexttiled(c->next), i++) { /* add 1 px to first lft tabs */
                 drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
                                           c == m->sel ? SchemeSel :
-                                          i % 2 == 0 ? SchemeStts : SchemeNorm]);
+                                          i % 2 == 0 ? SchemeNorm : SchemeStts]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, tbw + 1 - lrpad / 2, th, lrpad / 2, c->name, 0);
                 x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0); /* to keep right padding clean */
@@ -1112,7 +1112,7 @@ drawtabhelper(Monitor *m, int onlystack)
         for (; i < ntabs; c = nexttiled(c->next), i++) {
                 drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
                                           c == m->sel ? SchemeSel :
-                                          i % 2 == 0 ? SchemeStts : SchemeNorm]);
+                                          i % 2 == 0 ? SchemeNorm : SchemeStts]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, tbw - lrpad / 2, th, lrpad / 2, c->name, 0);
                 x = drw_text(drw, x, 0, lrpad / 2, th, 0, "", 0); /* to keep right padding clean */
