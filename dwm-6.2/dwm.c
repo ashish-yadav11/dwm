@@ -1612,8 +1612,8 @@ void
 maprequest(XEvent *e)
 {
 	static XWindowAttributes wa;
-	XMapRequestEvent *ev = &e->xmaprequest;
 	Client *i;
+	XMapRequestEvent *ev = &e->xmaprequest;
 
 	if ((i = wintosystrayicon(ev->window))) {
 		sendevent(i->win, netatom[Xembed], StructureNotifyMask, CurrentTime,
@@ -2011,11 +2011,11 @@ resizemouse(const Arg *arg)
 void
 resizerequest(XEvent *e)
 {
+	Client *c;
 	XResizeRequestEvent *ev = &e->xresizerequest;
-	Client *i;
 
-	if ((i = wintosystrayicon(ev->window))) {
-		updatesystrayicongeom(i, ev->width, ev->height);
+        if ((c = wintosystrayicon(ev->window))) {
+		updatesystrayicongeom(c, ev->width, ev->height);
 		resizebarwin(selmon);
 		updatesystray();
 	}
@@ -2053,6 +2053,7 @@ void
 run(void)
 {
 	XEvent ev;
+
 	/* main event loop */
 	XSync(dpy, False);
 	while (running && !XNextEvent(dpy, &ev))
@@ -2773,6 +2774,7 @@ togglebar(const Arg *arg)
 	resizebarwin(selmon);
 	if (showsystray) {
 		XWindowChanges wc;
+
                 wc.y = selmon->showbar ? (selmon->topbar ? 0 : selmon->mh - bh) : -bh;
 		XConfigureWindow(dpy, systray->win, CWY, &wc);
 	}
@@ -3028,6 +3030,7 @@ updatebars(void)
 		.event_mask = ButtonPressMask|ExposureMask|PointerMotionMask
 	};
 	XClassHint ch = {"dwm", "dwm"};
+
 	for (m = mons; m; m = m->next) {
 		if (m->barwin)
 			continue;
