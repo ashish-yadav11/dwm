@@ -93,7 +93,7 @@ static const Layout layouts[] = {
 
 static const char *const *scratchcmds[] = {
 	(const char *[]){ "termite", "--name=scratch_Termite", NULL },
-	(const char *[]){ "brave", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
+	(const char *[]){ "chromium", "--profile-directory=Profile 1", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
 	(const char *[]){ "termite", "--name=pyfzf_Termite", "-e", "/home/ashish/.local/bin/pyfzf", NULL },
 	(const char *[]){ "termite", "--name=calcurse_Termite", "-e", "calcurse", NULL },
 	(const char *[]){ "signal-desktop", NULL },
