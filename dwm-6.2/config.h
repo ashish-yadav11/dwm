@@ -129,9 +129,9 @@ static const char *const *scratchcmds[] = {
 #define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", \
         "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
 #define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("watchlidswitch0.sh"), NULL } }
+        SCRIPT("inhibitsuspend0.sh"), NULL } }
 #define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("watchlidswitch1.sh"), NULL } }
+        SCRIPT("inhibitsuspend1.sh"), NULL } }
 
 #define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
 #define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
