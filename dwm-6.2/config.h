@@ -95,7 +95,7 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "termite", "--name=scratch_Termite", NULL },
 	(const char *[]){ "chromium", "--profile-directory=Profile 1", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
 	(const char *[]){ "termite", "--name=pyfzf_Termite", "-e", "/home/ashish/.local/bin/pyfzf", NULL },
-	(const char *[]){ "termite", "--name=calcurse_Termite", "-e", "calcurse", NULL },
+	(const char *[]){ "termite", "--name=calcurse_Termite", "-t", "Calcurse", "-e", "calcurse", NULL },
 	(const char *[]){ "signal-desktop", NULL },
 	(const char *[]){ "telegram-desktop", NULL },
 };
