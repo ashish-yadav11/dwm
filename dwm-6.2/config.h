@@ -144,7 +144,7 @@ static const char *const *scratchcmds[] = {
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && dunstify -r 4120 -t 0 'data entry mode activated'")
 
-static const Win browser = { .cmd = CMD0("firefox"), .tag = 8, .scratchkey = -1 };
+static const Win browser = { .cmd = CMD0("brave"), .tag = 8, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 9, .scratchkey = -2 };
 
 /* custom function declarations */
@@ -942,7 +942,7 @@ applyrules(Client *c)
                 c->w = 950;
                 c->h = 626;
                 center(c);
-        } else if (strcmp(class, "firefox") == 0) {
+        } else if (strcmp(instance, "brave-browser") == 0) {
                 marknegscratch(c, -1);
         } else if (strcmp(class, "Signal") == 0) {
                 c->isfloating = 1;
