@@ -956,6 +956,9 @@ applyrules(Client *c)
                 c->w = 770;
                 c->h = 555;
                 center(c);
+        } else if (strcmp(c->name, "Picture in picture") ||
+                   strcmp(c->name, "Picture-in-Picture")) {
+                c->isfloating = 1;
         }
 
 	if (ch.res_class)
