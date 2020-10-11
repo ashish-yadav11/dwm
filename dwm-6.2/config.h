@@ -366,8 +366,7 @@ void
 floatmovex(const Arg *arg)
 {
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int nx, ptrx, ptry;
-                int restoreptr = 0;
+                int nx;
                 int cw = WIDTH(selmon->sel), mw = selmon->wx + selmon->ww;
 
                 nx = selmon->sel->x + arg->i;
@@ -376,13 +375,7 @@ floatmovex(const Arg *arg)
                         nx = selmon->wx;
                 else if (selmon->sel->x + cw < mw && nx + cw > mw)
                         nx = mw - cw;
-                if (getwinptr(selmon->sel->win, &ptrx, &ptry) &&
-                    ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw &&
-                    ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw)
-                        restoreptr = 1;
                 resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, 1);
-                if (restoreptr)
-                        XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
         }
 }
 
@@ -390,8 +383,7 @@ void
 floatmovey(const Arg *arg)
 {
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int ny, ptrx, ptry;
-                int restoreptr = 0;
+                int ny;
                 int ch = HEIGHT(selmon->sel), mh = selmon->wy + selmon->wh;
 
                 ny = selmon->sel->y + arg->i;
@@ -400,13 +392,7 @@ floatmovey(const Arg *arg)
                         ny = selmon->wy;
                 else if (selmon->sel->y + ch < mh && ny + ch > mh)
                         ny = mh - ch;
-                if (getwinptr(selmon->sel->win, &ptrx, &ptry) &&
-                    ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw &&
-                    ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw)
-                        restoreptr = 1;
                 resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, 1);
-                if (restoreptr)
-                        XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
         }
 }
 
@@ -414,26 +400,14 @@ void
 floatresizeh(const Arg *arg)
 {
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int nh, ptrx, ptry;
-                int restoreptr = 0;
+                int nh;
                 int cy = selmon->sel->y + 2 * selmon->sel->bw, mh = selmon->wy + selmon->wh;
-                float ptryp;
 
                 nh = selmon->sel->h + arg->i;
                 /* snap to monitor edge on first try of crossover */
                 if (cy + selmon->sel->h < mh && cy + nh > mh)
                         nh = mh - cy;
-                if (arg->i < 0 && getwinptr(selmon->sel->win, &ptrx, &ptry)
-                               && ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw
-                               && ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw) {
-                        restoreptr = 1;
-                        ptryp = (float)ptry / (float)selmon->sel->h;
-                }
                 resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, nh, 1);
-                if (restoreptr) {
-                        ptry = selmon->sel->h * ptryp;
-                        XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
-                }
         }
 }
 
@@ -441,26 +415,14 @@ void
 floatresizew(const Arg *arg)
 {
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int nw, ptrx, ptry;
-                int restoreptr = 0;
+                int nw;
                 int cx = selmon->sel->x + 2 * selmon->sel->bw, mw = selmon->wx + selmon->ww;
-                float ptrxp;
 
                 nw = selmon->sel->w + arg->i;
                 /* snap to monitor edge on first try of crossover */
                 if (cx + selmon->sel->w < mw && cx + nw > mw)
                         nw = mw - cx;
-                if (arg->i < 0 && getwinptr(selmon->sel->win, &ptrx, &ptry)
-                               && ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw
-                               && ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw) {
-                        restoreptr = 1;
-                        ptrxp = (float)ptrx / (float)selmon->sel->w;
-                }
                 resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, 1);
-                if (restoreptr) {
-                        ptrx = selmon->sel->w * ptrxp;
-                        XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
-                }
         }
 }
 
