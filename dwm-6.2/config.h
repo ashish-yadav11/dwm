@@ -497,21 +497,20 @@ void
 focusnthtiled(const Arg *arg)
 {
         unsigned int n = arg->ui;
-        Client *c;
-        Client *i = nexttiled(selmon->clients);
+        Client *c, *i;
 
+        if (!(i = nexttiled(selmon->clients)))
+                return;
         do
                 c = i;
         while (--n && (i = nexttiled(i->next)));
-        if (c) {
-                if (c == selmon->sel) {
-                        for (c = c->snext; c && !ISVISIBLE(c); c = c->snext);
-                        if (!c)
-                                return;
-                }
-                focusalt(c);
-                restack(selmon, 0);
+        if (c == selmon->sel) {
+                for (c = c->snext; c && !ISVISIBLE(c); c = c->snext);
+                if (!c)
+                        return;
         }
+        focusalt(c);
+        restack(selmon, 0);
 }
 
 void
