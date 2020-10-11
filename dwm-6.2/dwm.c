@@ -257,7 +257,6 @@ static void resizebarwin(Monitor *m);
 static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
 static void resizerequest(XEvent *e);
-//static void restack(Monitor *m);
 static void restack(Monitor *m, int dbr);
 static void run(void);
 static void scan(void);
