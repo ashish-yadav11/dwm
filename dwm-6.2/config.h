@@ -380,7 +380,7 @@ floatmovex(const Arg *arg)
                     ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw &&
                     ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw)
                         restoreptr = 1;
-                resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, True);
+                resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, 1);
                 if (restoreptr)
                         XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
         }
@@ -404,7 +404,7 @@ floatmovey(const Arg *arg)
                     ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw &&
                     ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw)
                         restoreptr = 1;
-                resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, True);
+                resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, 1);
                 if (restoreptr)
                         XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
         }
@@ -429,7 +429,7 @@ floatresizeh(const Arg *arg)
                         restoreptr = 1;
                         ptryp = (float)ptry / (float)selmon->sel->h;
                 }
-                resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, nh, True);
+                resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, nh, 1);
                 if (restoreptr) {
                         ptry = selmon->sel->h * ptryp;
                         XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
@@ -456,7 +456,7 @@ floatresizew(const Arg *arg)
                         restoreptr = 1;
                         ptrxp = (float)ptrx / (float)selmon->sel->w;
                 }
-                resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, True);
+                resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, 1);
                 if (restoreptr) {
                         ptrx = selmon->sel->w * ptrxp;
                         XWarpPointer(dpy, None, selmon->sel->win, 0, 0, 0, 0, ptrx, ptry);
@@ -579,7 +579,7 @@ hideclient(const Arg *arg)
         if (!selmon->sel->isfloating) {
                 selmon->sel->isfloating = 1;
                 resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
-                       selmon->sel->sfw, selmon->sel->sfh, False);
+                       selmon->sel->sfw, selmon->sel->sfh, 0);
 		XRaiseWindow(dpy, selmon->sel->win);
         }
         selmon->sel->ishidden = 1;
