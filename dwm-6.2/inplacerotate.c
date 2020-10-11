@@ -27,9 +27,9 @@ inplacerotate(const Arg *arg)
 {
         int marg;
         int i, selidx;
-	Client *c, *head, *tail;
+        Client *c, *head, *tail;
 
-	if (!selmon->sel || selmon->sel->isfloating)
+        if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
                 return;
         marg = selmon->lt[selmon->sellt]->arrange == deck ? -arg->i : arg->i;
         /* all clients rotate */
@@ -68,10 +68,10 @@ inplacerotate(const Arg *arg)
                         return;
                 marg == -1 ? moveafter(head, tail) : movebefore(tail, head);
         }
-	/* restore focus position */
-	for (i = selidx, c = nexttiled(selmon->clients);
+        /* restore focus position */
+        for (i = selidx, c = nexttiled(selmon->clients);
              i > 0;
              c = nexttiled(c->next), i--);
         focusalt(c);
-	arrange(selmon);
+        arrange(selmon);
 }
