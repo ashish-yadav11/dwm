@@ -28,40 +28,49 @@ movebefore(Client *c, Client *p)
 static void
 inplacerotate(const Arg *arg)
 {
+        int marg;
         int i, selidx;
-	Client *c;
-        Client *mhead, *mtail, *shead, *stail;
+	Client *c, *head, *tail;
 
 	if (!selmon->sel || selmon->sel->isfloating)
                 return;
-        /* determine mhead, mtail, shead, stail and selidx */
-        c = mhead = nexttiled(selmon->clients);
-	for (i = 0; c; c = nexttiled(c->next), i++) {
-		if (c == selmon->sel)
-                        selidx = i;
-                if (i == selmon->nmaster)
-                        shead = c;
-                else if (i == selmon->nmaster - 1)
-                        mtail = c;
-		stail = c;
-	}
-        /* rotate */
-        switch (selmon->lt[selmon->sellt]->arrange == deck ? -arg->i : arg->i) {
-                case 1: /* all clients rotate anticlockwise */
-                        moveafter(mhead, stail);
-                        break;
-                case 2: /* all clients rotate clockwise */
-                        movebefore(stail, mhead);
-                        break;
-                case -1: /* stack xor master clients rotate anticlockwise */
-                        selidx < selmon->nmaster ? moveafter(mhead, mtail) : moveafter(shead, stail);
-                        break;
-                case -2: /* stack xor master clients rotate clockwise */
-                        selidx < selmon->nmaster ? movebefore(mtail, mhead) : movebefore(stail, shead);
-                        break;
+        marg = selmon->lt[selmon->sellt]->arrange == deck ? -arg->i : arg->i;
+        /* all clients rotate */
+        if (marg > 0) {
+                head = nexttiled(selmon->clients);
+                for (selidx = 0, c = head;
+                     c != selmon->sel;
+                     c = nexttiled(c->next), selidx++);
+                do
+                        tail = c;
+                while ((c = nexttiled(c->next)));
+                marg == 1 ? moveafter(head, tail) : movebefore(tail, head);
+        } else {
+                for (selidx = 0, c = nexttiled(selmon->clients);
+                     c != selmon->sel;
+                     c = nexttiled(c->next), selidx++);
+                /* master clients rotate */
+                if (selidx < selmon->nmaster) {
+                        tail = c = head = nexttiled(selmon->clients);
+                        i = 1;
+                        while (i++ < selmon->nmaster && (c = nexttiled(c->next)))
+                                tail = c;
+                /* stack clients rotate */
+                } else {
+                        for (i = 0, c = nexttiled(selmon->clients);
+                             i < selmon->nmaster;
+                             c = nexttiled(c->next), i++);
+                        head = c;
+                        do
+                                tail = c;
+                        while ((c = nexttiled(c->next)));
+                }
+                marg == -1 ? moveafter(head, tail) : movebefore(tail, head);
         }
 	/* restore focus position */
-	for (i = 0, c = nexttiled(selmon->clients); c && i != selidx; c = nexttiled(c->next), i++);
+	for (i = selidx, c = nexttiled(selmon->clients);
+             i > 0;
+             c = nexttiled(c->next), i--);
         focusalt(c);
 	arrange(selmon);
 }
