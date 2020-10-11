@@ -1,8 +1,7 @@
+/* the following two functions assume non-NULL and distinct c and p */
 static void
 moveafter(Client *c, Client *p)
 {
-        if (c == p)
-                return;
         detach(c);
         c->next = p->next;
         p->next = c;
@@ -13,8 +12,6 @@ movebefore(Client *c, Client *p)
 {
         Client *i;
 
-        if (c == p)
-                return;
         detach(c);
         if (p == selmon->clients)
                 attach(c);
@@ -44,6 +41,8 @@ inplacerotate(const Arg *arg)
                 do
                         tail = c;
                 while ((c = nexttiled(c->next)));
+                if (head == tail)
+                        return;
                 marg == 1 ? moveafter(head, tail) : movebefore(tail, head);
         } else {
                 for (selidx = 0, c = nexttiled(selmon->clients);
@@ -65,6 +64,8 @@ inplacerotate(const Arg *arg)
                                 tail = c;
                         while ((c = nexttiled(c->next)));
                 }
+                if (head == tail)
+                        return;
                 marg == -1 ? moveafter(head, tail) : movebefore(tail, head);
         }
 	/* restore focus position */
