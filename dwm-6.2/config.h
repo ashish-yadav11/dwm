@@ -368,18 +368,17 @@ floatmovex(const Arg *arg)
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int nx, ptrx, ptry;
                 int restoreptr = 0;
-                int vselcw = WIDTH(selmon->sel);
-                int vselmw = selmon->wx + selmon->ww;
+                int cw = WIDTH(selmon->sel), mw = selmon->wx + selmon->ww;
 
                 nx = selmon->sel->x + arg->i;
+                /* snap to monitor edge on first try of crossover */
                 if (selmon->sel->x > selmon->wx && nx < selmon->wx)
                         nx = selmon->wx;
-                else if (selmon->sel->x + vselcw < vselmw && nx + vselcw > vselmw)
-                        nx = vselmw - vselcw;
-                XRaiseWindow(dpy, selmon->sel->win);
+                else if (selmon->sel->x + cw < mw && nx + cw > mw)
+                        nx = mw - cw;
                 if (getwinptr(selmon->sel->win, &ptrx, &ptry) &&
-                    ptrx >= -selmon->sel->bw && ptrx <= selmon->sel->w + selmon->sel->bw - 1 &&
-                    ptry >= -selmon->sel->bw && ptry <= selmon->sel->h + selmon->sel->bw - 1)
+                    ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw &&
+                    ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw)
                         restoreptr = 1;
                 resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, True);
                 if (restoreptr)
@@ -393,18 +392,17 @@ floatmovey(const Arg *arg)
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int ny, ptrx, ptry;
                 int restoreptr = 0;
-                int vselch = HEIGHT(selmon->sel);
-                int vselmh = selmon->wy + selmon->wh;
+                int ch = HEIGHT(selmon->sel), mh = selmon->wy + selmon->wh;
 
                 ny = selmon->sel->y + arg->i;
+                /* snap to monitor edge on first try of crossover */
                 if (selmon->sel->y > selmon->wy && ny < selmon->wy)
                         ny = selmon->wy;
-                else if (selmon->sel->y + vselch < vselmh && ny + vselch > vselmh)
-                        ny = vselmh - vselch;
-                XRaiseWindow(dpy, selmon->sel->win);
+                else if (selmon->sel->y + ch < mh && ny + ch > mh)
+                        ny = mh - ch;
                 if (getwinptr(selmon->sel->win, &ptrx, &ptry) &&
-                    ptrx >= -selmon->sel->bw && ptrx <= selmon->sel->w + selmon->sel->bw - 1 &&
-                    ptry >= -selmon->sel->bw && ptry <= selmon->sel->h + selmon->sel->bw - 1)
+                    ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw &&
+                    ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw)
                         restoreptr = 1;
                 resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, True);
                 if (restoreptr)
@@ -418,17 +416,16 @@ floatresizeh(const Arg *arg)
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int nh, ptrx, ptry;
                 int restoreptr = 0;
-                int vselcy = selmon->sel->y + 2 * selmon->sel->bw;
-                int vselmh = selmon->wy + selmon->wh;
+                int cy = selmon->sel->y + 2 * selmon->sel->bw, mh = selmon->wy + selmon->wh;
                 float ptryp;
 
                 nh = selmon->sel->h + arg->i;
-                if (vselcy + selmon->sel->h < vselmh && vselcy + nh > vselmh)
-                        nh = vselmh - vselcy;
-                XRaiseWindow(dpy, selmon->sel->win);
+                /* snap to monitor edge on first try of crossover */
+                if (cy + selmon->sel->h < mh && cy + nh > mh)
+                        nh = mh - cy;
                 if (arg->i < 0 && getwinptr(selmon->sel->win, &ptrx, &ptry)
-                               && ptrx >= -selmon->sel->bw && ptrx <= selmon->sel->w + selmon->sel->bw - 1
-                               && ptry >= -selmon->sel->bw && ptry <= selmon->sel->h + selmon->sel->bw - 1) {
+                               && ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw
+                               && ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw) {
                         restoreptr = 1;
                         ptryp = (float)ptry / (float)selmon->sel->h;
                 }
@@ -446,17 +443,16 @@ floatresizew(const Arg *arg)
         if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
                 int nw, ptrx, ptry;
                 int restoreptr = 0;
-                int vselcx = selmon->sel->x + 2 * selmon->sel->bw;
-                int vselmw = selmon->wx + selmon->ww;
+                int cx = selmon->sel->x + 2 * selmon->sel->bw, mw = selmon->wx + selmon->ww;
                 float ptrxp;
 
                 nw = selmon->sel->w + arg->i;
-                if (vselcx + selmon->sel->w < vselmw && vselcx + nw > vselmw)
-                        nw = vselmw - vselcx;
-                XRaiseWindow(dpy, selmon->sel->win);
+                /* snap to monitor edge on first try of crossover */
+                if (cx + selmon->sel->w < mw && cx + nw > mw)
+                        nw = mw - cx;
                 if (arg->i < 0 && getwinptr(selmon->sel->win, &ptrx, &ptry)
-                               && ptrx >= -selmon->sel->bw && ptrx <= selmon->sel->w + selmon->sel->bw - 1
-                               && ptry >= -selmon->sel->bw && ptry <= selmon->sel->h + selmon->sel->bw - 1) {
+                               && ptrx >= -selmon->sel->bw && ptrx < selmon->sel->w + selmon->sel->bw
+                               && ptry >= -selmon->sel->bw && ptry < selmon->sel->h + selmon->sel->bw) {
                         restoreptr = 1;
                         ptrxp = (float)ptrx / (float)selmon->sel->w;
                 }
