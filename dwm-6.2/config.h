@@ -657,8 +657,8 @@ push(const Arg *arg)
 			pc = i;
 	}
 	/* swap c and selmon->sel in the selmon->clients list */
-        tmp = (selmon->sel->next == c) ? selmon->sel : selmon->sel->next;
-        selmon->sel->next = (c->next == selmon->sel) ? c : c->next;
+        tmp = selmon->sel->next == c ? selmon->sel : selmon->sel->next;
+        selmon->sel->next = c->next == selmon->sel ? c : c->next;
         c->next = tmp;
         if (ps) {
                 if (ps != c)
@@ -766,7 +766,7 @@ togglefullscreen(const Arg *arg)
 void
 vieworprev(const Arg *arg)
 {
-	view(((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags]) ? &((Arg){0}) : arg);
+	view((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags] ? &((Arg){0}) : arg);
 }
 
 void
@@ -836,10 +836,17 @@ zoomswap(const Arg *arg)
 void
 zoomvar(const Arg *arg)
 {
-        if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1)
-                arg->i ? zoomswap(&((Arg){0})) : zoom(&((Arg){0}));
-        else
-                arg->i ? zoom(&((Arg){0})) : zoomswap(&((Arg){0}));
+        if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1) {
+                if (arg->i)
+                        zoomswap(&((Arg){0}));
+                else
+                        zoom(&((Arg){0}));
+        } else {
+                if (arg->i)
+                        zoom(&((Arg){0}));
+                else
+                        zoomswap(&((Arg){0}));
+        }
 }
 
 /* Window rules */

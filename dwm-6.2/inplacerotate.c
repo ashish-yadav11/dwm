@@ -43,7 +43,10 @@ inplacerotate(const Arg *arg)
                 while ((c = nexttiled(c->next)));
                 if (head == tail)
                         return;
-                marg == 1 ? moveafter(head, tail) : movebefore(tail, head);
+                if (marg == 1)
+                        moveafter(head, tail);
+                else
+                        movebefore(tail, head);
         } else {
                 for (selidx = 0, c = nexttiled(selmon->clients);
                      c != selmon->sel;
@@ -66,7 +69,10 @@ inplacerotate(const Arg *arg)
                 }
                 if (head == tail)
                         return;
-                marg == -1 ? moveafter(head, tail) : movebefore(tail, head);
+                if (marg == -1)
+                        moveafter(head, tail);
+                else
+                        movebefore(tail, head);
         }
         /* restore focus position */
         for (i = selidx, c = nexttiled(selmon->clients);
