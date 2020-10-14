@@ -91,7 +91,7 @@ static const Layout layouts[] = {
 	{ "[ ]=",       tile,                   &attachs[0] },
 	{ "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
 	{ "[M]",        monocle,                &attachs[1] },
-	{ "[D]",        deck,                   &attachs[2] },
+	{ "[D]",        deck,                   &attachs[1] },
 };
 
 static const char *const *scratchcmds[] = {
@@ -237,8 +237,8 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
 	{ MODLKEY,                      XK_e,           setltorprev,            {.v = &layouts[0]} },
 	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,            {.v = &layouts[1]} },
-	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.v = &layouts[2]} },
-	{ MODLKEY,                      XK_w,           setltorprev,            {.v = &layouts[3]} },
+	{ MODLKEY,                      XK_w,           setltorprev,            {.v = &layouts[2]} },
+	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.v = &layouts[3]} },
 	{ MODLKEY,                      XK_F1,          setattorprev,           {.v = &attachs[0]} },
 	{ MODLKEY,                      XK_F2,          setattorprev,           {.v = &attachs[1]} },
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.v = &attachs[2]} },
