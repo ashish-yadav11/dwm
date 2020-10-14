@@ -113,8 +113,7 @@ static const char *const *scratchcmds[] = {
 	{ MODLKEY|ControlMask,          KEY,      toggletag,      {.ui = 1 << TAG} }, \
 	{ SUPKEY,                       KEY,      tagandview,     {.ui = TAG} }, \
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
-	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} }, \
-	{ SUPKEY|MODRKEY,               KEY,      focusnthtiled,  {.ui = TAG + 1} },
+	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
 
 /* helper for spawning shell commands in pre dwm-5.0 fashion */
 #define SHCMD(cmd) { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
@@ -244,7 +243,6 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.v = &attachs[2]} },
 	{ MODLKEY,                      XK_F4,          setattorprev,           {.v = &attachs[3]} },
 	{ MODLKEY,                      XK_F5,          setattorprev,           {.v = &attachs[4]} },
-
 	{ MODLKEY,                      XK_Tab,         focuslast,              {0} },
 	{ SUPKEY,                       XK_Tab,         focuslastvisible,       {0} },
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
@@ -254,12 +252,12 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_period,      shiftview,              {.i = +1 } },
 	{ MODLKEY,                      XK_comma,       shiftview,              {.i = -1 } },
 	{ MODLKEY|ShiftMask,            XK_period,      hideclient,             {0} },
-	{ SUPKEY,                       XK_F1,          togglescratch,          {.i = 1 } },
-	{ MODRKEY,                      XK_m,           togglescratch,          {.i = 2 } },
-	{ SUPKEY,                       XK_p,           togglescratch,          {.i = 3 } },
-	{ SUPKEY,                       XK_c,           togglescratch,          {.i = 4 } },
-	{ SUPKEY,                       XK_s,           togglescratch,          {.i = 5 } },
-	{ SUPKEY,                       XK_w,           togglescratch,          {.i = 6 } },
+	{ SUPKEY,                       XK_F1,          togglescratch,          {.i = 1} },
+	{ MODRKEY,                      XK_m,           togglescratch,          {.i = 2} },
+	{ SUPKEY,                       XK_p,           togglescratch,          {.i = 3} },
+	{ SUPKEY,                       XK_c,           togglescratch,          {.i = 4} },
+	{ SUPKEY,                       XK_s,           togglescratch,          {.i = 5} },
+	{ SUPKEY,                       XK_w,           togglescratch,          {.i = 6} },
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
@@ -317,6 +315,26 @@ static Key keys[] = {
 	{ MODRKEY,           XK_F11,                    spawn,                  REDSHIFT("2200") },
 	{ MODRKEY,           XK_F12,                    spawn,                  REDSHIFT("2000") },
 
+	{ SUPKEY|MODRKEY,               XK_1,           focusnthtiled,          {.i = 1  } },
+	{ SUPKEY|MODRKEY,               XK_2,           focusnthtiled,          {.i = 2  } },
+	{ SUPKEY|MODRKEY,               XK_3,           focusnthtiled,          {.i = 3  } },
+	{ SUPKEY|MODRKEY,               XK_4,           focusnthtiled,          {.i = 4  } },
+	{ SUPKEY|MODRKEY,               XK_5,           focusnthtiled,          {.i = 5  } },
+	{ SUPKEY|MODRKEY,               XK_6,           focusnthtiled,          {.i = 6  } },
+	{ SUPKEY|MODRKEY,               XK_7,           focusnthtiled,          {.i = 7  } },
+	{ SUPKEY|MODRKEY,               XK_8,           focusnthtiled,          {.i = 8  } },
+	{ SUPKEY|MODRKEY,               XK_9,           focusnthtiled,          {.i = 9  } },
+	{ SUPKEY|MODRKEY,               XK_0,           focusnthtiled,          {.i = 10 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_1,           focusnthtiled,          {.i = 11 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_2,           focusnthtiled,          {.i = 12 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_3,           focusnthtiled,          {.i = 13 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_4,           focusnthtiled,          {.i = 14 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_5,           focusnthtiled,          {.i = 15 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_6,           focusnthtiled,          {.i = 16 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_7,           focusnthtiled,          {.i = 17 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_8,           focusnthtiled,          {.i = 18 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_9,           focusnthtiled,          {.i = 19 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_0,           focusnthtiled,          {.i = 20 } },
 	{ MODLKEY,                      XK_0,           vieworprev,             {.ui = ~0 } },
 	{ MODLKEY|ShiftMask,            XK_0,           tag,                    {.ui = ~0 } },
 	TAGKEYS(                        XK_1,                                   0)
@@ -458,14 +476,14 @@ focusmaster(const Arg *arg)
 void
 focusnthtiled(const Arg *arg)
 {
-        unsigned int n = arg->ui;
+        int n = arg->i;
         Client *c, *i;
 
         if (!(i = nexttiled(selmon->clients)))
                 return;
         do
                 c = i;
-        while (--n && (i = nexttiled(i->next)));
+        while (--n > 0 && (i = nexttiled(i->next)));
         if (c == selmon->sel) {
                 for (c = c->snext; c && !ISVISIBLE(c); c = c->snext);
                 if (!c)
