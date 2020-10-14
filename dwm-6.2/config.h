@@ -81,8 +81,8 @@ static const Attach attachs[] = {
 	/* symbol       attach function */
 	{ "M",          attach },
 	{ "D",          attachbelow },
-	{ "S",          attachaside },
 	{ "A",          attachabove },
+	{ "S",          attachaside },
 	{ "B",          attachbottom },
 };
 
