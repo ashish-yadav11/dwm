@@ -151,8 +151,6 @@ typedef struct {
         const Attach *attach;
 } Layout;
 
-#define MAXTABS 10
-
 typedef struct Pertag Pertag;
 struct Monitor {
 	char ltsymbol[16];
@@ -192,6 +190,7 @@ static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interac
 static void arrange(Monitor *m);
 static void arrangemon(Monitor *m);
 static void attach(Client *c);
+static void attachabove(Client *c);
 static void attachaside(Client *c);
 static void attachbelow(Client *c);
 static void attachbottom(Client *c);
@@ -484,51 +483,62 @@ attach(Client *c)
 }
 
 void
+attachabove(Client *c)
+{
+        Client *i;
+
+	if (!c->mon->sel || c->mon->sel->isfloating || c->mon->sel == c->mon->clients) {
+                attach(c);
+                return;
+        }
+        for (i = c->mon->clients; i->next != c->mon->sel; i = i->next);
+        c->next = i->next;
+        i->next = c;
+}
+
+void
 attachaside(Client *c)
 {
-        Client *at = c->mon->clients;
+        int n;
+        Client *i;
 
-	for (int n = 1; at; at = at->next)
-                if (at->isfloating || !(c->tags & at->tags))
-                        continue;
-                else {
-                        if (n == c->mon->nmaster)
-                                break;
-                        n++;
-                }
-	if (!at) {
-		attachbottom(c);
-		return;
-	}
-	c->next = at->next;
-	at->next = c;
+        if (!c->mon->nmaster) {
+                attach(c);
+                return;
+        }
+        for (n = c->mon->nmaster, i = nexttiled(c->mon->clients);
+             n > 1 && i;
+             i = nexttiled(i->next), n--);
+        if (!i) {
+                attachbottom(c);
+                return;
+        }
+        c->next = i->next;
+        i->next = c;
 }
 
 void
 attachbelow(Client *c)
 {
-	/* if there is nothing on the monitor or the selected client is floating, attach as normal */
-	if (c->mon->sel == NULL || c->mon->sel->isfloating) {
+	if (!c->mon->sel || c->mon->sel->isfloating) {
 		attach(c);
 		return;
 	}
-
-	/* set the new client's next property to the same as the currently selected clients next */
 	c->next = c->mon->sel->next;
-	/* set the currently selected clients next property to the new client */
 	c->mon->sel->next = c;
 }
 
 void
 attachbottom(Client *c)
 {
-	Client *below = c->mon->clients;
-	for (; below && below->next; below = below->next);
+	Client *i = c->mon->clients;
+
+	for (; i && i->next; i = i->next);
 	c->next = NULL;
-	if (below)
-		below->next = c;
-	else
-		c->mon->clients = c;
+	if (i)
+                i->next = c;
+        else
+                c->mon->clients = c;
 }
 
 void

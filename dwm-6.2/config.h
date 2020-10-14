@@ -1,9 +1,11 @@
 /* See LICENSE file for copyright and license details. */
 
-/* systray icon height, change to bh to keep it equal to font height */
-#define SH                          16
+/* maximum number of tabs to show */
+#define MAXTABS                     15
 /* minimum allowed vertical height of a window when resizing with setsplus */
 #define MINWINHEIGHT                26
+/* systray icon height, change to bh to keep it equal to font height */
+#define SH                          16
 
 typedef struct {
         const Arg cmd;
@@ -80,6 +82,7 @@ static const Attach attachs[] = {
 	{ "M",          attach },
 	{ "D",          attachbelow },
 	{ "S",          attachaside },
+	{ "A",          attachabove },
 	{ "B",          attachbottom },
 };
 
@@ -240,6 +243,7 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_F2,          setattorprev,           {.v = &attachs[1]} },
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.v = &attachs[2]} },
 	{ MODLKEY,                      XK_F4,          setattorprev,           {.v = &attachs[3]} },
+	{ MODLKEY,                      XK_F5,          setattorprev,           {.v = &attachs[4]} },
 
 	{ MODLKEY,                      XK_Tab,         focuslast,              {0} },
 	{ SUPKEY,                       XK_Tab,         focuslastvisible,       {0} },
