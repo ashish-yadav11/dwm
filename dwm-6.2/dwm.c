@@ -487,7 +487,7 @@ attachabove(Client *c)
 {
         Client *i;
 
-	if (!c->mon->sel || c->mon->sel->isfloating || c->mon->sel == c->mon->clients) {
+        if (!c->mon->sel || c->mon->sel->isfloating || c->mon->sel == c->mon->clients) {
                 attach(c);
                 return;
         }
@@ -520,22 +520,22 @@ attachaside(Client *c)
 void
 attachbelow(Client *c)
 {
-	if (!c->mon->sel || c->mon->sel->isfloating) {
-		attach(c);
-		return;
-	}
-	c->next = c->mon->sel->next;
-	c->mon->sel->next = c;
+        if (!c->mon->sel || c->mon->sel->isfloating) {
+                attachbottom(c);
+                return;
+        }
+        c->next = c->mon->sel->next;
+        c->mon->sel->next = c;
 }
 
 void
 attachbottom(Client *c)
 {
-	Client *i = c->mon->clients;
+        Client *i = c->mon->clients;
 
-	for (; i && i->next; i = i->next);
-	c->next = NULL;
-	if (i)
+        for (; i && i->next; i = i->next);
+        c->next = NULL;
+        if (i)
                 i->next = c;
         else
                 c->mon->clients = c;
