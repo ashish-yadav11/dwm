@@ -368,7 +368,7 @@ static Button buttons[] = {
 };
 
 #define FSIGID "z:"
-/* without considering the terminating null byte */
+/* set the following lengths without considering the terminating null byte */
 #define FSIGIDLEN 2
 #define MAXFSIGNAMELEN 4
 #define MAXFSIGARGLEN 2
