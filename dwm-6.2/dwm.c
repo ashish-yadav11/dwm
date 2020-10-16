@@ -3434,7 +3434,6 @@ updatesystrayiconstate(Client *i, XPropertyEvent *ev)
 
 	if (ev->atom != xatom[XembedInfo] || !(flags = getatomprop(i, xatom[XembedInfo])))
 		return;
-
 	if (flags & XEMBED_MAPPED && !i->tags) {
 		i->tags = 1;
 		code = XEMBED_WINDOW_ACTIVATE;
