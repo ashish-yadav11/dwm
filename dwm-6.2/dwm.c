@@ -2275,10 +2275,13 @@ setlayout(const Arg *arg)
 {
 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
 		selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag] ^= 1;
-	if (arg && arg->v) {
+	if (arg && arg->v)
 		selmon->lt[selmon->sellt] =
-                        selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt] = (Layout *)arg->v;
-                setattach(&((Arg){ .v = ((Layout *)arg->v)->attach }));
+                        selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt] =
+                                (Layout *)arg->v;
+        if (selmon->lt[selmon->sellt]->attach != ATT(selmon)) {
+                selmon->pertag->selatts[selmon->pertag->curtag] ^= 1;
+                ATT(selmon) = selmon->lt[selmon->sellt]->attach;
         }
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
 	if (selmon->sel)
