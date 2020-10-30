@@ -126,14 +126,7 @@ static const char *const *scratchcmds[] = {
 #define CMD1(cmd, arg) { .v = (const char*[]){ cmd, arg, NULL } }
 #define SCRIPT0(name) { .v = (const char*[]){ SCRIPT(name), NULL } }
 #define SCRIPT1(name, arg) { .v = (const char*[]){ SCRIPT(name), arg, NULL } }
-#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO", arg, NULL } }
-
-#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", \
-        "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
-#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("inhibitsuspend0.sh"), NULL } }
-#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("inhibitsuspend1.sh"), NULL } }
+#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
 
 #define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
 #define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
@@ -142,6 +135,13 @@ static const char *const *scratchcmds[] = {
 #define ROFIDRUN { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
+
+#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", \
+        "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
+#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
+        SCRIPT("inhibitsuspend0.sh"), NULL } }
+#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
+        SCRIPT("inhibitsuspend1.sh"), NULL } }
 
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && dunstify -r 4120 -t 0 'data entry mode activated'")
@@ -261,7 +261,9 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
-	{ 0,                            XK_Print,       spawn,                  CMD1("gnome-screenshot", "-i") },
+	{ 0,                            XK_Print,       spawn,                  SCRIPT1("screenshot.sh", "r") },
+	{ ShiftMask,                    XK_Print,       spawn,                  SCRIPT1("screenshot.sh", "w") },
+	{ ControlMask,                  XK_Print,       spawn,                  SCRIPT1("screenshot.sh", "s") },
 	{ MODLKEY,                      XK_c,           spawn,                  SCRIPT0("color_under_cursor.sh") },
 	{ MODLKEY,                      XK_F7,          spawn,                  DISABLEDEMODE },
 	{ MODLKEY,                      XK_F8,          spawn,                  ENABLEDEMODE },
