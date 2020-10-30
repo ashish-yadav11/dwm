@@ -261,7 +261,7 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
-	{ 0,                            XK_Print,       spawn,                  SCRIPT1("screenshot.sh", "r") },
+	{ 0,                            XK_Print,       spawn,                  SCRIPT0("screenshot.sh") },
 	{ ShiftMask,                    XK_Print,       spawn,                  SCRIPT1("screenshot.sh", "w") },
 	{ ControlMask,                  XK_Print,       spawn,                  SCRIPT1("screenshot.sh", "s") },
 	{ MODLKEY,                      XK_c,           spawn,                  SCRIPT0("color_under_cursor.sh") },
