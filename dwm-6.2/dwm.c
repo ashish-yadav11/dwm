@@ -550,8 +550,8 @@ attachstack(Client *c)
 void
 buttonpress(XEvent *e)
 {
-        unsigned int click;
         int x;
+        unsigned int click;
 	Arg arg = {0};
 	Client *c;
 	Monitor *m;
@@ -566,16 +566,8 @@ buttonpress(XEvent *e)
 	}
 	if (ev->window == selmon->barwin) {
                 unsigned int i;
-                int wbar = selmon->ww;
+                int wbar;
 
-                if (showsystray) {
-                        wbar -= stw;
-                        if ((x = wbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
-                                updatedsblockssig(x);
-                                click = ClkStatusText;
-                                goto clickhandler;
-                        }
-                }
                 i = 0, x = -ev->x;
                 do
                         x += TEXTW(tags[i]);
@@ -585,9 +577,12 @@ buttonpress(XEvent *e)
                         arg.ui = 1 << i;
                 } else if (x + blw > 0)
                         click = ClkLtSymbol;
-                else if (wbar - wstext > ev->x)
+                else if ((wbar = showsystray ? selmon->ww - stw : selmon->ww) - wstext > ev->x)
                         click = ClkWinTitle;
-                else
+                else if ((x = wbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
+                        updatedsblockssig(x);
+                        click = ClkStatusText;
+                } else
                         return;
 	} else if (ev->window == selmon->tabwin && selmon->ntiles > 0) {
                 int i;
@@ -615,7 +610,6 @@ buttonpress(XEvent *e)
 		XAllowEvents(dpy, ReplayPointer, CurrentTime);
 		click = ClkClientWin;
 	}
-clickhandler:
 	for (int i = 0; i < LENGTH(buttons); i++)
 		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
 		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)){
