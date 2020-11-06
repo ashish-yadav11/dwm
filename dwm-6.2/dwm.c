@@ -1014,11 +1014,10 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
                 drw_setscheme(drw, scheme[urg & 1 << i ? SchemeUrg :
                                           m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], 0);
+		x = drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], 0);
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
 				m == selmon && selmon->sel && selmon->sel->tags & 1 << i, 0);
-		x += w;
 	}
         if (nhid)
                 snprintf(mltsymbol, sizeof mltsymbol, "%u %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
@@ -1028,8 +1027,10 @@ drawbar(Monitor *m)
         drw_setscheme(drw, scheme[SchemeLtSm]);
         x = drw_text(drw, x, 0, w, bh, lrpad / 2, mltsymbol, 0);
 
+        w = wbar - x - lrpad / 2; /* - lrpad / 2 for right padding */
+        if (m == selmon)
+                w -= wstext;
         drw_setscheme(drw, scheme[SchemeNorm]);
-        w = wbar - wstext - lrpad / 2 - x; /* - lrpad / 2 for right padding */
         if (m->sel && w > bh) {
                 drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
                 if (m->sel->isfloating)
