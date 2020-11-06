@@ -1659,7 +1659,7 @@ motionnotify(XEvent *e)
 {
         XMotionEvent *ev = &e->xmotion;
 
-        if (showsystray && ev->window != selmon->barwin) {
+        if (showsystray && ev->window == selmon->barwin) {
                 int x;
 
                 if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0)
