@@ -770,11 +770,9 @@ togglefocusfloat(const Arg *arg)
 
         if (!selmon->sel)
                 return;
-        if (selmon->sel->isfloating) {
-                if (selmon->sel->isfullscreen)
-                        return;
+        if (selmon->sel->isfloating)
                 for (c = selmon->sel; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
-        } else
+        else
                 for (c = selmon->sel; c && (!ISVISIBLE(c) || !c->isfloating); c = c->snext);
         if (c) {
                 focusalt(c);
