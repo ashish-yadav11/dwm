@@ -810,7 +810,7 @@ windowswitcher(const Arg *arg)
 	for (Monitor *m = mons; m; m = m->next) {
                 if (m == selmon)
                         continue;
-                for (Client *c = selmon->stack; c; c = c->snext)
+                for (Client *c = m->stack; c; c = c->snext)
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
         }
