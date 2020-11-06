@@ -385,65 +385,85 @@ static Signal signals[] = {
 void
 floatmovex(const Arg *arg)
 {
-        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int nx;
-                int cw = WIDTH(selmon->sel), mw = selmon->wx + selmon->ww;
+        int nx, cw, mw;
 
-                nx = selmon->sel->x + arg->i;
-                /* snap to monitor edge on first try of crossover */
-                if (selmon->sel->x > selmon->wx && nx < selmon->wx)
-                        nx = selmon->wx;
-                else if (selmon->sel->x + cw < mw && nx + cw > mw)
-                        nx = mw - cw;
-                resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, 1);
-        }
+        if (!selmon->sel)
+                return;
+        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+                return;
+        if (selmon->sel->isfullscreen)
+                return;
+        nx = selmon->sel->x + arg->i;
+        cw = WIDTH(selmon->sel);
+        mw = selmon->wx + selmon->ww;
+        /* snap to monitor edge on first try of crossover */
+        if (selmon->sel->x > selmon->wx && nx < selmon->wx)
+                nx = selmon->wx;
+        else if (selmon->sel->x + cw < mw && nx + cw > mw)
+                nx = mw - cw;
+        resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, 1);
 }
 
 void
 floatmovey(const Arg *arg)
 {
-        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int ny;
-                int ch = HEIGHT(selmon->sel), mh = selmon->wy + selmon->wh;
+        int ny, ch, mh;
 
-                ny = selmon->sel->y + arg->i;
-                /* snap to monitor edge on first try of crossover */
-                if (selmon->sel->y > selmon->wy && ny < selmon->wy)
-                        ny = selmon->wy;
-                else if (selmon->sel->y + ch < mh && ny + ch > mh)
-                        ny = mh - ch;
-                resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, 1);
-        }
+        if (!selmon->sel)
+                return;
+        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+                return;
+        if (selmon->sel->isfullscreen)
+                return;
+        ny = selmon->sel->y + arg->i;
+        ch = HEIGHT(selmon->sel);
+        mh = selmon->wy + selmon->wh;
+        /* snap to monitor edge on first try of crossover */
+        if (selmon->sel->y > selmon->wy && ny < selmon->wy)
+                ny = selmon->wy;
+        else if (selmon->sel->y + ch < mh && ny + ch > mh)
+                ny = mh - ch;
+        resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, 1);
 }
 
 void
 floatresizeh(const Arg *arg)
 {
-        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int nh;
-                int cy = selmon->sel->y + 2 * selmon->sel->bw, mh = selmon->wy + selmon->wh;
+        int nh, cy, mh;
 
-                nh = selmon->sel->h + arg->i;
-                /* snap to monitor edge on first try of crossover */
-                if (cy + selmon->sel->h < mh && cy + nh > mh)
-                        nh = mh - cy;
-                resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, nh, 1);
-        }
+        if (!selmon->sel)
+                return;
+        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+                return;
+        if (selmon->sel->isfullscreen)
+                return;
+        nh = selmon->sel->h + arg->i;
+        cy = selmon->sel->y + 2 * selmon->sel->bw;
+        mh = selmon->wy + selmon->wh;
+        /* snap to monitor edge on first try of crossover */
+        if (cy + selmon->sel->h < mh && cy + nh > mh)
+                nh = mh - cy;
+        resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, nh, 1);
 }
 
 void
 floatresizew(const Arg *arg)
 {
-        if (selmon->sel && (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)) {
-                int nw;
-                int cx = selmon->sel->x + 2 * selmon->sel->bw, mw = selmon->wx + selmon->ww;
+        int nw, cx, mw;
 
-                nw = selmon->sel->w + arg->i;
-                /* snap to monitor edge on first try of crossover */
-                if (cx + selmon->sel->w < mw && cx + nw > mw)
-                        nw = mw - cx;
-                resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, 1);
-        }
+        if (!selmon->sel)
+                return;
+        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+                return;
+        if (selmon->sel->isfullscreen)
+                return;
+        nw = selmon->sel->w + arg->i;
+        cx = selmon->sel->x + 2 * selmon->sel->bw;
+        mw = selmon->wx + selmon->ww;
+        /* snap to monitor edge on first try of crossover */
+        if (cx + selmon->sel->w < mw && cx + nw > mw)
+                nw = mw - cx;
+        resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, 1);
 }
 
 void
