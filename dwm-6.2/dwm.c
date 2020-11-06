@@ -1662,10 +1662,11 @@ motionnotify(XEvent *e)
         if (!m)
                 return;
         if (m == selmon && ev->x >= selmon->btlw) {
-                int x;
-                int wbar = showsystray ? selmon->ww - stw : selmon->ww;
+                int x = selmon->ww - lrpad / 2 - ev->x;
 
-                if ((x = wbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
+                if (showsystray)
+                        x -= stw;
+                if (x > 0 && (x -= wstext - lrpad) <= 0) {
                         updatedsblockssig(x);
                         return;
                 }
