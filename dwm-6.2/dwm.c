@@ -2151,9 +2151,7 @@ sendmon(Client *c, Monitor *m)
 {
 	if (c->mon == m)
 		return;
-//	unfocus(c, 1);
-	if (c->mon->sel == c)
-                unfocus(c, 1);
+	unfocus(c, 1);
 	detach(c);
 	detachstack(c);
 	c->mon = m;
