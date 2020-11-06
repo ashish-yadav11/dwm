@@ -1731,9 +1731,8 @@ movemouse(const Arg *arg)
 	} while (ev.type != ButtonRelease);
 	XUngrabPointer(dpy, CurrentTime);
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
-		sendmon(c, m);
 		selmon = m;
-		focus(NULL);
+		sendmon(c, m);
 	}
 }
 
@@ -1991,9 +1990,8 @@ resizemouse(const Arg *arg)
 	XUngrabPointer(dpy, CurrentTime);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
-		sendmon(c, m);
 		selmon = m;
-		focus(NULL);
+		sendmon(c, m);
 	}
 }
 
