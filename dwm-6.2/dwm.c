@@ -303,6 +303,7 @@ static void updatedsblockssig(int x);
 static int updategeom(void);
 static void updatentiles(Monitor *m);
 static void updatenumlockmask(void);
+static void updateselmon(Monitor *m);
 static void updatesizehints(Client *c);
 static void updatestatus(void);
 static void updatesystray(void);
@@ -563,7 +564,7 @@ buttonpress(XEvent *e)
 	if ((m = wintomon(ev->window)) && m != selmon) {
                 dirty = 1;
 		unfocus(selmon->sel, 1);
-		selmon = m;
+                updateselmon(m);
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
@@ -752,6 +753,8 @@ clientmessage(XEvent *e)
 			setfullscreen(c, (cme->data.l[0] == 1 /* _NET_WM_STATE_ADD */
 				|| (cme->data.l[0] == 2 /* _NET_WM_STATE_TOGGLE */ && !c->isfullscreen)));
 	} else if (cme->message_type == netatom[NetActiveWindow])
+                focusclient(c, 0);
+/*
 		if (c != selmon->sel) {
                         if (c->mon == selmon)
                                 focusclient(c, 0);
@@ -762,6 +765,7 @@ clientmessage(XEvent *e)
                                 drawtab(c->mon);
                         }
                 }
+*/
 }
 
 void
@@ -1122,7 +1126,7 @@ enternotify(XEvent *e)
 	m = c ? c->mon : wintomon(ev->window);
 	if (m != selmon) {
 		unfocus(selmon->sel, 1);
-		selmon = m;
+                updateselmon(m);
 	} else if (!c || c == selmon->sel)
 		return;
 	focus(c);
@@ -1152,7 +1156,7 @@ focus(Client *c)
 		unfocus(selmon->sel, 0);
 	if (c) {
 		if (c->mon != selmon)
-			selmon = c->mon;
+                        updateselmon(c->mon);
 		if (c->isurgent)
 			seturgent(c, 0);
 		detachstack(c);
@@ -1188,8 +1192,10 @@ focusalt(Client *c)
 void
 focusclient(Client *c, unsigned int tag)
 {
-        if (c->mon != selmon)
-                selmon = c->mon;
+        if (c->mon != selmon) {
+		unfocus(selmon->sel, 1);
+                updateselmon(c->mon);
+        }
         if (c->isurgent)
                 seturgent(c, 0);
         if (c->tags & selmon->tagset[selmon->seltags]) {
@@ -1265,19 +1271,14 @@ void
 focusmon(const Arg *arg)
 {
         Client *c;
-	Monitor *m, *p;
+	Monitor *m;
 
 	if (!mons->next)
 		return;
 	if ((m = dirtomon(arg->i)) == selmon)
 		return;
 	unfocus(selmon->sel, 0);
-        p = selmon;
-	selmon = m;
-        for (c = p->clients; c; c = c->next)
-                updateclientdesktop(c);
-        for (c = m->clients; c; c = c->next)
-                updateclientdesktop(c);
+        updateselmon(m);
 	focus(NULL);
 }
 */
@@ -1645,7 +1646,7 @@ motionnotify(XEvent *e)
 		return;
 	if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != mon && mon) {
 		unfocus(selmon->sel, 1);
-		selmon = m;
+                updateselmon(m);
 		focus(NULL);
 	}
 	mon = m;
@@ -1731,8 +1732,8 @@ movemouse(const Arg *arg)
 	} while (ev.type != ButtonRelease);
 	XUngrabPointer(dpy, CurrentTime);
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
-		selmon = m;
-		sendmon(c, m);
+                updateselmon(m);
+		sendmon(c, selmon);
 	}
 }
 
@@ -1990,8 +1991,8 @@ resizemouse(const Arg *arg)
 	XUngrabPointer(dpy, CurrentTime);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
-		selmon = m;
-		sendmon(c, m);
+                updateselmon(m);
+		sendmon(c, selmon);
 	}
 }
 
@@ -3103,6 +3104,7 @@ int
 updategeom(void)
 {
 	int dirty = 0;
+        Monitor *p = selmon;
 
 #ifdef XINERAMA
 	if (XineramaIsActive(dpy)) {
@@ -3174,6 +3176,15 @@ updategeom(void)
 		selmon = mons;
 		selmon = wintomon(root);
 	}
+        if (selmon != p) {
+                Client *c;
+
+                if (p)
+                        for (c = p->clients; c; c = c->next)
+                                updateclientdesktop(c);
+                for (c = selmon->clients; c; c = c->next)
+                        updateclientdesktop(c);
+        }
 	return dirty;
 }
 
@@ -3182,6 +3193,20 @@ updatentiles(Monitor *m)
 {
         m->ntiles = 0;
         for (Client *c = nexttiled(m->clients); c; c = nexttiled(c->next), m->ntiles++);
+}
+
+void
+updateselmon(Monitor *m)
+{
+        Client *c;
+        Monitor *p = selmon;
+
+        selmon = m;
+        if (p)
+                for (c = p->clients; c; c = c->next)
+                        updateclientdesktop(c);
+        for (c = selmon->clients; c; c = c->next)
+                updateclientdesktop(c);
 }
 
 void
