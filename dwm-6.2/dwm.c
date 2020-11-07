@@ -3023,6 +3023,7 @@ updatebars(void)
 		XDefineCursor(dpy, m->tabwin, cursor[CurNormal]->cursor);
 		XMapRaised(dpy, m->tabwin);
 		XSetClassHint(dpy, m->barwin, &ch);
+		XSetClassHint(dpy, m->tabwin, &ch);
 	}
 }
 
