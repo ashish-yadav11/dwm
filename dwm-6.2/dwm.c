@@ -2156,8 +2156,6 @@ sendevent(Window w, Atom proto, int mask, long d0, long d1, long d2, long d3, lo
 void
 sendmon(Client *c, Monitor *m)
 {
-	if (c->mon == m)
-		return;
 	unfocus(c, 1);
 	detach(c);
 	detachstack(c);
@@ -2599,9 +2597,12 @@ tag(const Arg *arg)
 void
 tagmon(const Arg *arg)
 {
+        Monitor *m;
+
 	if (!selmon->sel || !mons->next)
 		return;
-	sendmon(selmon->sel, dirtomon(arg->i));
+        if ((m = dirtomon(arg->i)) != selmon)
+                sendmon(selmon->sel, m);
 }
 */
 
@@ -2894,14 +2895,21 @@ togglewin(const Arg *arg)
                         focusclient(c, selmon->pertag->prevtag);
                 else
                         view(&((Arg){0}));
-                return;
-        }
-        for (c = selmon->clients; c && c->scratchkey != ((Win*)(arg->v))->scratchkey; c = c->next);
-        if (c)
-                focusclient(c, ((Win*)(arg->v))->tag);
-        else {
+        } else {
+                for (Monitor *m = mons; m; m = m->next)
+                        for (c = m->clients; c; c = c->next)
+                                if (c->scratchkey == ((Win*)(arg->v))->scratchkey)
+                                        goto show;
                 view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
                 spawn(&((Win*)(arg->v))->cmd);
+                return;
+show:
+                if (c->mon == selmon)
+                        focusclient(c, ((Win*)(arg->v))->tag);
+                else {
+                        view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
+                        sendmon(c, selmon);
+                }
         }
 }
 

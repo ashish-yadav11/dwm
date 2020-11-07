@@ -882,8 +882,7 @@ zoomvar(const Arg *arg)
 
 /* Window rules */
 static void center(Client *c);
-static void marknegscratch(Client *c, int scratchkey);
-static void markposscratch(Client *c, int scratchkey);
+static void markscratch(Client *c, int scratchkey);
 
 static void
 applyrules(Client *c)
@@ -897,21 +896,21 @@ applyrules(Client *c)
 
         if (strcmp(instance, "scratch_Termite") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 1);
+                markscratch(c, 1);
                 c->w = 750;
                 c->h = 450;
                 center(c);
         } else if (strcmp(instance, "neomutt_Termite") == 0) {
-                marknegscratch(c, -2);
+                markscratch(c, -2);
         } else if (strcmp(instance, "pyfzf_Termite") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 3);
+                markscratch(c, 3);
                 c->w = 750;
                 c->h = 450;
                 center(c);
         } else if (strcmp(instance, "calcurse_Termite") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 4);
+                markscratch(c, 4);
                 c->w = 950;
                 c->h = 650;
                 center(c);
@@ -936,22 +935,22 @@ applyrules(Client *c)
         /* windows generally opened once */
         } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 2);
+                markscratch(c, 2);
                 c->bw = 0;
                 c->w = 950;
                 c->h = 626;
                 center(c);
         } else if (strcmp(instance, "brave-browser") == 0) {
-                marknegscratch(c, -1);
+                markscratch(c, -1);
         } else if (strcmp(class, "Signal") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 5);
+                markscratch(c, 5);
                 c->w = 880;
                 c->h = 620;
                 center(c);
         } else if (strcmp(class, "TelegramDesktop") == 0) {
                 c->isfloating = 1;
-                markposscratch(c, 6);
+                markscratch(c, 6);
                 c->w = 770;
                 c->h = 555;
                 center(c);
@@ -976,16 +975,7 @@ center(Client *c)
 }
 
 void
-marknegscratch(Client *c, int key)
-{
-        for (Client *i = selmon->clients; i; i = i->next)
-                if (i->scratchkey == key)
-                        return;
-        c->scratchkey = key;
-}
-
-void
-markposscratch(Client *c, int key)
+markscratch(Client *c, int key)
 {
         for (Monitor *m = mons; m; m = m->next)
                 for (Client *i = m->clients; i; i = i->next)
