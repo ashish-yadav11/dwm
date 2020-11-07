@@ -964,7 +964,7 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-	int x, w;
+	int x, w, sx;
         int wbar = m->ww;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
@@ -979,10 +979,9 @@ drawbar(Monitor *m)
                 char ctmp;
 
                 if (showsystray)
-                        wbar -= (stw = getsystraywidth()); /* account for the systray */
-
+                        wbar -= (stw = getsystraywidth());
                 drw_setscheme(drw, scheme[SchemeStts]);
-                x = wbar - wstext;
+                sx = x = wbar - wstext;
                 drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
                 for (;;) {
                         if ((unsigned char)*ts > LENGTH(colors) + 10) {
@@ -1002,7 +1001,8 @@ drawbar(Monitor *m)
                 }
                 drw_setscheme(drw, scheme[SchemeStts]);
                 drw_rect(drw, x, 0, wbar - x, bh, 1, 1); /* to keep right padding clean */
-	}
+	} else
+                sx = wbar;
 
 	for (c = m->clients; c; c = c->next) {
                 if (c->ishidden && (c->tags & m->tagset[m->seltags]))
@@ -1016,12 +1016,13 @@ drawbar(Monitor *m)
 		w = TEXTW(tags[i]);
                 drw_setscheme(drw, scheme[urg & 1 << i ? SchemeUrg :
                                           m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
-		drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], 0);
+		w = drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], 0);
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
 				m == selmon && selmon->sel && selmon->sel->tags & 1 << i, 0);
-		x += w;
+		x = w;
 	}
+
         if (nhid)
                 snprintf(mltsymbol, sizeof mltsymbol, "%u %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
         else
@@ -1030,15 +1031,13 @@ drawbar(Monitor *m)
         drw_setscheme(drw, scheme[SchemeLtSm]);
         m->btlw = x = drw_text(drw, x, 0, w, bh, lrpad / 2, mltsymbol, 0);
 
-        w = wbar - x - lrpad / 2; /* - lrpad / 2 for right padding */
-        if (m == selmon)
-                w -= wstext;
+        w = sx - x - lrpad / 2; /* - lrpad / 2 for right padding */
         drw_setscheme(drw, scheme[SchemeNorm]);
         if (m->sel && w > bh) {
-                drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
+                w = drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
                 if (m->sel->isfloating)
                         drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
-                drw_rect(drw, x + w, 0, lrpad / 2, bh, 1, 1); /* to keep right padding clean */
+                drw_rect(drw, w, 0, lrpad / 2, bh, 1, 1); /* to keep right padding clean */
         } else
                 drw_rect(drw, x, 0, w + lrpad / 2, bh, 1, 1); /* to keep title area clean */
 
