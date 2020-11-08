@@ -158,7 +158,7 @@ struct Monitor {
         int ntiles;
 	int nmaster;
 	int num;
-	int by, blw, btlw;    /* bar geometry */
+	int by;               /* bar geometry */
 	int ty;               /* tab bar geometry */
 	int mx, my, mw, mh;   /* screen size */
 	int wx, wy, ww, wh;   /* window area */
@@ -327,10 +327,10 @@ static char stext[256];
 static char stextc[256];
 static char stexts[256];
 static int screen;
-static int sw, sh;           /* X display screen geometry width, height */
-static int bh, stw;          /* bar geometry */
-static int th;               /* tab bar geometry */
-static int lrpad;            /* sum of left and right padding for text */
+static int sw, sh;              /* X display screen geometry width, height */
+static int bh, blw, ble, stw;   /* bar geometry */
+static int th;                  /* tab bar geometry */
+static int lrpad;               /* sum of left and right padding for text */
 static int restart = 0;
 static int running = 1;
 static int wstext;
@@ -551,7 +551,7 @@ attachstack(Client *c)
 void
 buttonpress(XEvent *e)
 {
-        int x;
+        int i, x;
         int dirty = 0;
         unsigned int click;
 	Arg arg = {0};
@@ -568,29 +568,30 @@ buttonpress(XEvent *e)
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
-                int wbar;
-                unsigned int i;
+                if (ev->x < ble) {
+                        if (ev->x < ble - blw) {
+                                i = -1, x = -ev->x;
+                                do
+                                        x += TEXTW(tags[++i]);
+                                while (x <= 0);
+                                click = ClkTagBar;
+                                arg.ui = 1 << i;
+                        } else
+                                click = ClkLtSymbol;
+                } else {
+                        int wbar = showsystray ? selmon->ww - stw : selmon->ww;
 
-                i = 0, x = -ev->x;
-                do
-                        x += TEXTW(tags[i]);
-                while (x <= 0 && ++i < LENGTH(tags));
-                if (i < LENGTH(tags)) {
-                        click = ClkTagBar;
-                        arg.ui = 1 << i;
-                } else if (x + selmon->blw > 0)
-                        click = ClkLtSymbol;
-                else if ((wbar = showsystray ? selmon->ww - stw : selmon->ww) - wstext > ev->x)
-                        click = ClkWinTitle;
-                else if ((x = wbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
-                        updatedsblockssig(x);
-                        if (dirty)
+                        if (ev->x < wbar - wstext)
+                                click = ClkWinTitle;
+                        else if ((x = wbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
+                                updatedsblockssig(x);
+                                if (dirty)
+                                        return;
+                                click = ClkStatusText;
+                        } else
                                 return;
-                        click = ClkStatusText;
-                } else
-                        return;
+                }
 	} else if (ev->window == selmon->tabwin && selmon->ntiles > 0) {
-                int i;
                 int ntabs, ofst, tbw, lft;
 
                 if (selmon->lt[selmon->sellt]->arrange == deck &&
@@ -605,8 +606,8 @@ buttonpress(XEvent *e)
                 lft = selmon->ww - tbw * ntabs;
                 i = 0, x = -ev->x;
                 do
-                        x += i < lft ? tbw + 1 : tbw;
-                while (x <= 0 && ++i < ntabs);
+                        x += (++i <= lft) ? tbw + 1 : tbw;
+                while (x <= 0);
                 click = ClkTabBar;
                 arg.i = i + ofst;
         } else if ((c = wintoclient(ev->window))) {
@@ -615,7 +616,7 @@ buttonpress(XEvent *e)
 		XAllowEvents(dpy, ReplayPointer, CurrentTime);
 		click = ClkClientWin;
         }
-	for (int i = 0; i < LENGTH(buttons); i++)
+	for (i = 0; i < LENGTH(buttons); i++)
 		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
 		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)){
 			buttons[i].func(((click == ClkTagBar || click == ClkTabBar) &&
@@ -964,7 +965,7 @@ dirtomon(int dir)
 void
 drawbar(Monitor *m)
 {
-	int x, w, sx;
+	int x, w;
         int wbar = m->ww;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
@@ -981,7 +982,7 @@ drawbar(Monitor *m)
                 if (showsystray)
                         wbar -= (stw = getsystraywidth());
                 drw_setscheme(drw, scheme[SchemeStts]);
-                sx = x = wbar - wstext;
+                x = wbar - wstext;
                 drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
                 for (;;) {
                         if ((unsigned char)*ts > LENGTH(colors) + 10) {
@@ -994,15 +995,13 @@ drawbar(Monitor *m)
                                 x = drw_text(drw, x, 0, TTEXTW(tp), bh, 0, tp, 0);
                         if (ctmp == '\0')
                                 break;
-                        /* - 11 to compensate for + 10 above */
                         drw_setscheme(drw, scheme[ctmp - 11]);
                         *ts = ctmp;
                         tp = ++ts;
                 }
                 drw_setscheme(drw, scheme[SchemeStts]);
                 drw_rect(drw, x, 0, wbar - x, bh, 1, 1); /* to keep right padding clean */
-	} else
-                sx = wbar;
+	}
 
 	for (c = m->clients; c; c = c->next) {
                 if (c->ishidden && (c->tags & m->tagset[m->seltags]))
@@ -1027,11 +1026,16 @@ drawbar(Monitor *m)
                 snprintf(mltsymbol, sizeof mltsymbol, "%u %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
         else
                 snprintf(mltsymbol, sizeof mltsymbol, "%s %s", ATT(m)->symbol, m->ltsymbol);
-        m->blw = w = TEXTW(mltsymbol);
+        w = TEXTW(mltsymbol);
         drw_setscheme(drw, scheme[SchemeLtSm]);
-        m->btlw = x = drw_text(drw, x, 0, w, bh, lrpad / 2, mltsymbol, 0);
+        x = drw_text(drw, x, 0, w, bh, lrpad / 2, mltsymbol, 0);
 
-        w = sx - x - lrpad / 2; /* - lrpad / 2 for right padding */
+        if (m == selmon) {
+                blw = w, ble = x;
+                w = wbar - wstext - lrpad / 2 - x; /* - lrpad / 2 for right padding */
+        } else
+                w = wbar - lrpad / 2 - x; /* - lrpad / 2 for right padding */
+
         drw_setscheme(drw, scheme[SchemeNorm]);
         if (m->sel && w > bh) {
                 w = drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
@@ -1317,7 +1321,7 @@ focuswin(const Arg* arg)
         int i = arg->i;
         Client *c;
 
-        for (c = nexttiled(selmon->clients); c && i; c = nexttiled(c->next), i--);
+        for (c = nexttiled(selmon->clients); c && i > 1; c = nexttiled(c->next), i--);
         if (c) {
                 focusalt(c);
                 restack(selmon, 0);
@@ -1662,7 +1666,7 @@ motionnotify(XEvent *e)
         for (m = mons; m && m->barwin != ev->window; m = m->next);
         if (!m)
                 return;
-        if (m == selmon && ev->x >= selmon->btlw) {
+        if (m == selmon && ev->x >= ble) {
                 int x = selmon->ww - lrpad / 2 - ev->x;
 
                 if (showsystray)
