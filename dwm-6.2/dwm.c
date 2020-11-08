@@ -1052,9 +1052,7 @@ drawbar(Monitor *m)
 void
 drawbars(void)
 {
-	Monitor *m;
-
-	for (m = mons; m; m = m->next)
+	for (Monitor *m = mons; m; m = m->next)
 		drawbar(m);
 }
 
