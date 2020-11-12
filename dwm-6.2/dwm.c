@@ -1754,7 +1754,7 @@ moveprevtag(const Arg *arg)
                 selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << (selmon->pertag->prevtag - 1);
                 t = selmon->pertag->prevtag;
         } else {
-                selmon->sel->tags = selmon->tagset[selmon->seltags] = (~0 & TAGMASK);
+                selmon->sel->tags = selmon->tagset[selmon->seltags] = ~0 & TAGMASK;
                 t = 10;
         }
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
@@ -2425,26 +2425,24 @@ seturgent(Client *c, int urg)
 void
 shiftview(const Arg *arg)
 {
-        if (selmon->pertag->curtag) {
-                unsigned int activetags = 0;
-                Client *c;
-                Arg shifted;
+        unsigned int activetags = 0;
+        Arg shifted;
 
-                for (c = selmon->clients; c; c = c->next)
-                        activetags |= c->tags;
-                if (!activetags)
-                        return;
-                shifted.ui = 1 << (selmon->pertag->curtag - 1);
-                if (arg->i > 0)
-                        do
-                                shifted.ui = shifted.ui << 1 | (shifted.ui >> (LENGTH(tags) - 1));
-                        while (!(shifted.ui & activetags));
-                else
-                        do
-                                shifted.ui = shifted.ui >> 1 | (shifted.ui << (LENGTH(tags) - 1));
-                        while (!(shifted.ui & activetags));
-                view(&shifted);
-        }
+        if (!selmon->pertag->curtag)
+                return;
+        for (Client *c = selmon->clients; c; c = c->next)
+                activetags |= c->tags;
+        if (!activetags || activetags == (shifted.ui = 1 << (selmon->pertag->curtag - 1)))
+                return;
+        if (arg->i > 0)
+                do
+                        shifted.ui = shifted.ui << 1 | (shifted.ui >> (LENGTH(tags) - 1));
+                while (!(shifted.ui & activetags));
+        else
+                do
+                        shifted.ui = shifted.ui >> 1 | (shifted.ui << (LENGTH(tags) - 1));
+                while (!(shifted.ui & activetags));
+        view(&shifted);
 }
 
 void
