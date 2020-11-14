@@ -3406,14 +3406,14 @@ updatesystrayicongeom(Client *i, int w, int h)
         else if (h == SH)
                 i->w = w;
         else
-                i->w = (int) ((float)SH * ((float)w / (float)h));
+                i->w = (SH * w) / h;
         applysizehints(i, &(i->x), &(i->y), &(i->w), &(i->h), False);
         /* force icons into the systray dimensions if they don't want to */
         if (i->h > SH) {
                 if (i->w == i->h)
                         i->w = SH;
                 else
-                        i->w = (int) ((float)SH * ((float)i->w / (float)i->h));
+                        i->w = (SH * i->w) / i->h;
                 i->h = SH;
         }
 }
