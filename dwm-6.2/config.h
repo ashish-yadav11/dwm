@@ -42,10 +42,10 @@ static const char col_white1[]          = "#eeeeee";
 static const char col_white2[]          = "#dddddd";
 static const char col_red[]             = "#b21e19";
 static const char col1[]                = "#8fb4a6"; /* default icon color */
-static const char col2[]                = "#c3c26f"; /* warning icon color */
+static const char col2[]                = "#bebd82"; /* alternate icon color */
 static const char col3[]                = "#8d97cd"; /* mail block - frozen */
 static const char col4[]                = "#b399cd"; /* mail block - MAILSYNC started */
-static const char col5[]                = "#d29b88"; /* mail block - syncing */
+static const char col5[]                = "#cda091"; /* mail block - syncing */
 
 enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
        SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm, SchemeTray }; /* color schemes */
