@@ -1937,9 +1937,7 @@ resizeclient(Client *c, int x, int y, int w, int h)
 void
 resizemouse(const Arg *arg)
 {
-	int ocx, ocy, nw, nh;
-        int px, py;
-        float fpx, fpy;
+	int ocx, ocy, ocw, och, px, py, nw, nh;
 	Client *c;
 	Monitor *m;
 	XEvent ev;
@@ -1952,13 +1950,13 @@ resizemouse(const Arg *arg)
         restack(selmon, 1);
 	ocx = c->x;
 	ocy = c->y;
+        ocw = c->w;
+        och = c->h;
 	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
 		None, cursor[CurResize]->cursor, CurrentTime) != GrabSuccess)
 		return;
         if (!getwinptr(c->win, &px, &py))
 	        return;
-        fpx = (float)px / (float)c->w;
-        fpy = (float)py / (float)c->h;
 	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
 	do {
 		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
@@ -1987,9 +1985,7 @@ resizemouse(const Arg *arg)
 			break;
 		}
 	} while (ev.type != ButtonRelease);
-        px = c->w * fpx;
-        py = c->h * fpy;
-        XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, px, py);
+        XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, (px * c->w) / ocw , (py * c->h) / och);
 	XUngrabPointer(dpy, CurrentTime);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 	if ((m = recttomon(c->x, c->y, c->w, c->h)) != selmon) {
