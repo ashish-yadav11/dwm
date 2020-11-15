@@ -678,7 +678,7 @@ cleanupmon(Monitor *mon)
 	if (mon == mons)
 		mons = mons->next;
 	else {
-		for (m = mons; m && m->next != mon; m = m->next);
+                for (m = mons; m->next != mon; m = m->next);
 		m->next = mon->next;
 	}
 	XUnmapWindow(dpy, mon->barwin);
@@ -1868,8 +1868,7 @@ removesystrayicon(Client *i)
 	Client **ii;
 
 	for (ii = &systray->icons; *ii && *ii != i; ii = &(*ii)->next);
-	if (ii)
-		*ii = i->next;
+        *ii = i->next;
 	free(i);
 }
 
@@ -3129,10 +3128,10 @@ updategeom(void)
 		nn = j;
 		if (n <= nn) { /* new monitors available */
 			for (i = 0; i < (nn - n); i++) {
-				for (m = mons; m && m->next; m = m->next);
-				if (m)
+                                if (mons) {
+                                        for (m = mons; m->next; m = m->next);
 					m->next = createmon();
-				else
+                                } else
 					mons = createmon();
 			}
 			for (i = 0, m = mons; i < nn && m; m = m->next, i++)
@@ -3150,7 +3149,7 @@ updategeom(void)
 				}
 		} else { /* less monitors available nn < n */
 			for (i = nn; i < n; i++) {
-				for (m = mons; m && m->next; m = m->next);
+                                for (m = mons; m->next; m = m->next);
 				while ((c = m->clients)) {
 					dirty = 1;
 					m->clients = c->next;
