@@ -764,7 +764,7 @@ togglefocusarea(const Arg *arg)
         int curidx, inrel;
         Client *c, *i;
 
-        if (!selmon->sel || selmon->sel->isfloating)
+        if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
                 return;
         for (curidx = 0, i = nexttiled(selmon->clients);
              i != selmon->sel;
@@ -789,7 +789,7 @@ togglefocusfloat(const Arg *arg)
 {
         Client *c;
 
-        if (!selmon->sel)
+        if (!selmon->sel || !selmon->lt[selmon->sellt]->arrange)
                 return;
         if (selmon->sel->isfloating)
                 for (c = selmon->sel; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
