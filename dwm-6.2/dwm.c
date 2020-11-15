@@ -531,13 +531,13 @@ attachbelow(Client *c)
 void
 attachbottom(Client *c)
 {
-        Client *i = c->mon->clients;
+        Client *i;
 
-        for (; i && i->next; i = i->next);
         c->next = NULL;
-        if (i)
+        if (c->mon->clients) {
+                for (i = c->mon->clients; i->next; i = i->next);
                 i->next = c;
-        else
+        } else
                 c->mon->clients = c;
 }
 
