@@ -638,19 +638,33 @@ checkotherwm(void)
 void
 cleanup(void)
 {
-	Arg a = {.ui = ~0};
-	Layout foo = { "", NULL };
-        Client *c;
-	Monitor *m;
 	size_t i;
+        Arg v = {.ui = ~0}, lt = {.v = &layouts[1]};
+        Client *c, *s;
+	Monitor *m;
 
-	view(&a);
-	selmon->lt[selmon->sellt] = &foo;
-	for (m = mons; m; m = m->next)
+	view(&v);
+        setlayout(&lt);
+	for (m = mons; m; m = m->next) {
+                if (m == selmon)
+                        continue;
                 while (m->clients) {
                         for (c = m->clients; c->next; c = c->next);
-                        unmanage(c, 0);
+                        sendmon(c, selmon);
                 }
+        }
+        s = NULL;
+        for (c = selmon->clients; c; c = c->next) {
+                if (c->isfloating <= 0) {
+                        c->isfloating = 1;
+                        resize(c, c->sfx, c->sfy, c->sfw, c->sfh, 0);
+                }
+                c->snext = s;
+                s = c;
+        }
+        selmon->stack = s;
+        while (selmon->stack)
+                unmanage(selmon->stack, 0);
 	XUngrabKey(dpy, AnyKey, AnyModifier, root);
 	while (mons)
 		cleanupmon(mons);
@@ -2761,16 +2775,18 @@ togglefloating(const Arg *arg)
                         resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
                                selmon->sel->sfw, selmon->sel->sfh, 0);
                 else {
-                        /* save last known float dimensions */
+                        /* save current dimensions before resizing */
                         selmon->sel->sfx = selmon->sel->x;
                         selmon->sel->sfy = selmon->sel->y;
                         selmon->sel->sfw = selmon->sel->w;
                         selmon->sel->sfh = selmon->sel->h;
                 }
         } else
-                if (selmon->sel->isfloating)
+                if (selmon->sel->isfloating) {
+                        selmon->sel->isfloating = -1;
                         resize(selmon->sel, selmon->sel->x, selmon->sel->y,
                                 selmon->sel->w, selmon->sel->h, 0);
+                }
 	arrange(selmon);
 }
 
