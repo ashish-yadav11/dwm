@@ -827,8 +827,7 @@ winview(const Arg* arg)
 void
 zoomswap(const Arg *arg)
 {
-	Client *c;
-        Client *master, *at;
+	Client *nmc, *bnmc, *omc;
 
 	if (!selmon->sel)
 		return;
@@ -839,28 +838,30 @@ zoomswap(const Arg *arg)
                        selmon->sel->w, selmon->sel->h, 0);
                 return;
         }
-	if ((c = selmon->sel) == (master = nexttiled(selmon->clients))) {
-                for (c = c->snext; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
-                if (!c)
+        nmc = selmon->sel;
+        omc = nexttiled(selmon->clients);
+	if (nmc == omc) {
+                for (nmc = nmc->snext; nmc && (nmc->isfloating || !ISVISIBLE(nmc)); nmc = nmc->snext);
+                if (!nmc)
                         return;
+        } else {
+                Client **bomc;
+
+                /* make omc the "snext" without focusing it */
+                for (bomc = &omc->mon->stack; *bomc && *bomc != omc; bomc = &(*bomc)->snext);
+                *bomc = omc->snext;
+                attachstack(omc);
         }
-        for (at = selmon->clients; at && at->next != c; at = at->next);
-	detach(c);
-	attach(c);
-	/* swap windows instead of pushing the previous one down */
-	if (master && at && c != master && at != master) {
-                Client **tc;
-
-                /* make master the "snext" without focusing it */
-                for (tc = &master->mon->stack; *tc && *tc != master; tc = &(*tc)->snext);
-                *tc = master->snext;
-                attachstack(master);
-
-                detach(master);
-                master->next = at->next;
-                at->next = master;
+        for (bnmc = selmon->clients; bnmc->next != nmc; bnmc = bnmc->next);
+	detach(nmc);
+	attach(nmc);
+	/* swap nmc and omc instead of pushing the omc down */
+	if (bnmc != omc) {
+                detach(omc);
+                omc->next = bnmc->next;
+                bnmc->next = omc;
 	}
-	focusalt(c);
+	focusalt(nmc);
 	arrange(selmon);
 }
 
