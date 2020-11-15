@@ -2764,8 +2764,8 @@ togglebar(const Arg *arg)
 void
 togglefloating(const Arg *arg)
 {
-        if (!selmon->sel || !selmon->lt[selmon->sellt]->arrange)
-                return;
+	if (!selmon->sel)
+		return;
 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
