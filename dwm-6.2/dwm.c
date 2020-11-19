@@ -1018,7 +1018,7 @@ drawbar(Monitor *m)
 	}
 
 	for (c = m->clients; c; c = c->next) {
-                if (c->ishidden && (c->tags & m->tagset[m->seltags]))
+                if (c->ishidden && c->tags & m->tagset[m->seltags])
                         nhid++;
                 occ |= c->tags;
 		if (c->isurgent)
@@ -3052,7 +3052,7 @@ updateclientdesktop(Client *c)
 
         if (c->tags == (~0 & TAGMASK))
                 t = 10;
-        else if (selmon->pertag->curtag && (c->tags & 1 << (selmon->pertag->curtag - 1)))
+        else if (selmon->pertag->curtag && c->tags & 1 << (selmon->pertag->curtag - 1))
                 t = selmon->pertag->curtag;
         else {
                 for (t = 0; t < LENGTH(tags) && !(1 << t & c->tags); t++);

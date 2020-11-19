@@ -733,7 +733,7 @@ showfloating(const Arg *arg)
         Client *f = NULL; /* last focused hidden floating client */
 
         for (Client *c = selmon->stack; c; c = c->snext)
-                if (c->ishidden && (c->tags & selmon->tagset[selmon->seltags])) {
+                if (c->ishidden && c->tags & selmon->tagset[selmon->seltags]) {
                         if (!f)
                                 f = c;
                         c->ishidden = 0;
