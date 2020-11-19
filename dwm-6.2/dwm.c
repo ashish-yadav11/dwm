@@ -1111,7 +1111,7 @@ drawtabhelper(Monitor *m, int onlystack)
         lft = m->ww - tbw * ntabs; /* leftover pixels */
         for (i = 0; i < ntabs; c = nexttiled(c->next), i++) {
                 drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
-                                          c == m->sel ? SchemeSel :
+                                          c == selmon->sel ? SchemeSel :
                                           i % 2 == 0 ? SchemeNorm : SchemeStts]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, (i < lft ? tbw + 1 : tbw) - lrpad / 2, th, lrpad / 2, c->name, 0);
