@@ -134,12 +134,9 @@ static const char *const *scratchcmds[] = {
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
 
-#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", \
-        "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
-#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("inhibitsuspend0.sh"), NULL } }
-#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
-        SCRIPT("inhibitsuspend1.sh"), NULL } }
+#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
+#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend0.sh"), NULL } }
+#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend1.sh"), NULL } }
 
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
