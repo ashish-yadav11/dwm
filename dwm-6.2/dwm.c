@@ -2287,7 +2287,7 @@ setmfact(const Arg *arg)
 {
 	float f;
 
-	if (!arg || !selmon->lt[selmon->sellt]->arrange)
+	if (!selmon->lt[selmon->sellt]->arrange || selmon->lt[selmon->sellt]->arrange == monocle)
 		return;
 	f = arg->f < 1.0 ? arg->f + selmon->mfact : arg->f - 1.0;
 	if (f < 0.05 || f > 0.95)
@@ -2301,9 +2301,10 @@ setsplus(const Arg *arg)
 {
         int selidx = 0;
 
-	if (!arg || !selmon->sel || !selmon->lt[selmon->sellt]->arrange
-                 || selmon->lt[selmon->sellt]->arrange == monocle)
+	if (!selmon->lt[selmon->sellt]->arrange || selmon->lt[selmon->sellt]->arrange == monocle)
 		return;
+        if (!selmon->sel)
+                return;
         for (Client *c = nexttiled(selmon->clients); c != selmon->sel; c = nexttiled(c->next), selidx++);
         if (selmon->lt[selmon->sellt]->arrange == tile) {
                 if (selidx < selmon->nmaster) {

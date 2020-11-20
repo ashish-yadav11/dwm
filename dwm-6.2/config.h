@@ -387,9 +387,7 @@ floatmovex(const Arg *arg)
 {
         int nx, cw, mw;
 
-        if (!selmon->sel)
-                return;
-        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
@@ -409,9 +407,7 @@ floatmovey(const Arg *arg)
 {
         int ny, ch, mh;
 
-        if (!selmon->sel)
-                return;
-        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
@@ -431,9 +427,7 @@ floatresizeh(const Arg *arg)
 {
         int nh, cy, mh;
 
-        if (!selmon->sel)
-                return;
-        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
@@ -451,9 +445,7 @@ floatresizew(const Arg *arg)
 {
         int nw, cx, mw;
 
-        if (!selmon->sel)
-                return;
-        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange)
+        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
