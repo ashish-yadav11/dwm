@@ -141,8 +141,8 @@ static const char *const *scratchcmds[] = {
 #define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", \
         SCRIPT("inhibitsuspend1.sh"), NULL } }
 
-#define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && dunstify -r 4120 -t 1000 'data entry mode deactivated'")
-#define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && dunstify -r 4120 -t 0 'data entry mode activated'")
+#define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
+#define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
 
 static const Win browser = { .cmd = CMD0("brave"), .tag = 8, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 9, .scratchkey = -2 };
