@@ -126,13 +126,13 @@ static const char *const *scratchcmds[] = {
 #define SCRIPT1(name, arg) { .v = (const char*[]){ SCRIPT(name), arg, NULL } }
 #define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
 
-#define PACTLD { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "-5%", NULL } }
-#define PACTLI { .v = (const char*[]){ "pactl", "set-sink-volume", "0", "+5%", NULL } }
-#define PACTLM { .v = (const char*[]){ "pactl", "set-sink-mute", "0", "toggle", NULL } }
 #define REDSHIFTDEFAULT { .v = (const char*[]){ "redshift", "-x", NULL } }
 #define ROFIDRUN { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
+#define VOLUMEL { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
+#define VOLUMEM { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
+#define VOLUMER { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
 
 #define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
 #define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend0.sh"), NULL } }
@@ -289,9 +289,9 @@ static Key keys[] = {
 	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
 	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
 	{ MODLKEY,           XK_backslash,              hidevisiblescratch,     {0} },
-	{ 0,                 XF86XK_AudioMute,          spawn,                  PACTLM },
-	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  PACTLD },
-	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  PACTLI },
+	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
+	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  VOLUMEL },
+	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  VOLUMER },
 	{ 0,                 XF86XK_MonBrightnessDown,  spawn,                  SCRIPT0("btnsd.sh") },
 	{ 0,                 XF86XK_MonBrightnessUp,    spawn,                  SCRIPT0("btnsi.sh") },
 	{ ShiftMask,         XK_F2,                     spawn,                  SCRIPT0("btnsds.sh") },
