@@ -64,6 +64,9 @@
 #define ATT(M)                      (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
 #define SPLUS(M)                    (M->pertag->splus[M->pertag->curtag])
 
+#define STATUSLENGTH                256
+#define ROOTNAMELENGTH              320 /* fake signal + status */
+
 #define DSBLOCKSLOCKFILE            "/tmp/dsblocks.pid"
 
 #define SYSTEM_TRAY_REQUEST_DOCK    0
@@ -258,6 +261,7 @@ static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
 static void resizerequest(XEvent *e);
 static void restack(Monitor *m, int dbr);
+static void restorestatus(void);
 static void run(void);
 static void scan(void);
 static void scratchhide(const Arg *arg);
@@ -323,9 +327,8 @@ static void zoom(const Arg *arg);
 
 /* variables */
 static const char broken[] = "";
-static char stext[256];
-static char stextc[256];
-static char stexts[256];
+static char stextc[STATUSLENGTH];
+static char stexts[STATUSLENGTH];
 static int screen;
 static int sw, sh;              /* X display screen geometry width, height */
 static int bh, blw, ble, stw;   /* bar geometry */
@@ -682,6 +685,7 @@ cleanup(void)
 	XSync(dpy, False);
 	XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
 	XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+        restorestatus();
 }
 
 void
@@ -2048,6 +2052,25 @@ restack(Monitor *m, int dbr)
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
 }
 
+/* Checks for fake signal in root name and removes if there is one, restoring
+ * status text. */
+/* When sending fake signals, make sure to include the current status text after
+ * a newline character for this to work. */
+void
+restorestatus(void)
+{
+	char curstext[ROOTNAMELENGTH];
+        char *newstext;
+
+        if (!gettextprop(root, XA_WM_NAME, curstext, sizeof curstext))
+                return;
+        if (strncmp(curstext, FSIGID, FSIGIDLEN) != 0)
+                return;
+        for (newstext = curstext; *newstext != '\n' && *newstext != '\0'; newstext++);
+        if (*newstext != '\0' && *(++newstext) != '\0')
+                XStoreName(dpy, DefaultRootWindow(dpy), newstext);
+}
+
 void
 run(void)
 {
@@ -3292,10 +3315,9 @@ updatesizehints(Client *c)
 void
 updatestatus(void)
 {
-	char rawstext[256];
+	char rawstext[ROOTNAMELENGTH];
 
 	if (!gettextprop(root, XA_WM_NAME, rawstext, sizeof rawstext)) {
-                *stext = '\0';
                 strcpy(stextc, "dwm-"VERSION);
                 strcpy(stexts, stextc);
                 wstext = TEXTW(stextc);
@@ -3330,19 +3352,18 @@ updatestatus(void)
                         if (strncmp(sig, signals[i].sig, lensig) == 0 && signals[i].func)
                                 signals[i].func(&a);
 	} else {
-                char stextp[256];
-                char *st = stext, *stc = stextc, *sts = stexts, *stp = stextp;
+                char stextp[STATUSLENGTH];
+                char *stp = stextp, *stc = stextc, *sts = stexts;
 
                 for (char *rst = rawstext; *rst != '\0'; rst++) {
-                        *(st++) = *rst;
                         if ((unsigned char)*rst >= ' ')
-                                *(stc++) = *(sts++) = *(stp++) = *rst;
+                                *(stp++) = *(stc++) = *(sts++) = *rst;
                         else if ((unsigned char)*rst > 10)
                                 *(stc++) = *rst;
                         else
                                 *(sts++) = *rst;
                 }
-                *st = *stc = *sts = *stp = '\0';
+                *stp = *stc = *sts = '\0';
                 wstext = TEXTW(stextp);
                 drawbar(selmon);
         }
@@ -3654,7 +3675,6 @@ main(int argc, char *argv[])
 	scan();
 	run();
 	cleanup();
-        XStoreName(dpy, DefaultRootWindow(dpy), stext);
 	XCloseDisplay(dpy);
 	if (restart)
                 execvp(argv[0], argv);
