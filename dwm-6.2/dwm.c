@@ -3330,20 +3330,20 @@ updatestatus(void)
                         if (strncmp(sig, signals[i].sig, lensig) == 0 && signals[i].func)
                                 signals[i].func(&a);
 	} else {
-                char stextt[256];
-                char *st = stext, *stc = stextc, *sts = stexts, *stt = stextt;
+                char stextp[256];
+                char *st = stext, *stc = stextc, *sts = stexts, *stp = stextp;
 
-                for (char *rt = rawstext; *rt != '\0'; rt++) {
-                        *(st++) = *rt;
-                        if ((unsigned char)*rt >= ' ')
-                                *(stc++) = *(sts++) = *(stt++) = *rt;
-                        else if ((unsigned char)*rt > 10)
-                                *(stc++) = *rt;
+                for (char *rst = rawstext; *rst != '\0'; rst++) {
+                        *(st++) = *rst;
+                        if ((unsigned char)*rst >= ' ')
+                                *(stc++) = *(sts++) = *(stp++) = *rst;
+                        else if ((unsigned char)*rst > 10)
+                                *(stc++) = *rst;
                         else
-                                *(sts++) = *rt;
+                                *(sts++) = *rst;
                 }
-                *st = *stc = *sts = *stt = '\0';
-                wstext = TEXTW(stextt);
+                *st = *stc = *sts = *stp = '\0';
+                wstext = TEXTW(stextp);
                 drawbar(selmon);
         }
 }
