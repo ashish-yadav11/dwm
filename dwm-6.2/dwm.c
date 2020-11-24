@@ -330,7 +330,7 @@ static int screen;
 static int sw, sh;              /* X display screen geometry width, height */
 static int bh, blw, ble, stw;   /* bar geometry */
 static int th;                  /* tab bar geometry */
-static int lrpad;               /* sum of left and right padding for text */
+static int lrpad;               /* sum of left and right paddings for text */
 static int restart = 0;
 static int running = 1;
 static int wstext;
@@ -741,12 +741,12 @@ clientmessage(XEvent *e)
 			XAddToSaveSet(dpy, c->win);
                         XSelectInput(dpy, c->win, StructureNotifyMask|PropertyChangeMask|ResizeRedirectMask);
 			XReparentWindow(dpy, c->win, systray->win, 0, 0);
-			/* use parents background color */
+			/* use parent's background color */
                         swa.background_pixel = scheme[SchemeTray][ColBg].pixel;
 			XChangeWindowAttributes(dpy, c->win, CWBackPixel, &swa);
 			sendevent(c->win, netatom[Xembed], StructureNotifyMask, CurrentTime,
                                   XEMBED_EMBEDDED_NOTIFY, 0, systray->win, XEMBED_EMBEDDED_VERSION);
-			/* FIXME not sure if I have to send these events, too */
+			/* FIXME: not sure if I have to send these events too */
 			sendevent(c->win, netatom[Xembed], StructureNotifyMask, CurrentTime,
                                   XEMBED_FOCUS_IN, 0, systray->win, XEMBED_EMBEDDED_VERSION);
 			sendevent(c->win, netatom[Xembed], StructureNotifyMask, CurrentTime,
@@ -1107,7 +1107,7 @@ drawtabhelper(Monitor *m, int onlystack)
                 ntabs = MIN(m->ntiles, MAXTABS);
                 c = nexttiled(m->clients);
         }
-        tbw = m->ww / ntabs; /* provisional width of each tab */
+        tbw = m->ww / ntabs; /* provisional width for each tab */
         lft = m->ww - tbw * ntabs; /* leftover pixels */
         for (i = 0; i < ntabs; c = nexttiled(c->next), i++) {
                 drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
@@ -1349,7 +1349,7 @@ getatomprop(Client *c, Atom prop)
 	Atom da, atom = None;
 	Atom req = XA_ATOM;
 
-	/* FIXME getatomprop should return the number of items and a pointer to
+	/* FIXME: getatomprop should return the number of items and a pointer to
 	 * the stored data instead of this workaround */
 	if (prop == xatom[XembedInfo])
 		req = xatom[XembedInfo];
@@ -3302,7 +3302,7 @@ updatestatus(void)
                 drawbar(selmon);
                 return;
         }
-        /* Check if a fake signal was found, and if so handle it */
+        /* fake signal handler */
         if (strncmp(rawstext, FSIGID, FSIGIDLEN) == 0) {
                 int len, lensig, numarg;
                 char sig[MAXFSIGNAMELEN + 1], arg[MAXFSIGARGLEN + 1];
@@ -3329,7 +3329,6 @@ updatestatus(void)
                 for (int i = 0; i < LENGTH(signals); i++)
                         if (strncmp(sig, signals[i].sig, lensig) == 0 && signals[i].func)
                                 signals[i].func(&a);
-        /* update status if there was no fake signal */
 	} else {
                 char stextt[256];
                 char *st = stext, *stc = stextc, *sts = stexts, *stt = stextt;
@@ -3384,7 +3383,7 @@ updatesystray(void)
 		}
 	}
 	for (w = 0, i = systray->icons; i; i = i->next) {
-		/* make sure the background color stays the same */
+		/* prevent corruption of background color */
                 wa.background_pixel = scheme[SchemeTray][ColBg].pixel;
 		XChangeWindowAttributes(dpy, i->win, CWBackPixel, &wa);
 		XMapRaised(dpy, i->win);
@@ -3424,7 +3423,7 @@ updatesystrayicongeom(Client *i, int w, int h)
         else
                 i->w = (SH * w) / h;
         applysizehints(i, &(i->x), &(i->y), &(i->w), &(i->h), False);
-        /* force icons into the systray dimensions if they don't want to */
+        /* force icons into systray dimensions if they don't want to */
         if (i->h > SH) {
                 if (i->w == i->h)
                         i->w = SH;
