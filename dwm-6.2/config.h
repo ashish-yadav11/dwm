@@ -156,10 +156,10 @@ static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
 static void hidefloating(const Arg *arg);
-static void hidevisiblescratch(const Arg *arg);
 static Client *nextsamefloat(int next);
 static Client *nextvisible(int next);
 static void push(const Arg *arg);
+static void scratchhidevisible(const Arg *arg);
 static void showfloating(const Arg *arg);
 static void tagandview(const Arg *arg);
 static void togglefocusarea(const Arg *arg);
@@ -247,12 +247,12 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_period,      shiftview,              {.i = +1 } },
 	{ MODLKEY,                      XK_comma,       shiftview,              {.i = -1 } },
 	{ MODLKEY|ShiftMask,            XK_period,      hideclient,             {0} },
-	{ SUPKEY,                       XK_F1,          togglescratch,          {.i = 1} },
-	{ MODRKEY,                      XK_m,           togglescratch,          {.i = 2} },
-	{ SUPKEY,                       XK_p,           togglescratch,          {.i = 3} },
-	{ SUPKEY,                       XK_c,           togglescratch,          {.i = 4} },
-	{ SUPKEY,                       XK_s,           togglescratch,          {.i = 5} },
-	{ SUPKEY,                       XK_w,           togglescratch,          {.i = 6} },
+	{ SUPKEY,                       XK_F1,          scratchtoggle,          {.i = 1} },
+	{ MODRKEY,                      XK_m,           scratchtoggle,          {.i = 2} },
+	{ SUPKEY,                       XK_p,           scratchtoggle,          {.i = 3} },
+	{ SUPKEY,                       XK_c,           scratchtoggle,          {.i = 4} },
+	{ SUPKEY,                       XK_s,           scratchtoggle,          {.i = 5} },
+	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
@@ -288,7 +288,7 @@ static Key keys[] = {
 
 	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
 	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
-	{ MODLKEY,           XK_backslash,              hidevisiblescratch,     {0} },
+	{ MODLKEY,           XK_backslash,              scratchhidevisible,     {0} },
 	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
 	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  VOLUMEL },
 	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  VOLUMER },
@@ -375,7 +375,7 @@ static Signal signals[] = {
 	{ "quit",               quit },
 	{ "scrh",               scratchhide },
 	{ "scrs",               scratchshow },
-	{ "tscr",               togglescratch },
+	{ "scrt",               scratchtoggle },
 };
 
 /* custom function implementations */
@@ -594,21 +594,6 @@ hidefloating(const Arg *arg)
         arrange(selmon);
 }
 
-void
-hidevisiblescratch(const Arg *arg)
-{
-        unsigned long t = 0;
-
-        for (Client *c = selmon->clients; c; c = c->next)
-                if ((c->scratchkey > 0) && ISVISIBLE(c)) {
-                        c->tags = 0;
-                        XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                                        PropModeReplace, (unsigned char *) &t, 1);
-                }
-        focus(NULL);
-        arrange(selmon);
-}
-
 /* the following two functions assume non-NULL selmon->sel */
 Client *
 nextsamefloat(int next)
@@ -713,6 +698,21 @@ push(const Arg *arg)
                         pc->next = selmon->sel;
         } else
                 selmon->clients = selmon->sel;
+        arrange(selmon);
+}
+
+void
+scratchhidevisible(const Arg *arg)
+{
+        unsigned long t = 0;
+
+        for (Client *c = selmon->clients; c; c = c->next)
+                if ((c->scratchkey > 0) && ISVISIBLE(c)) {
+                        c->tags = 0;
+                        XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
+                                        PropModeReplace, (unsigned char *) &t, 1);
+                }
+        focus(NULL);
         arrange(selmon);
 }
 

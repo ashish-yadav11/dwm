@@ -265,7 +265,10 @@ static void restorestatus(void);
 static void run(void);
 static void scan(void);
 static void scratchhide(const Arg *arg);
+static void scratchhidehelper(void);
 static void scratchshow(const Arg *arg);
+static void scratchshowhelper(int key);
+static void scratchtoggle(const Arg *arg);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
 static void sendmon(Client *c, Monitor *m);
 static void setattach(const Arg *arg);
@@ -292,7 +295,6 @@ static void tile(Monitor *m);
 static void tiledeck(Monitor *m, int deck);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
-static void togglescratch(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void togglewin(const Arg *arg);
@@ -2112,29 +2114,39 @@ scan(void)
 void
 scratchhide(const Arg *arg)
 {
-        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
-                unsigned long t = 0;
+        if (selmon->sel && selmon->sel->scratchkey == arg->i)
+                scratchhidehelper();
+}
 
-                selmon->sel->tags = 0;
-                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) &t, 1);
-                focus(NULL);
-                arrange(selmon);
-        }
+void
+scratchhidehelper(void)
+{
+        unsigned long t = 0;
+
+        selmon->sel->tags = 0;
+        XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *) &t, 1);
+        focus(NULL);
+        arrange(selmon);
 }
 
 void
 scratchshow(const Arg *arg)
 {
+        if (!selmon->sel || selmon->sel->scratchkey != arg->i)
+                scratchshowhelper(arg->i);
+}
+
+void
+scratchshowhelper(int key)
+{
         Client *c;
 
-        if (selmon->sel && selmon->sel->scratchkey == arg->i)
-                return;
         for (Monitor *m = mons; m; m = m->next)
                 for (c = m->clients; c; c = c->next)
-                        if (c->scratchkey == arg->i)
+                        if (c->scratchkey == key)
                                 goto show;
-        spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
+        spawn(&((Arg){ .v = scratchcmds[key - 1] }));
         return;
 show:
         if (c->ishidden)
@@ -2149,6 +2161,15 @@ show:
         ATT(c->mon)->attach(c);
         focusalt(c);
         arrange(selmon);
+}
+
+void
+scratchtoggle(const Arg *arg)
+{
+        if (selmon->sel && selmon->sel->scratchkey == arg->i)
+                scratchhidehelper();
+        else
+                scratchshowhelper(arg->i);
 }
 
 int
@@ -2811,42 +2832,6 @@ togglefloating(const Arg *arg)
                                 selmon->sel->w, selmon->sel->h, 0);
                 }
 	arrange(selmon);
-}
-
-void
-togglescratch(const Arg *arg)
-{
-        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
-                unsigned long t = 0;
-
-                selmon->sel->tags = 0;
-                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) &t, 1);
-                focus(NULL);
-                arrange(selmon);
-        } else {
-                Client *c;
-
-                for (Monitor *m = mons; m; m = m->next)
-                        for (c = m->clients; c; c = c->next)
-                                if (c->scratchkey == arg->i)
-                                        goto show;
-                spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
-                return;
-show:
-                if (c->ishidden)
-                        c->ishidden = 0;
-                if (c->mon != selmon) {
-                        sendmon(c, selmon);
-                        return;
-                }
-                c->tags = selmon->tagset[selmon->seltags];
-                updateclientdesktop(c);
-                detach(c);
-                ATT(c->mon)->attach(c);
-                focusalt(c);
-                arrange(selmon);
-        }
 }
 
 void
