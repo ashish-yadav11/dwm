@@ -685,7 +685,6 @@ cleanup(void)
 	XSync(dpy, False);
 	XSetInputFocus(dpy, PointerRoot, RevertToPointerRoot, CurrentTime);
 	XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
-        restorestatus();
 }
 
 void
@@ -3675,6 +3674,7 @@ main(int argc, char *argv[])
 	scan();
 	run();
 	cleanup();
+        restorestatus();
 	XCloseDisplay(dpy);
 	if (restart)
                 execvp(argv[0], argv);
