@@ -2054,9 +2054,8 @@ restack(Monitor *m, int dbr)
 }
 
 /* Checks for fake signal in root name and removes if there is one, restoring
- * status text. */
-/* When sending fake signals, make sure to include the current status text after
- * a newline character for this to work. */
+ * status text. Make sure to include status text after a newline character
+ * whenever sending a fake signal. */
 void
 restorestatus(void)
 {
