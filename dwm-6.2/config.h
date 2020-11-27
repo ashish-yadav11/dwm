@@ -362,11 +362,11 @@ static Button buttons[] = {
 	{ ClkTagBar,            MODLKEY,        Button3,        toggletag,      {0} },
 };
 
-#define FSIGID "z:"
-#define FSIGIDLEN (sizeof FSIGID - 1)
+#define FSIGID                      "z:"
+#define FSIGIDLEN                   (LENGTH(FSIGID) - 1)
 /* set the following lengths without considering the terminating null byte */
-#define MAXFSIGNAMELEN 4
-#define MAXFSIGARGLEN 2
+#define MAXFSIGNAMELEN              4
+#define MAXFSIGARGLEN               2
 
 /* trigger signals using `xsetroot -name "FSIGID<signame> [<type> <value>]"` */
 /* signal definitions */
