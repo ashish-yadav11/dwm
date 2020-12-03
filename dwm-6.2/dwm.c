@@ -2068,8 +2068,8 @@ restorestatus(void)
         if (strncmp(curstext, FSIGID, FSIGIDLEN) != 0)
                 return;
         for (newstext = curstext; *newstext != '\n' && *newstext != '\0'; newstext++);
-        if (*newstext != '\0' && *(++newstext) != '\0')
-                XStoreName(dpy, DefaultRootWindow(dpy), newstext);
+        if (*newstext != '\0')
+                XStoreName(dpy, DefaultRootWindow(dpy), ++newstext);
 }
 
 void
