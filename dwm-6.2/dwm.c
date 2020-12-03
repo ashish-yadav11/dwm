@@ -283,6 +283,7 @@ static void setmfact(const Arg *arg);
 static void setsplus(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
+static void shifttag(const Arg *arg);
 static void shiftview(const Arg *arg);
 static void showhide(Client *c);
 static void sigchld(int unused);
@@ -2472,6 +2473,22 @@ seturgent(Client *c, int urg)
 	wmh->flags = urg ? (wmh->flags | XUrgencyHint) : (wmh->flags & ~XUrgencyHint);
 	XSetWMHints(dpy, c->win, wmh);
 	XFree(wmh);
+}
+
+void
+shifttag(const Arg *arg)
+{
+        Arg shifted;
+
+        if (!selmon->pertag->curtag)
+                return;
+        if (arg->i > 0)
+                shifted.ui = selmon->pertag->curtag == LENGTH(tags) ?
+                        1 << 0 : 1 << (selmon->pertag->curtag);
+        else
+                shifted.ui = selmon->pertag->curtag == 1 ?
+                        1 << (LENGTH(tags) - 1) : 1 << (selmon->pertag->curtag - 2);
+        view(&shifted);
 }
 
 void
