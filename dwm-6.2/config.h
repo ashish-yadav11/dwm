@@ -1,11 +1,11 @@
 /* See LICENSE file for copyright and license details. */
 
 /* maximum number of tabs to show */
-#define MAXTABS                     15
+#define MAXTABS                         15
 /* minimum allowed vertical height of a window when resizing with setsplus */
-#define MINWINHEIGHT                26
+#define MINWINHEIGHT                    26
 /* systray icon height, change to bh to keep it equal to font height */
-#define SH                          16
+#define SH                              16
 
 typedef struct {
         const Arg cmd;
@@ -364,11 +364,11 @@ static Button buttons[] = {
 	{ ClkTagBar,            MODLKEY,        Button3,        toggletag,      {0} },
 };
 
-#define FSIGID                      "z:"
-#define FSIGIDLEN                   (LENGTH(FSIGID) - 1)
+#define FSIGID                          "z:"
+#define FSIGIDLEN                       (LENGTH(FSIGID) - 1)
 /* set the following lengths without considering the terminating null byte */
-#define MAXFSIGNAMELEN              4
-#define MAXFSIGARGLEN               2
+#define MAXFSIGNAMELEN                  4
+#define MAXFSIGARGLEN                   2
 
 /* trigger signals using `xsetroot -name "FSIGID<signame> [<type> <value>]"` */
 /* signal definitions */
