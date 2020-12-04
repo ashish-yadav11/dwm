@@ -3354,14 +3354,13 @@ updatestatus(void)
                 char stextp[STATUSLENGTH];
                 char *stp = stextp, *stc = stextc, *sts = stexts;
 
-                for (char *rst = rawstext; *rst != '\0'; rst++) {
+                for (char *rst = rawstext; *rst != '\0'; rst++)
                         if ((unsigned char)*rst >= ' ')
                                 *(stp++) = *(stc++) = *(sts++) = *rst;
                         else if ((unsigned char)*rst > 10)
                                 *(stc++) = *rst;
                         else
                                 *(sts++) = *rst;
-                }
                 *stp = *stc = *sts = '\0';
                 wstext = TEXTW(stextp);
                 drawbar(selmon);
