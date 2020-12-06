@@ -907,9 +907,14 @@ applyrules(Client *c)
 	class = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name ? ch.res_name : broken;
 
-        if (strcmp(instance, "scratch_Termite") == 0) {
+        if (strcmp(instance, "calcurse_Termite") == 0) {
                 c->isfloating = 1;
-                markscratch(c, 1);
+                markscratch(c, 4);
+                c->w = 950;
+                c->h = 650;
+                center(c);
+        } else if (strcmp(instance, "floating_Termite") == 0) {
+                c->isfloating = 1;
                 c->w = 750;
                 c->h = 450;
                 center(c);
@@ -921,31 +926,14 @@ applyrules(Client *c)
                 c->w = 750;
                 c->h = 450;
                 center(c);
-        } else if (strcmp(instance, "calcurse_Termite") == 0) {
+        } else if (strcmp(instance, "scratch_Termite") == 0) {
                 c->isfloating = 1;
-                markscratch(c, 4);
-                c->w = 950;
-                c->h = 650;
-                center(c);
-        } else if (strcmp(instance, "floating_Termite") == 0) {
-                c->isfloating = 1;
+                markscratch(c, 1);
                 c->w = 750;
                 c->h = 450;
                 center(c);
-        /* windows to be made floating and centered */
-        } else if (strstr(class, "Yad") ||
-                   strcmp(class, "Sxiv") == 0 ||
-                   strcmp(c->name, "Event Tester") == 0 ||
-                   strcmp(class, "Matplotlib") == 0 ||
-                   strcmp(class, "Ristretto") == 0 ||
-                   strcmp(class, "Woeusbgui") == 0) {
-                c->isfloating = 1;
-                center(c);
-        /* windows to be made floating and have 0 border */
-        } else if (strcmp(class, "Gnome-screenshot") == 0) {
-                c->isfloating = 1;
-                c->bw = 0;
-        /* windows generally opened once */
+        } else if (strcmp(instance, "brave-browser") == 0) {
+                markscratch(c, -1);
         } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
                 c->isfloating = 1;
                 markscratch(c, 2);
@@ -953,8 +941,6 @@ applyrules(Client *c)
                 c->w = 950;
                 c->h = 626;
                 center(c);
-        } else if (strcmp(instance, "brave-browser") == 0) {
-                markscratch(c, -1);
         } else if (strcmp(class, "Signal") == 0) {
                 c->isfloating = 1;
                 markscratch(c, 5);
@@ -966,6 +952,13 @@ applyrules(Client *c)
                 markscratch(c, 6);
                 c->w = 770;
                 c->h = 555;
+                center(c);
+        } else if (strcmp(class, "Sxiv") == 0 ||
+                   strstr(class, "Yad") ||
+                   strcmp(class, "Matplotlib") == 0 ||
+                   strcmp(class, "Woeusbgui") == 0 ||
+                   strcmp(c->name, "Event Tester") == 0) {
+                c->isfloating = 1;
                 center(c);
         } else if (strcmp(c->name, "Picture in picture") == 0 ||
                    strcmp(c->name, "Picture-in-Picture") == 0) {
