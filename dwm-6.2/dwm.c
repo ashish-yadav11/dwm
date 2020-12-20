@@ -989,7 +989,7 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, nhid = 0, occ = 0, urg = 0;
-        char mltsymbol[28];
+        char halsymbol[43]; /* 10 + 1 + 15 + 1 + 15 + 1 */
 	Client *c;
 
 	/* draw status first so it can be overdrawn by tags later */
@@ -1042,12 +1042,12 @@ drawbar(Monitor *m)
 	}
 
         if (nhid)
-                snprintf(mltsymbol, sizeof mltsymbol, "%u %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
+                snprintf(halsymbol, sizeof halsymbol, "%u %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
         else
-                snprintf(mltsymbol, sizeof mltsymbol, "%s %s", ATT(m)->symbol, m->ltsymbol);
-        w = TEXTW(mltsymbol);
+                snprintf(halsymbol, sizeof halsymbol, "%s %s", ATT(m)->symbol, m->ltsymbol);
+        w = TEXTW(halsymbol);
         drw_setscheme(drw, scheme[SchemeLtSm]);
-        x = drw_text(drw, x, 0, w, bh, lrpad / 2, mltsymbol, 0);
+        x = drw_text(drw, x, 0, w, bh, lrpad / 2, halsymbol, 0);
 
         if (m == selmon) {
                 blw = w, ble = x;
