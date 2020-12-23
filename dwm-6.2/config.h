@@ -43,9 +43,8 @@ static const char col_white2[]          = "#dddddd";
 static const char col_red[]             = "#b21e19";
 static const char col1[]                = "#8fb4a6"; /* default icon color */
 static const char col2[]                = "#bebd82"; /* alternate icon color */
-static const char col3[]                = "#8d97cd"; /* mail block - frozen */
-static const char col4[]                = "#b399cd"; /* mail block - MAILSYNC started */
-static const char col5[]                = "#cda091"; /* mail block - syncing */
+static const char col3[]                = "#cda091"; /* mail block - syncing */
+static const char col4[]                = "#9e95cd"; /* mail block - frozen */
 
 enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
        SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm, SchemeTray }; /* color schemes */
@@ -57,7 +56,6 @@ static const char *colors[][3] = {
 	[SchemeCol2]    = { col2,         col_black,      col_gray2 },
 	[SchemeCol3]    = { col3,         col_black,      col_gray2 },
 	[SchemeCol4]    = { col4,         col_black,      col_gray2 },
-	[SchemeCol5]    = { col5,         col_black,      col_gray2 },
 	[SchemeNorm]    = { col_white1,   col_gray1,      col_gray2 },
 	[SchemeSel]     = { col_white1,   col_cyan,       col_cyan },
 	[SchemeUrg]     = { col_white1,   col_red,        col_red },
