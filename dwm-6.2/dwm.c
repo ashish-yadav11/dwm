@@ -188,6 +188,7 @@ struct Systray {
 };
 
 /* function declarations */
+static void applycurtagsettings(void);
 static void applyrules(Client *c); /* defined in config.h */
 static int applysizehints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void arrange(Monitor *m);
@@ -1248,20 +1249,11 @@ focusclient(Client *c, unsigned int tag)
                 updateclientdesktop(c);
         }
         resetifempty(selmon->pertag->curtag);
-
         selmon->seltags ^= 1; /* toggle sel tagset */
         selmon->tagset[selmon->seltags] = 1 << tag & TAGMASK;
-
         selmon->pertag->prevtag = selmon->pertag->curtag;
         selmon->pertag->curtag = tag + 1;
-        selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag];
-        selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag];
-        selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag];
-        selmon->lt[selmon->sellt] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt];
-        selmon->lt[selmon->sellt^1] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt^1];
-
-        if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
-                togglebar(NULL);
+        applycurtagsettings();
 
         focusalt(c);
         arrange(selmon);
@@ -1782,15 +1774,7 @@ moveprevtag(const Arg *arg)
         tmptag = selmon->pertag->prevtag;
         selmon->pertag->prevtag = selmon->pertag->curtag;
         selmon->pertag->curtag = tmptag;
-
-	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag];
-	selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag];
-	selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag];
-	selmon->lt[selmon->sellt] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt];
-	selmon->lt[selmon->sellt^1] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt^1];
-
-	if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
-		togglebar(NULL);
+        applycurtagsettings();
 
 	arrange(selmon);
 }
@@ -2902,16 +2886,7 @@ toggleview(const Arg *arg)
                         selmon->pertag->curtag = i + 1;
                 }
         selmon->tagset[selmon->seltags] = newtagset;
-
-        /* apply settings for this view */
-        selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag];
-        selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag];
-        selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag];
-        selmon->lt[selmon->sellt] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt];
-        selmon->lt[selmon->sellt^1] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt^1];
-
-        if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
-                togglebar(NULL);
+        applycurtagsettings();
 
         focus(NULL);
         arrange(selmon);
@@ -3253,6 +3228,19 @@ updateselmon(Monitor *m)
 }
 
 void
+applycurtagsettings(void)
+{
+	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag];
+	selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag];
+	selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag];
+	selmon->lt[selmon->sellt] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt];
+	selmon->lt[selmon->sellt^1] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt^1];
+
+	if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
+		togglebar(NULL);
+}
+
+void
 updatenumlockmask(void)
 {
 	unsigned int i, j;
@@ -3545,16 +3533,7 @@ view(const Arg *arg)
 		selmon->pertag->prevtag = selmon->pertag->curtag;
 		selmon->pertag->curtag = tmptag;
 	}
-
-	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag];
-	selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag];
-	selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag];
-	selmon->lt[selmon->sellt] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt];
-	selmon->lt[selmon->sellt^1] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt^1];
-
-	if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
-		togglebar(NULL);
-
+        applycurtagsettings();
 	focus(NULL);
 	arrange(selmon);
 }
