@@ -159,7 +159,6 @@ static Client *nextvisible(int next);
 static void push(const Arg *arg);
 static void scratchhidevisible(const Arg *arg);
 static void showfloating(const Arg *arg);
-static void tagandview(const Arg *arg);
 static void togglefocusarea(const Arg *arg);
 static void togglefocusfloat(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
@@ -732,19 +731,6 @@ showfloating(const Arg *arg)
         if (f) {
                 focusalt(f);
                 arrange(selmon);
-        }
-}
-
-void
-tagandview(const Arg *arg)
-{
-        if (selmon->sel && (1 << arg->ui) != selmon->tagset[selmon->seltags]) {
-                unsigned long t = arg->ui + 1;
-
-                selmon->sel->tags = 1 << arg->ui;
-                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) &t, 1);
-                focusclient(selmon->sel, arg->ui + 1);
         }
 }
 
