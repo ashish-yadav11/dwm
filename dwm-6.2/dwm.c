@@ -2911,7 +2911,7 @@ toggleview(const Arg *arg)
         selmon->lt[selmon->sellt^1] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt^1];
 
         if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
-            togglebar(NULL);
+                togglebar(NULL);
 
         focus(NULL);
         arrange(selmon);
