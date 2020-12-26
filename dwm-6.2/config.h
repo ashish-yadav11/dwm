@@ -86,7 +86,7 @@ static const Layout layouts[] = {
 	/* symbol       arrange function        default attach */
 	{ "[ ]=",       tile,                   &attachs[0] },
 	{ "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
-	{ "[M]",        monocle,                &attachs[1] },
+	{ "[T]",        monocle,                &attachs[1] },
 	{ "[D]",        deck,                   &attachs[1] },
 };
 
