@@ -18,16 +18,17 @@
 #define BETWEEN(X, A, B)        ({ \
                                         __auto_type __X = (X); \
 \
-                                        A <= __X && __X <= B; \
+                                        (A) <= __X && __X <= (B); \
                                 })
 #define SWAP(A, B)              ({ \
                                         __auto_type __A = (A); \
 \
-                                        A = B; B = __A; \
+                                        (A) = (B); \
+                                        (B) = __A; \
                                 })
 
-#define STR_HELPER(x)           #x
-#define STR(x)                  STR_HELPER(x)
+#define STR_HELPER(X)           #X
+#define STR(X)                  STR_HELPER(X)
 
 void die(const char *fmt, ...);
 void *ecalloc(size_t nmemb, size_t size);
