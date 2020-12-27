@@ -1899,7 +1899,7 @@ resettagifempty(unsigned int tag)
         selmon->pertag->ltidxs[tag][0] = selmon->pertag->ltidxs[tag][1] = &layouts[def_layouts[tag]];
         selmon->pertag->showbars[tag] = showbar;
         /* custom */
-        selmon->pertag->attidxs[tag][0] = selmon->pertag->attidxs[tag][0] = &attachs[def_attachs[tag]];
+        selmon->pertag->attidxs[tag][0] = selmon->pertag->attidxs[tag][1] = &attachs[def_attachs[tag]];
         selmon->pertag->showtabs[tag] = showtab;
         selmon->pertag->splus[tag][0] = selmon->pertag->splus[tag][1] = selmon->pertag->splus[tag][2] = 0;
 }
