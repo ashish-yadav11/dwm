@@ -1602,7 +1602,6 @@ manage(Window w, XWindowAttributes *wa)
 	arrange(c->mon);
 	XMapWindow(dpy, c->win);
 	focus(NULL);
-	/* set clients tag as current desktop (_NET_WM_DESKTOP) */
 	updateclientdesktop(c);
 }
 
