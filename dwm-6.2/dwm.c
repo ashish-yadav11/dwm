@@ -1262,14 +1262,12 @@ focusclient(Client *c, unsigned int tag)
                 c->ishidden = 0;
                 updateclientdesktop(c);
         }
-        resettagifempty(selmon->pertag->curtag);
-
-        selmon->seltags ^= 1; /* toggle sel tagset */
+        selmon->seltags ^= 1;
         selmon->tagset[selmon->seltags] = 1 << tag & TAGMASK;
+        resettagifempty(selmon->pertag->curtag);
         selmon->pertag->prevtag = selmon->pertag->curtag;
         selmon->pertag->curtag = tag + 1;
         applycurtagsettings();
-
         focusalt(c);
         arrange(selmon);
 }
@@ -1773,9 +1771,7 @@ moveprevtag(const Arg *arg)
 
         if (!selmon->sel || selmon->pertag->prevtag == selmon->pertag->curtag)
                 return;
-        resettagifempty(selmon->pertag->curtag);
-
-	selmon->seltags ^= 1; /* toggle sel tagset */
+	selmon->seltags ^= 1;
         if (selmon->pertag->prevtag) {
                 selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << (selmon->pertag->prevtag - 1);
                 t = selmon->pertag->prevtag;
@@ -1785,12 +1781,11 @@ moveprevtag(const Arg *arg)
         }
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
-
+        resettagifempty(selmon->pertag->curtag);
         tmptag = selmon->pertag->prevtag;
         selmon->pertag->prevtag = selmon->pertag->curtag;
         selmon->pertag->curtag = tmptag;
         applycurtagsettings();
-
 	arrange(selmon);
 }
 
@@ -1901,12 +1896,10 @@ resettagifempty(unsigned int tag)
                 return;
         selmon->pertag->nmasters[tag] = nmaster;
         selmon->pertag->mfacts[tag] = mfact;
-        selmon->sellt = selmon->pertag->sellts[tag] ^= 1;
-        selmon->pertag->ltidxs[tag][selmon->sellt] = &layouts[def_layouts[tag]];
+        selmon->pertag->ltidxs[tag][0] = selmon->pertag->ltidxs[tag][1] = &layouts[def_layouts[tag]];
         selmon->pertag->showbars[tag] = showbar;
         /* custom */
-        selmon->pertag->selatts[tag] ^= 1;
-        selmon->pertag->attidxs[tag][selmon->pertag->selatts[tag]] = &attachs[def_attachs[tag]];
+        selmon->pertag->attidxs[tag][0] = selmon->pertag->attidxs[tag][0] = &attachs[def_attachs[tag]];
         selmon->pertag->showtabs[tag] = showtab;
         selmon->pertag->splus[tag][0] = selmon->pertag->splus[tag][1] = selmon->pertag->splus[tag][2] = 0;
 }
@@ -2602,7 +2595,7 @@ swaptags(const Arg *arg)
                         XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                                         PropModeReplace, (unsigned char *) &newtag, 1);
                 }
-        selmon->seltags ^= 1; /* toggle sel tagset */
+        selmon->seltags ^= 1;
         selmon->tagset[selmon->seltags] = newtags;
         /* pertag swaps */
         SWAP(selmon->pertag->nmasters[newtag],
@@ -2921,7 +2914,6 @@ toggleview(const Arg *arg)
                 }
         selmon->tagset[selmon->seltags] = newtagset;
         applycurtagsettings();
-
         focus(NULL);
         arrange(selmon);
 }
@@ -3532,7 +3524,6 @@ view(const Arg *arg)
 	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
 		return;
         resettagifempty(selmon->pertag->curtag);
-
 	selmon->seltags ^= 1; /* toggle sel tagset */
 	if (arg->ui & TAGMASK) {
 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
