@@ -1766,7 +1766,6 @@ movemouse(const Arg *arg)
 void
 moveprevtag(const Arg *arg)
 {
-	unsigned int tmptag;
         unsigned long t;
 
         if (!selmon->sel)
@@ -1782,9 +1781,7 @@ moveprevtag(const Arg *arg)
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
         resettagifempty(selmon->pertag->curtag);
-        tmptag = selmon->pertag->prevtag;
-        selmon->pertag->prevtag = selmon->pertag->curtag;
-        selmon->pertag->curtag = tmptag;
+        SWAP(selmon->pertag->prevtag, selmon->pertag->curtag);
         applycurtagsettings();
 	arrange(selmon);
 }
@@ -3535,12 +3532,8 @@ view(const Arg *arg)
 			for (i = 0; !(arg->ui & 1 << i); i++);
 			selmon->pertag->curtag = i + 1;
 		}
-	} else {
-                unsigned int tmptag = selmon->pertag->prevtag;
-
-		selmon->pertag->prevtag = selmon->pertag->curtag;
-		selmon->pertag->curtag = tmptag;
-	}
+	} else
+                SWAP(selmon->pertag->prevtag, selmon->pertag->curtag);
         applycurtagsettings();
 	focus(NULL);
 	arrange(selmon);
