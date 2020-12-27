@@ -67,6 +67,7 @@
 #define STATUSLENGTH                    256
 #define ROOTNAMELENGTH                  320 /* fake signal + status */
 #define DSBLOCKSLOCKFILE                "/tmp/dsblocks.pid"
+#define DELIMITERENDCHAR                10
 
 #define SYSTEM_TRAY_REQUEST_DOCK        0
 
@@ -1019,7 +1020,7 @@ drawbar(Monitor *m)
                 x = wbar - wstext;
                 drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
                 for (;;) {
-                        if ((unsigned char)*ts > LENGTH(colors) + 10) {
+                        if ((unsigned char)*ts > LENGTH(colors) + DELIMITERENDCHAR) {
                                 ts++;
                                 continue;
                         }
@@ -1029,7 +1030,7 @@ drawbar(Monitor *m)
                                 x = drw_text(drw, x, 0, TTEXTW(tp), bh, 0, tp, 0);
                         if (ctmp == '\0')
                                 break;
-                        drw_setscheme(drw, scheme[ctmp - 11]);
+                        drw_setscheme(drw, scheme[ctmp - DELIMITERENDCHAR - 1]);
                         *ts = ctmp;
                         tp = ++ts;
                 }
@@ -2533,11 +2534,11 @@ sigdsblocks(const Arg *arg)
 {
         int fd;
         struct flock fl;
-	union sigval sv;
+        union sigval sv;
 
         if (!dsblockssig)
                 return;
-	sv.sival_int = (dsblockssig << 8) | arg->i;
+        sv.sival_int = (dsblockssig << 8) | arg->i;
         fd = open(DSBLOCKSLOCKFILE, O_RDONLY);
         if (fd == -1)
                 return;
@@ -3109,7 +3110,7 @@ updatedsblockssig(int x)
         char ctmp;
 
         while (*ts != '\0') {
-                if ((unsigned char)*ts > 10) {
+                if ((unsigned char)*ts > DELIMITERENDCHAR) {
                         ts++;
                         continue;
                 }
@@ -3118,7 +3119,7 @@ updatedsblockssig(int x)
                 x += TTEXTW(tp);
                 *ts = ctmp;
                 if (x > 0) {
-                        if (ctmp == 10)
+                        if (ctmp == DELIMITERENDCHAR)
                                 goto cursorondelim;
                         if (!selmon->statushandcursor) {
                                 selmon->statushandcursor = 1;
@@ -3351,7 +3352,7 @@ updatestatus(void)
                 for (char *rst = rawstext; *rst != '\0'; rst++)
                         if ((unsigned char)*rst >= ' ')
                                 *(stp++) = *(stc++) = *(sts++) = *rst;
-                        else if ((unsigned char)*rst > 10)
+                        else if ((unsigned char)*rst > DELIMITERENDCHAR)
                                 *(stc++) = *rst;
                         else
                                 *(sts++) = *rst;
