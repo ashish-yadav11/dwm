@@ -397,8 +397,8 @@ applycurtagsettings(void)
 	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag];
 	selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag];
 	selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag];
-	selmon->lt[selmon->sellt] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt];
-	selmon->lt[selmon->sellt^1] = selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt^1];
+	selmon->lt[0] = selmon->pertag->ltidxs[selmon->pertag->curtag][0];
+	selmon->lt[1] = selmon->pertag->ltidxs[selmon->pertag->curtag][1];
 
 	if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
 		togglebar(NULL);
@@ -2601,19 +2601,19 @@ swaptags(const Arg *arg)
              selmon->pertag->mfacts[selmon->pertag->curtag]);
         SWAP(selmon->pertag->sellts[newtag],
              selmon->pertag->sellts[selmon->pertag->curtag]);
-        SWAP(selmon->pertag->ltidxs[newtag][selmon->pertag->sellts[newtag]],
-             selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->pertag->sellts[selmon->pertag->curtag]]);
-        SWAP(selmon->pertag->ltidxs[newtag][selmon->pertag->sellts[newtag]^1],
-             selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->pertag->sellts[selmon->pertag->curtag]^1]);
+        SWAP(selmon->pertag->ltidxs[newtag][0],
+             selmon->pertag->ltidxs[selmon->pertag->curtag][0]);
+        SWAP(selmon->pertag->ltidxs[newtag][1],
+             selmon->pertag->ltidxs[selmon->pertag->curtag][1]);
         SWAP(selmon->pertag->showbars[newtag],
              selmon->pertag->showbars[selmon->pertag->curtag]);
         /* custom pertag swaps */
         SWAP(selmon->pertag->selatts[newtag],
              selmon->pertag->selatts[selmon->pertag->curtag]);
-        SWAP(selmon->pertag->attidxs[newtag][selmon->pertag->selatts[newtag]],
-             selmon->pertag->attidxs[selmon->pertag->curtag][selmon->pertag->selatts[selmon->pertag->curtag]]);
-        SWAP(selmon->pertag->attidxs[newtag][selmon->pertag->selatts[newtag]^1],
-             selmon->pertag->attidxs[selmon->pertag->curtag][selmon->pertag->selatts[selmon->pertag->curtag]^1]);
+        SWAP(selmon->pertag->attidxs[newtag][0],
+             selmon->pertag->attidxs[selmon->pertag->curtag][0]);
+        SWAP(selmon->pertag->attidxs[newtag][1],
+             selmon->pertag->attidxs[selmon->pertag->curtag][1]);
         SWAP(selmon->pertag->showtabs[newtag],
              selmon->pertag->showtabs[selmon->pertag->curtag]);
         SWAP(selmon->pertag->splus[newtag][0],
