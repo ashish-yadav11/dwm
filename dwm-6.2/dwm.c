@@ -299,7 +299,7 @@ static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void togglewin(const Arg *arg);
-static void unfocus(Client *c, int setfocus);
+static void unfocus(Client *c);
 static void unmanage(Client *c, int destroyed);
 static void unmapnotify(XEvent *e);
 static void updatebarpos(Monitor *m);
@@ -581,7 +581,7 @@ buttonpress(XEvent *e)
 	/* focus monitor if necessary */
 	if ((m = wintomon(ev->window)) && m != selmon) {
                 dirty = 1;
-		unfocus(selmon->sel, 1);
+		unfocus(selmon->sel);
                 updateselmon(m);
 		focus(NULL);
 	}
@@ -1160,7 +1160,7 @@ enternotify(XEvent *e)
 	c = wintoclient(ev->window);
 	m = c ? c->mon : wintomon(ev->window);
 	if (m != selmon) {
-		unfocus(selmon->sel, 1);
+		unfocus(selmon->sel);
                 updateselmon(m);
 	} else if (!c || c == selmon->sel)
 		return;
@@ -1188,7 +1188,7 @@ focus(Client *c)
 	if (!c || !ISVISIBLE(c))
 		for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext);
 	if (selmon->sel && selmon->sel != c)
-		unfocus(selmon->sel, 0);
+		unfocus(selmon->sel);
 	if (c) {
 		if (c->mon != selmon)
                         updateselmon(c->mon);
@@ -1213,7 +1213,7 @@ void
 focusalt(Client *c)
 {
         if (selmon->sel && selmon->sel != c)
-                unfocus(selmon->sel, 0);
+                unfocus(selmon->sel);
         detachstack(c);
         attachstack(c);
         grabbuttons(c, 1);
@@ -1228,7 +1228,7 @@ void
 focusclient(Client *c, unsigned int tag)
 {
         if (c->mon != selmon) {
-		unfocus(selmon->sel, 1);
+                unfocus(selmon->sel);
                 updateselmon(c->mon);
         }
         if (c->isurgent)
@@ -1304,7 +1304,7 @@ focusmon(const Arg *arg)
 		return;
 	if ((m = dirtomon(arg->i)) == selmon)
 		return;
-	unfocus(selmon->sel, 0);
+	unfocus(selmon->sel);
         updateselmon(m);
 	focus(NULL);
 }
@@ -1597,7 +1597,7 @@ manage(Window w, XWindowAttributes *wa)
 	XMoveResizeWindow(dpy, c->win, c->x + 2 * sw, c->y, c->w, c->h); /* some windows require this */
 	setclientstate(c, NormalState);
 	if (c->mon == selmon)
-		unfocus(selmon->sel, 0);
+		unfocus(selmon->sel);
 	c->mon->sel = c;
 	arrange(c->mon);
 	XMapWindow(dpy, c->win);
@@ -1672,7 +1672,7 @@ motionnotify(XEvent *e)
 	if (ev->window != root)
 		return;
 	if ((m = recttomon(ev->x_root, ev->y_root, 1, 1)) != mon && mon) {
-		unfocus(selmon->sel, 1);
+		unfocus(selmon->sel);
                 updateselmon(m);
 		focus(NULL);
 	}
@@ -2206,7 +2206,7 @@ sendevent(Window w, Atom proto, int mask, long d0, long d1, long d2, long d3, lo
 void
 sendmon(Client *c, Monitor *m)
 {
-	unfocus(c, 1);
+	unfocus(c);
 	detach(c);
 	detachstack(c);
 	c->mon = m;
@@ -2214,7 +2214,7 @@ sendmon(Client *c, Monitor *m)
 	updateclientdesktop(c);
         ATT(c->mon)->attach(c);
 	attachstack(c);
-	focus(NULL);
+	focus(c);
 	arrange(NULL);
 }
 
@@ -2955,16 +2955,12 @@ show:
 }
 
 void
-unfocus(Client *c, int setfocus)
+unfocus(Client *c)
 {
 	if (!c)
 		return;
 	grabbuttons(c, 0);
 	XSetWindowBorder(dpy, c->win, scheme[SchemeNorm][ColBorder].pixel);
-	if (setfocus) {
-		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
-		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
-	}
 }
 
 void
