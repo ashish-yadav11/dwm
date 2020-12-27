@@ -1769,7 +1769,7 @@ moveprevtag(const Arg *arg)
 	unsigned int tmptag;
         unsigned long t;
 
-        if (!selmon->sel || selmon->pertag->prevtag == selmon->pertag->curtag)
+        if (!selmon->sel)
                 return;
 	selmon->seltags ^= 1;
         if (selmon->pertag->prevtag) {
