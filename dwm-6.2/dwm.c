@@ -291,6 +291,7 @@ static void sigdsblocks(const Arg *arg);
 static void spawn(const Arg *arg);
 static void tabmode(const Arg *arg);
 static void tag(const Arg *arg);
+static void tagandview(const Arg *arg);
 //static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
 static void tiledeck(Monitor *m, int deck);
