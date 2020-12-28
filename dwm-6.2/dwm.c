@@ -588,16 +588,15 @@ buttonpress(XEvent *e)
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
-                if (ev->x < ble) {
-                        if (ev->x < ble - blw) {
-                                i = -1, x = -ev->x;
-                                do
-                                        x += TEXTW(tags[++i]);
-                                while (x <= 0);
-                                click = ClkTagBar;
-                                arg.ui = 1 << i;
-                        } else
-                                click = ClkLtSymbol;
+                if (ev->x < ble - blw) {
+                        i = -1, x = -ev->x;
+                        do
+                                x += TEXTW(tags[++i]);
+                        while (x <= 0);
+                        click = ClkTagBar;
+                        arg.ui = 1 << i;
+                } else if (ev->x < ble) {
+                        click = ClkLtSymbol;
                 } else {
                         int wbar = showsystray ? selmon->ww - stw : selmon->ww;
 
