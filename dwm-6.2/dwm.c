@@ -335,12 +335,12 @@ static const char broken[] = "";
 static char stextc[STATUSLENGTH];
 static char stexts[STATUSLENGTH];
 static int screen;
-static int sw, sh;              /* X display screen geometry width, height */
-static int bh, blw, ble;        /* bar geometry */
-static int wsbar;               /* width of bar with systray */
-static int wstext;              /* width of status text */
-static int th;                  /* tab bar geometry */
-static int lrpad;               /* sum of left and right paddings for text */
+static int sw, sh;           /* X display screen geometry width, height */
+static int bh, blw, ble;     /* bar geometry */
+static int wsbar;            /* width of bar with systray */
+static int wstext;           /* width of status text */
+static int th;               /* tab bar geometry */
+static int lrpad;            /* sum of left and right paddings for text */
 static int restart = 0;
 static int running = 1;
 static int (*xerrorxlib)(Display *, XErrorEvent *);
