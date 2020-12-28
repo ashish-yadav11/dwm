@@ -337,7 +337,7 @@ static char stexts[STATUSLENGTH];
 static int screen;
 static int sw, sh;              /* X display screen geometry width, height */
 static int bh, blw, ble;        /* bar geometry */
-static int wsbar = 0;           /* width of bar with systray */
+static int wsbar;               /* width of bar with systray */
 static int wstext;              /* width of status text */
 static int th;                  /* tab bar geometry */
 static int lrpad;               /* sum of left and right paddings for text */
@@ -1011,7 +1011,8 @@ drawbar(Monitor *m)
                 char ctmp;
 
                 if (showsystray)
-                        wsbar = wbar -= getsystraywidth();
+                        wbar -= getsystraywidth();
+                wsbar = wbar;
                 drw_setscheme(drw, scheme[SchemeStts]);
                 x = wbar - wstext;
                 drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
