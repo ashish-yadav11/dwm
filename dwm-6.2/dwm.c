@@ -336,12 +336,13 @@ static char stextc[STATUSLENGTH];
 static char stexts[STATUSLENGTH];
 static int screen;
 static int sw, sh;              /* X display screen geometry width, height */
-static int bh, blw, ble, stw;   /* bar geometry */
+static int bh, blw, ble;        /* bar geometry */
+static int wsbar = 0;           /* width of bar with systray */
+static int wstext;              /* width of status text */
 static int th;                  /* tab bar geometry */
 static int lrpad;               /* sum of left and right paddings for text */
 static int restart = 0;
 static int running = 1;
-static int wstext;
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int dsblockssig;
 static unsigned int numlockmask = 0;
@@ -595,21 +596,17 @@ buttonpress(XEvent *e)
                         while (x <= 0);
                         click = ClkTagBar;
                         arg.ui = 1 << i;
-                } else if (ev->x < ble) {
+                } else if (ev->x < ble)
                         click = ClkLtSymbol;
-                } else {
-                        int wbar = showsystray ? selmon->ww - stw : selmon->ww;
-
-                        if (ev->x < wbar - wstext)
-                                click = ClkWinTitle;
-                        else if ((x = wbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
-                                updatedsblockssig(x);
-                                if (dirty)
-                                        return;
-                                click = ClkStatusText;
-                        } else
+                else if (ev->x < wsbar - wstext)
+                        click = ClkWinTitle;
+                else if ((x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
+                        updatedsblockssig(x);
+                        if (dirty)
                                 return;
-                }
+                        click = ClkStatusText;
+                } else
+                        return;
 	} else if (ev->window == selmon->tabwin && selmon->ntiles > 0) {
                 int ntabs, ofst, tbw, lft;
 
@@ -1014,7 +1011,7 @@ drawbar(Monitor *m)
                 char ctmp;
 
                 if (showsystray)
-                        wbar -= (stw = getsystraywidth());
+                        wsbar = wbar -= getsystraywidth();
                 drw_setscheme(drw, scheme[SchemeStts]);
                 x = wbar - wstext;
                 drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
@@ -1681,23 +1678,16 @@ motionnotify(XEvent *e)
 void
 motionnotify(XEvent *e)
 {
+        int x;
         Monitor *m;
         XMotionEvent *ev = &e->xmotion;
 
         for (m = mons; m && m->barwin != ev->window; m = m->next);
         if (!m)
                 return;
-        if (m == selmon && ev->x >= ble) {
-                int x = selmon->ww - lrpad / 2 - ev->x;
-
-                if (showsystray)
-                        x -= stw;
-                if (x > 0 && (x -= wstext - lrpad) <= 0) {
-                        updatedsblockssig(x);
-                        return;
-                }
-        }
-        if (m->statushandcursor) {
+        if (m == selmon && (x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0)
+                updatedsblockssig(x);
+        else if (m->statushandcursor) {
                 m->statushandcursor = 0;
                 XDefineCursor(dpy, m->barwin, cursor[CurNormal]->cursor);
         }
