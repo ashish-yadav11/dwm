@@ -1006,9 +1006,9 @@ drawbar(Monitor *m)
 
 	/* draw status first so it can be overdrawn by tags later */
 	if (m == selmon) { /* status is only drawn on focused monitor */
-                char *ts = stextc;
-                char *tp = stextc;
-                char ctmp;
+                char *stc = stextc;
+                char *stp = stextc;
+                char tmp;
 
                 if (showsystray)
                         wbar -= getsystraywidth();
@@ -1017,19 +1017,21 @@ drawbar(Monitor *m)
                 x = wbar - wstext;
                 drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
                 for (;;) {
-                        if ((unsigned char)*ts > LENGTH(colors) + DELIMITERENDCHAR) {
-                                ts++;
+                        if ((unsigned char)*stc >= ' ') {
+                                stc++;
                                 continue;
                         }
-                        ctmp = *ts;
-                        *ts = '\0';
-                        if (*tp != '\0')
-                                x = drw_text(drw, x, 0, TTEXTW(tp), bh, 0, tp, 0);
-                        if (ctmp == '\0')
+                        tmp = *stc;
+                        if (stp != stc) {
+                                *stc = '\0';
+                                x = drw_text(drw, x, 0, TTEXTW(stp), bh, 0, stp, 0);
+                        }
+                        if (tmp == '\0')
                                 break;
-                        drw_setscheme(drw, scheme[ctmp - DELIMITERENDCHAR - 1]);
-                        *ts = ctmp;
-                        tp = ++ts;
+                        if (tmp - DELIMITERENDCHAR - 1 < LENGTH(colors))
+                                drw_setscheme(drw, scheme[tmp - DELIMITERENDCHAR - 1]);
+                        *stc = tmp;
+                        stp = ++stc;
                 }
                 drw_setscheme(drw, scheme[SchemeStts]);
                 drw_rect(drw, x, 0, wbar - x, bh, 1, 1); /* to keep right padding clean */
@@ -3094,32 +3096,31 @@ updateclientlist(void)
 void
 updatedsblockssig(int x)
 {
-        char *ts = stexts;
-        char *tp = stexts;
-        char ctmp;
+        char *sts = stexts;
+        char *stp = stexts;
+        char tmp;
 
-        while (*ts != '\0') {
-                if ((unsigned char)*ts > DELIMITERENDCHAR) {
-                        ts++;
+        do {
+                if ((unsigned char)*sts >= ' ') {
+                        sts++;
                         continue;
                 }
-                ctmp = *ts;
-                *ts = '\0';
-                x += TTEXTW(tp);
-                *ts = ctmp;
+                tmp = *sts;
+                *sts = '\0';
+                x += TTEXTW(stp);
+                *sts = tmp;
                 if (x > 0) {
-                        if (ctmp == DELIMITERENDCHAR)
-                                goto cursorondelim;
+                        if (tmp == DELIMITERENDCHAR)
+                                break;
                         if (!selmon->statushandcursor) {
                                 selmon->statushandcursor = 1;
                                 XDefineCursor(dpy, selmon->barwin, cursor[CurHand]->cursor);
                         }
-                        dsblockssig = ctmp;
+                        dsblockssig = tmp;
                         return;
                 }
-                tp = ++ts;
-        }
-cursorondelim:
+                stp = ++sts;
+        } while (*sts != '\0');
         if (selmon->statushandcursor) {
                 selmon->statushandcursor = 0;
                 XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
