@@ -3100,7 +3100,7 @@ updatedsblockssig(int x)
         char *stp = stexts;
         char tmp;
 
-        do {
+        while (*sts != '\0') {
                 if ((unsigned char)*sts >= ' ') {
                         sts++;
                         continue;
@@ -3120,7 +3120,7 @@ updatedsblockssig(int x)
                         return;
                 }
                 stp = ++sts;
-        } while (*sts != '\0');
+        }
         if (selmon->statushandcursor) {
                 selmon->statushandcursor = 0;
                 XDefineCursor(dpy, selmon->barwin, cursor[CurNormal]->cursor);
