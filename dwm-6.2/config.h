@@ -75,9 +75,9 @@ static const int resizehints    = 0;    /* 1 means respect size hints in tiled r
 
 static const Attach attachs[] = {
 	/* symbol       attach function */
-	{ "M",          attach },
+	{ "T",          attach },
 	{ "D",          attachbelow },
-	{ "A",          attachabove },
+	{ "U",          attachabove },
 	{ "S",          attachaside },
 	{ "B",          attachbottom },
 };
