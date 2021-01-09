@@ -265,8 +265,6 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_semicolon,   spawn,                  SCRIPT1("espeak.sh", "selection") },
 	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,                  SCRIPT0("espeak.sh") },
 	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,                  SCRIPT0("espeak_last.sh") },
-	{ MODLKEY,                      XK_p,           spawn,                  SCRIPT1("curl_to_zathura.sh", "selection") },
-	{ MODLKEY|ShiftMask,            XK_p,           spawn,                  SCRIPT0("curl_to_zathura.sh") },
 	{ MODLKEY|ControlMask,          XK_apostrophe,  spawn,                  DICTIONARYHISTORY },
 	{ MODLKEY|ShiftMask,            XK_q,           spawn,                  SCRIPT0("quit.sh") },
 	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPT0("hotspot_launch.sh") },
