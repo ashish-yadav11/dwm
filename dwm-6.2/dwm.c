@@ -2523,21 +2523,31 @@ sigchld(int unused)
 void
 sigdsblocks(const Arg *arg)
 {
-        int fd;
+        static int fd = -1;
         struct flock fl;
         union sigval sv;
 
         if (!dsblockssig)
                 return;
-        fd = open(DSBLOCKSLOCKFILE, O_RDONLY);
-        if (fd == -1)
-                return;
         fl.l_type = F_WRLCK;
-        fl.l_start = 0;
         fl.l_whence = SEEK_SET;
+        fl.l_start = 0;
         fl.l_len = 0;
-        if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
-                return;
+        if (fd == -1) {
+                if ((fd = open(DSBLOCKSLOCKFILE, O_RDONLY)) == -1)
+                        return;
+                if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
+                        return;
+        } else {
+                if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK) {
+                        close(fd);
+                        if ((fd = open(DSBLOCKSLOCKFILE, O_RDONLY)) == -1)
+                                return;
+                        fl.l_type = F_WRLCK;
+                        if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
+                                return;
+                }
+        }
         sv.sival_int = (dsblockssig << 8) | arg->i;
         sigqueue(fl.l_pid, SIGRTMIN, sv);
 }
