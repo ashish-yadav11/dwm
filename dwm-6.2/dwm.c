@@ -2539,7 +2539,9 @@ sigdsblocks(const Arg *arg)
                 if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
                         return;
         } else {
-                if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK) {
+                if (fcntl(fd, F_GETLK, &fl) == -1)
+                        return;
+                if (fl.l_type == F_UNLCK) {
                         close(fd);
                         if ((fd = open(DSBLOCKSLOCKFILE, O_RDONLY)) == -1)
                                 return;
