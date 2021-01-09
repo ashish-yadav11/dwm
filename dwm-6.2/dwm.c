@@ -2529,7 +2529,6 @@ sigdsblocks(const Arg *arg)
 
         if (!dsblockssig)
                 return;
-        sv.sival_int = (dsblockssig << 8) | arg->i;
         fd = open(DSBLOCKSLOCKFILE, O_RDONLY);
         if (fd == -1)
                 return;
@@ -2539,6 +2538,7 @@ sigdsblocks(const Arg *arg)
         fl.l_len = 0;
         if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
                 return;
+        sv.sival_int = (dsblockssig << 8) | arg->i;
         sigqueue(fl.l_pid, SIGRTMIN, sv);
 }
 
