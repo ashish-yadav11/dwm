@@ -2338,9 +2338,8 @@ setsplus(const Arg *arg)
                 } else if ((selmon->ntiles - selmon->nmaster) > 1) {
                         if ((selmon->ntiles - selmon->nmaster) > 2 && selidx == selmon->nmaster + 1)
                                 SPLUS(selmon)[2] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[2] + arg->i, 0);
-                        else {
+                        else
                                 SPLUS(selmon)[1] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
-                        }
                 } else
                         return;
         } else {
