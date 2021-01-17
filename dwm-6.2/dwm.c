@@ -144,15 +144,14 @@ typedef struct {
 } Signal;
 
 typedef struct {
+	const char *symbol;
+	void (*arrange)(Monitor *);
+} Layout;
+
+typedef struct {
         const char *symbol;
         void (*attach)(Client *);
 } Attach;
-
-typedef struct {
-	const char *symbol;
-	void (*arrange)(Monitor *);
-        const Attach *attach;
-} Layout;
 
 typedef struct Pertag Pertag;
 struct Monitor {
@@ -2287,10 +2286,6 @@ setlayout(const Arg *arg)
 		selmon->lt[selmon->sellt] =
                         selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt] =
                                 (Layout *)arg->v;
-        if (selmon->lt[selmon->sellt]->attach != ATT(selmon)) {
-                selmon->pertag->selatts[selmon->pertag->curtag] ^= 1;
-                ATT(selmon) = selmon->lt[selmon->sellt]->attach;
-        }
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
 	if (selmon->sel)
 		arrange(selmon);
