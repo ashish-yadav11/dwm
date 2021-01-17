@@ -2632,7 +2632,7 @@ tabmode(const Arg *arg)
                 selmon->pertag->showtabs[selmon->pertag->curtag] = arg->ui % showtab_nmodes;
 	else
                 selmon->pertag->showtabs[selmon->pertag->curtag] =
-                        (selmon->pertag->showtabs[selmon->pertag->curtag] + 1 ) % showtab_nmodes;
+                        (selmon->pertag->showtabs[selmon->pertag->curtag] + 1) % showtab_nmodes;
 	arrange(selmon);
 }
 
@@ -3003,7 +3003,7 @@ updatebarpos(Monitor *m)
 	if (m->showbar) {
 		m->wh -= bh;
 		m->by = m->topbar ? m->wy : m->wy + m->wh;
-		if ( m->topbar )
+		if (m->topbar)
 			m->wy += bh;
 	} else {
 		m->by = -bh;
@@ -3015,7 +3015,7 @@ updatebarpos(Monitor *m)
               (m->lt[m->sellt]->arrange == deck && m->ntiles > m->nmaster + 1)))) {
 		m->wh -= th;
 		m->ty = m->toptab ? m->wy : m->wy + m->wh;
-		if ( m->toptab )
+		if (m->toptab)
 			m->wy += th;
 	} else {
 		m->ty = -th;
