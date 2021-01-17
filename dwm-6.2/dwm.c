@@ -61,7 +61,8 @@
 #define TAGMASK                         ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                        (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define TTEXTW(X)                       (drw_fontset_getwidth(drw, (X)))
-#define ATT(M)                          (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
+#define ATTACH(M)                       (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
+#define ISATTACHDIRTY(M)                (M->pertag->isattachdirty[M->pertag->curtag])
 #define SPLUS(M)                        (M->pertag->splus[M->pertag->curtag])
 
 #define STATUSLENGTH                    256
@@ -144,14 +145,15 @@ typedef struct {
 } Signal;
 
 typedef struct {
-	const char *symbol;
-	void (*arrange)(Monitor *);
-} Layout;
-
-typedef struct {
         const char *symbol;
         void (*attach)(Client *);
 } Attach;
+
+typedef struct {
+	const char *symbol;
+	void (*arrange)(Monitor *);
+        const Attach *attach;
+} Layout;
 
 typedef struct Pertag Pertag;
 struct Monitor {
@@ -253,7 +255,7 @@ static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void removesystrayicon(Client *i);
-static void resettagifempty(unsigned int tag);
+static void resettag(unsigned int tag);
 static void resetsplus(const Arg *arg);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizebarwin(Monitor *m);
@@ -384,6 +386,7 @@ struct Pertag {
         /* custom */
         unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions */
         const Attach *attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
+        int isattachdirty[LENGTH(tags) + 1]; /* has attach been changed from its default value */
         int showtabs[LENGTH(tags) + 1]; /* display tab per tag */
         int splus[LENGTH(tags) + 1][3]; /* extra size per tag - first master and first two stack clients */
 };
@@ -1056,9 +1059,9 @@ drawbar(Monitor *m)
 	}
 
         if (nhid)
-                snprintf(halsymbol, sizeof halsymbol, "%u %s %s", nhid, ATT(m)->symbol, m->ltsymbol);
+                snprintf(halsymbol, sizeof halsymbol, "%u %s %s", nhid, ATTACH(m)->symbol, m->ltsymbol);
         else
-                snprintf(halsymbol, sizeof halsymbol, "%s %s", ATT(m)->symbol, m->ltsymbol);
+                snprintf(halsymbol, sizeof halsymbol, "%s %s", ATTACH(m)->symbol, m->ltsymbol);
         w = TEXTW(halsymbol);
         drw_setscheme(drw, scheme[SchemeLtSm]);
         x = drw_text(drw, x, 0, w, bh, lrpad / 2, halsymbol, 0);
@@ -1263,7 +1266,7 @@ focusclient(Client *c, unsigned int tag)
         }
         selmon->seltags ^= 1;
         selmon->tagset[selmon->seltags] = 1 << tag & TAGMASK;
-        resettagifempty(selmon->pertag->curtag);
+        resettag(selmon->pertag->curtag);
         selmon->pertag->prevtag = selmon->pertag->curtag;
         selmon->pertag->curtag = tag + 1;
         applycurtagsettings();
@@ -1588,7 +1591,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
 		XRaiseWindow(dpy, c->win);
-        ATT(c->mon)->attach(c);
+        ATTACH(c->mon)->attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
 		(unsigned char *) &(c->win), 1);
@@ -1771,7 +1774,7 @@ moveprevtag(const Arg *arg)
         }
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
-        resettagifempty(selmon->pertag->curtag);
+        resettag(selmon->pertag->curtag);
         SWAP(selmon->pertag->prevtag, selmon->pertag->curtag);
         applycurtagsettings();
 	arrange(selmon);
@@ -1874,11 +1877,12 @@ removesystrayicon(Client *i)
 }
 
 void
-resettagifempty(unsigned int tag)
+resettag(unsigned int tag)
 {
         Client *c;
         unsigned int tagm = tag ? 1 << (tag - 1) : ~0 & TAGMASK;
 
+        selmon->pertag->isattachdirty[tag] = 0;
         for (c = selmon->clients; c && !(c->tags & tagm); c = c->next);
         if (c)
                 return;
@@ -2137,7 +2141,7 @@ show:
         c->tags = selmon->tagset[selmon->seltags];
         updateclientdesktop(c);
         detach(c);
-        ATT(c->mon)->attach(c);
+        ATTACH(c->mon)->attach(c);
         focusalt(c);
         arrange(selmon);
 }
@@ -2194,7 +2198,7 @@ sendmon(Client *c, Monitor *m)
 	c->mon = m;
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 	updateclientdesktop(c);
-        ATT(c->mon)->attach(c);
+        ATTACH(c->mon)->attach(c);
 	attachstack(c);
 	focus(c);
 	arrange(NULL);
@@ -2203,17 +2207,18 @@ sendmon(Client *c, Monitor *m)
 void
 setattach(const Arg *arg)
 {
-        if (!arg || !arg->v || arg->v != ATT(selmon))
+        if (!arg || !arg->v || arg->v != ATTACH(selmon))
                 selmon->pertag->selatts[selmon->pertag->curtag] ^= 1; /* toggle or save the previous */
         if (arg && arg->v)
-                ATT(selmon) = (Attach *)arg->v;
+                ATTACH(selmon) = (Attach *)arg->v;
+        ISATTACHDIRTY(selmon) = 1;
         drawbar(selmon);
 }
 
 void
 setattorprev(const Arg *arg)
 {
-	setattach(ATT(selmon) == arg->v ? NULL : arg);
+	setattach(ATTACH(selmon) == arg->v ? NULL : arg);
 }
 
 void
@@ -2286,6 +2291,10 @@ setlayout(const Arg *arg)
 		selmon->lt[selmon->sellt] =
                         selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt] =
                                 (Layout *)arg->v;
+        if (!ISATTACHDIRTY(selmon) && selmon->lt[selmon->sellt]->attach != ATTACH(selmon)) {
+                selmon->pertag->selatts[selmon->pertag->curtag] ^= 1;
+                ATTACH(selmon) = selmon->lt[selmon->sellt]->attach;
+        }
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
 	if (selmon->sel)
 		arrange(selmon);
@@ -2612,6 +2621,8 @@ swaptags(const Arg *arg)
              selmon->pertag->attidxs[selmon->pertag->curtag][0]);
         SWAP(selmon->pertag->attidxs[newtag][1],
              selmon->pertag->attidxs[selmon->pertag->curtag][1]);
+        SWAP(selmon->pertag->isattachdirty[newtag],
+             selmon->pertag->isattachdirty[selmon->pertag->curtag]);
         SWAP(selmon->pertag->showtabs[newtag],
              selmon->pertag->showtabs[selmon->pertag->curtag]);
         SWAP(selmon->pertag->splus[newtag][0],
@@ -2657,7 +2668,7 @@ tagandview(const Arg *arg)
                 selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << arg->ui;
                 XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                                 PropModeReplace, (unsigned char *) &t, 1);
-                resettagifempty(selmon->pertag->curtag);
+                resettag(selmon->pertag->curtag);
                 selmon->pertag->prevtag = selmon->pertag->curtag;
                 selmon->pertag->curtag = t;
                 applycurtagsettings();
@@ -2896,13 +2907,13 @@ toggleview(const Arg *arg)
                 free(masters);
 
                 if (newtagset == (~0 & TAGMASK)) {
-                        resettagifempty(selmon->pertag->curtag);
+                        resettag(selmon->pertag->curtag);
                         selmon->pertag->prevtag = selmon->pertag->curtag;
                         selmon->pertag->curtag = 0;
                 }
         } else
                 if (!selmon->pertag->curtag || !(newtagset & 1 << (selmon->pertag->curtag - 1))) {
-                        resettagifempty(selmon->pertag->curtag);
+                        resettag(selmon->pertag->curtag);
                         selmon->pertag->prevtag = selmon->pertag->curtag;
                         for (i = 0; !(newtagset & 1 << i); i++);
                         selmon->pertag->curtag = i + 1;
@@ -3185,7 +3196,7 @@ updategeom(void)
 					m->clients = c->next;
 					detachstack(c);
 					c->mon = mons;
-                                        ATT(c->mon)->attach(c);
+                                        ATTACH(c->mon)->attach(c);
 					attachstack(c);
 				}
 				if (m == selmon)
@@ -3517,7 +3528,7 @@ view(const Arg *arg)
 
 	if ((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags])
 		return;
-        resettagifempty(selmon->pertag->curtag);
+        resettag(selmon->pertag->curtag);
 	selmon->seltags ^= 1; /* toggle sel tagset */
 	if (arg->ui & TAGMASK) {
 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;

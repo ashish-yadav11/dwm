@@ -73,14 +73,6 @@ static const float mfact        = 0.60; /* factor of master area size (0.05 - 0.
 static const int nmaster        = 1;    /* number of clients in master area */
 static const int resizehints    = 0;    /* 1 means respect size hints in tiled resizals */
 
-static const Layout layouts[] = {
-	/* symbol       arrange function */
-	{ "[ ]=",       tile },
-	{ "[ . ]",      NULL },    /* no layout function means floating behavior */
-	{ "[M]",        monocle },
-	{ "[D]",        deck },
-};
-
 static const Attach attachs[] = {
 	/* symbol       attach function */
 	{ "T",          attach },
@@ -88,6 +80,14 @@ static const Attach attachs[] = {
 	{ "U",          attachabove },
 	{ "S",          attachaside },
 	{ "B",          attachbottom },
+};
+
+static const Layout layouts[] = {
+	/* symbol       arrange function        default attach */
+	{ "[ ]=",       tile,                   &attachs[0] },
+	{ "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
+	{ "[M]",        monocle,                &attachs[1] },
+	{ "[D]",        deck,                   &attachs[3] },
 };
 
 static const char *const *scratchcmds[] = {
