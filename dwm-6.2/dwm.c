@@ -2359,7 +2359,7 @@ setup(void)
 
         /* be the child subreaper */
         if (prctl(PR_SET_CHILD_SUBREAPER, 1) == -1)
-		fputs("warning: could not set dwm as the subreaper\n", stderr);
+		fputs("warning: could not set dwm as subreaper\n", stderr);
 
 	/* init screen */
 	screen = DefaultScreen(dpy);
