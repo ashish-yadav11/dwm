@@ -274,7 +274,6 @@ static Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPT1("systemctl_timeout.sh", "toggle") },
 	{ MODLKEY|ControlMask,          XK_F10,         spawn,                  SCRIPT1("systemctl_timeout.sh", "status") },
 	{ SUPKEY,                       XK_b,           spawn,                  SCRIPT0("gbtns.sh") },
-	{ SUPKEY,                       XK_n,           spawn,                  TERMCMD("newsboat -q") },
 	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger --cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
