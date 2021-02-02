@@ -3425,20 +3425,12 @@ updatesystray(void)
 void
 updatesystrayicongeom(Client *i, int w, int h)
 {
+        i->w = (SH * w) / h;
         i->h = SH;
-        if (w == h)
-                i->w = SH;
-        else if (h == SH)
-                i->w = w;
-        else
-                i->w = (SH * w) / h;
         applysizehints(i, &(i->x), &(i->y), &(i->w), &(i->h), False);
-        /* force icons into systray dimensions if they don't want to */
+        /* force icons into systray dimensions */
         if (i->h > SH) {
-                if (i->w == i->h)
-                        i->w = SH;
-                else
-                        i->w = (SH * i->w) / i->h;
+                i->w = (SH * i->w) / i->h;
                 i->h = SH;
         }
 }
