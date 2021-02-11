@@ -2090,9 +2090,11 @@ scan(void)
 void
 scratchhidehelper(void)
 {
-        unsigned long t = 0;
+        unsigned long t;
 
         selmon->sel->tags = 0;
+        t = selmon->sel->scratchkey > LENGTH(scratchcmds) ?
+                30 + selmon->sel->scratchkey - LENGTH(scratchcmds) : 0;
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
         focus(NULL);
@@ -2205,7 +2207,8 @@ setdesktopnames(void)
 	XTextProperty text;
         char *tagnames[] = { "S -", "N 1", "N 2", "N 3", "N 4", "N 5", "N 6", "N 7", "N 8", "N 9", "N A",
                                     "H 1", "H 2", "H 3", "H 4", "H 5", "H 6", "H 7", "H 8", "H 9", "H A",
-                                    "D 1", "D 2", "D 3", "D 4", "D 5", "D 6", "D 7", "D 8", "D 9", "D A" };
+                                    "D 1", "D 2", "D 3", "D 4", "D 5", "D 6", "D 7", "D 8", "D 9", "D A",
+                                    "S 1", "S 2", "S 3" };
 
 	Xutf8TextListToTextProperty(dpy, tagnames, LENGTH(tagnames), XUTF8StringStyle, &text);
 	XSetTextProperty(dpy, root, &text, netatom[NetDesktopNames]);
@@ -3046,7 +3049,8 @@ updateclientdesktop(Client *c)
         else {
                 for (t = 0; t < LENGTH(tags) && !(1 << t & c->tags); t++);
                 if (++t > LENGTH(tags)) {
-                        t = 0;
+                        t = c->scratchkey > LENGTH(scratchcmds) ?
+                                30 + c->scratchkey - LENGTH(scratchcmds) : 0;
                         goto update;
                 }
         }
