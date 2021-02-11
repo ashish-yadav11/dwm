@@ -97,6 +97,7 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "termite", "--name=calcurse_Termite", "-t", "Calcurse", "-e", "calcurse", NULL },
 	(const char *[]){ "signal-desktop", NULL },
 	(const char *[]){ "telegram-desktop", NULL },
+        (const char *[]){ "sxiv", "-N", "schedule_Sxiv", "/media/storage/sem6dat/schedule.png", NULL },
 };
 
 /* key definitions */
@@ -252,6 +253,7 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_c,           scratchtoggle,          {.i = 4} },
 	{ SUPKEY,                       XK_s,           scratchtoggle,          {.i = 5} },
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
+	{ SUPKEY|ShiftMask,             XK_s,           scratchtoggle,          {.i = 7} },
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
@@ -892,8 +894,8 @@ applyrules(Client *c)
 	instance = ch.res_name ? ch.res_name : broken;
 
         if (strcmp(instance, "calcurse_Termite") == 0) {
-                c->isfloating = 1;
                 markscratch(c, 4);
+                c->isfloating = 1;
                 c->w = 950;
                 c->h = 650;
                 center(c);
@@ -905,35 +907,39 @@ applyrules(Client *c)
         } else if (strcmp(instance, "neomutt_Termite") == 0) {
                 markscratch(c, -2);
         } else if (strcmp(instance, "pyfzf_Termite") == 0) {
-                c->isfloating = 1;
                 markscratch(c, 3);
+                c->isfloating = 1;
                 c->w = 750;
                 c->h = 450;
                 center(c);
         } else if (strcmp(instance, "scratch_Termite") == 0) {
-                c->isfloating = 1;
                 markscratch(c, 1);
+                c->isfloating = 1;
                 c->w = 750;
                 c->h = 450;
+                center(c);
+        } else if (strcmp(instance, "schedule_Sxiv") == 0) {
+                markscratch(c, 7);
+                c->isfloating = 1;
                 center(c);
         } else if (strcmp(instance, "brave-browser") == 0) {
                 markscratch(c, -1);
         } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
-                c->isfloating = 1;
                 markscratch(c, 2);
+                c->isfloating = 1;
                 c->bw = 0;
                 c->w = 950;
                 c->h = 626;
                 center(c);
         } else if (strcmp(class, "Signal") == 0) {
-                c->isfloating = 1;
                 markscratch(c, 5);
+                c->isfloating = 1;
                 c->w = 880;
                 c->h = 620;
                 center(c);
         } else if (strcmp(class, "TelegramDesktop") == 0) {
-                c->isfloating = 1;
                 markscratch(c, 6);
+                c->isfloating = 1;
                 c->w = 770;
                 c->h = 555;
                 center(c);
