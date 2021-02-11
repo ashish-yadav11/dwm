@@ -140,10 +140,15 @@ static const char *const *scratchcmds[] = {
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
 
+#define NOTIFYSCRATCHED { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "scratched focused window", NULL } }
+#define NOTIFYUNSCRATCHED { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "unscratched focused window", NULL } }
+
 static const Win browser = { .cmd = CMD0("brave"), .tag = 8, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 9, .scratchkey = -2 };
 
 /* custom function declarations */
+static void dynscratchtoggle(const Arg *arg);
+static void dynscratchunmark(const Arg *arg);
 static void floatmovex(const Arg *arg);
 static void floatmovey(const Arg *arg);
 static void floatresizeh(const Arg *arg);
@@ -158,7 +163,10 @@ static void hidefloating(const Arg *arg);
 static Client *nextsamefloat(int next);
 static Client *nextvisible(int next);
 static void push(const Arg *arg);
+static void scratchhide(const Arg *arg);
 static void scratchhidevisible(const Arg *arg);
+static void scratchshow(const Arg *arg);
+static void scratchtoggle(const Arg *arg);
 static void showfloating(const Arg *arg);
 static void togglefocusarea(const Arg *arg);
 static void togglefocusfloat(const Arg *arg);
@@ -171,6 +179,7 @@ static void zoomvar(const Arg *arg);
 
 #include "inplacerotate.c"
 #include <X11/XF86keysym.h>
+
 static Key keys[] = {
 	/* modifier                     key             function                argument */
 	{ MODLKEY,                      XK_d,           spawn,                  ROFIDRUN },
@@ -254,6 +263,12 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_s,           scratchtoggle,          {.i = 5} },
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
 	{ SUPKEY|ShiftMask,             XK_s,           scratchtoggle,          {.i = 7} },
+	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = 8} },
+	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = 8} },
+	{ MODLKEY,                      XK_y,           dynscratchtoggle,       {.i = 9} },
+	{ MODLKEY|ShiftMask,            XK_y,           dynscratchunmark,       {.i = 9} },
+	{ MODLKEY,                      XK_u,           dynscratchtoggle,       {.i = 10} },
+	{ MODLKEY|ShiftMask,            XK_u,           dynscratchunmark,       {.i = 10} },
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
@@ -380,6 +395,28 @@ static Signal signals[] = {
 };
 
 /* custom function implementations */
+void
+dynscratchtoggle(const Arg *arg)
+{
+        if (!selmon->sel)
+                scratchshowhelper(arg->i);
+        else if (selmon->sel->scratchkey == arg->i)
+                scratchhidehelper();
+        else if (!scratchshowhelper(arg->i)) {
+                selmon->sel->scratchkey = arg->i;
+                spawn(&((Arg)NOTIFYSCRATCHED));
+        }
+}
+
+void
+dynscratchunmark(const Arg *arg)
+{
+        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
+                selmon->sel->scratchkey = 0;
+                spawn(&((Arg)NOTIFYUNSCRATCHED));
+        }
+}
+
 void
 floatmovex(const Arg *arg)
 {
@@ -703,6 +740,13 @@ push(const Arg *arg)
 }
 
 void
+scratchhide(const Arg *arg)
+{
+        if (selmon->sel && selmon->sel->scratchkey == arg->i)
+                scratchhidehelper();
+}
+
+void
 scratchhidevisible(const Arg *arg)
 {
         unsigned long t = 0;
@@ -715,6 +759,24 @@ scratchhidevisible(const Arg *arg)
                 }
         focus(NULL);
         arrange(selmon);
+}
+
+void
+scratchshow(const Arg *arg)
+{
+        if (selmon->sel && selmon->sel->scratchkey == arg->i)
+                return;
+        if (!scratchshowhelper(arg->i))
+                spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
+}
+
+void
+scratchtoggle(const Arg *arg)
+{
+        if (selmon->sel && selmon->sel->scratchkey == arg->i)
+                scratchhidehelper();
+        else if (!scratchshowhelper(arg->i))
+                spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
 }
 
 void
@@ -812,7 +874,7 @@ windowswitcher(const Arg *arg)
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
         }
-        spawn(&((Arg) ROFIWIN));
+        spawn(&((Arg)ROFIWIN));
 }
 
 void

@@ -244,7 +244,6 @@ static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
 static void monocle(Monitor *m);
 static void motionnotify(XEvent *e);
-static void swaptags(const Arg *arg);
 static void movemouse(const Arg *arg);
 static void moveprevtag(const Arg *arg);
 static Client *nexttiled(Client *c);
@@ -264,11 +263,8 @@ static void restack(Monitor *m, int dbr);
 static void restorestatus(void);
 static void run(void);
 static void scan(void);
-static void scratchhide(const Arg *arg);
 static void scratchhidehelper(void);
-static void scratchshow(const Arg *arg);
-static void scratchshowhelper(int key);
-static void scratchtoggle(const Arg *arg);
+static int scratchshowhelper(int key);
 static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, long d3, long d4);
 static void sendmon(Client *c, Monitor *m);
 static void setattach(const Arg *arg);
@@ -289,6 +285,7 @@ static void showhide(Client *c);
 static void sigchld(int unused);
 static void sigdsblocks(const Arg *arg);
 static void spawn(const Arg *arg);
+static void swaptags(const Arg *arg);
 static void tabmode(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagandview(const Arg *arg);
@@ -2091,13 +2088,6 @@ scan(void)
 }
 
 void
-scratchhide(const Arg *arg)
-{
-        if (selmon->sel && selmon->sel->scratchkey == arg->i)
-                scratchhidehelper();
-}
-
-void
 scratchhidehelper(void)
 {
         unsigned long t = 0;
@@ -2109,14 +2099,7 @@ scratchhidehelper(void)
         arrange(selmon);
 }
 
-void
-scratchshow(const Arg *arg)
-{
-        if (!selmon->sel || selmon->sel->scratchkey != arg->i)
-                scratchshowhelper(arg->i);
-}
-
-void
+int
 scratchshowhelper(int key)
 {
         Client *c;
@@ -2125,14 +2108,13 @@ scratchshowhelper(int key)
                 for (c = m->clients; c; c = c->next)
                         if (c->scratchkey == key)
                                 goto show;
-        spawn(&((Arg){ .v = scratchcmds[key - 1] }));
-        return;
+        return 0;
 show:
         if (c->ishidden)
                 c->ishidden = 0;
         if (c->mon != selmon) {
                 sendmon(c, selmon);
-                return;
+                return 1;
         }
         c->tags = selmon->tagset[selmon->seltags];
         updateclientdesktop(c);
@@ -2140,15 +2122,7 @@ show:
         ATTACH(c->mon)->attach(c);
         focusalt(c);
         arrange(selmon);
-}
-
-void
-scratchtoggle(const Arg *arg)
-{
-        if (selmon->sel && selmon->sel->scratchkey == arg->i)
-                scratchhidehelper();
-        else
-                scratchshowhelper(arg->i);
+        return 1;
 }
 
 int
