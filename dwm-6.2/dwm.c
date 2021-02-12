@@ -215,6 +215,7 @@ static void detachstack(Client *c);
 //static Monitor *dirtomon(int dir);
 static void drawbar(Monitor *m);
 static void drawbars(void);
+static void drawstatus(void);
 static void drawtab(Monitor *m);
 static void drawtabhelper(Monitor *m, int onlystack);
 static void drawtabs(void);
@@ -594,7 +595,7 @@ buttonpress(XEvent *e)
                         arg.ui = 1 << i;
                 } else if (ev->x < ble)
                         click = ClkLtSymbol;
-                else if (ev->x < wsbar - wstext)
+                else if (ev->x < wsbar - wstext || wsbar - wstext - ble < lrpad)
                         click = ClkWinTitle;
                 else if ((x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
                         updatedsblockssig(x);
@@ -631,7 +632,7 @@ buttonpress(XEvent *e)
                 click = ClkRootWin;
 	for (i = 0; i < LENGTH(buttons); i++)
 		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
-		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)){
+		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)) {
 			buttons[i].func(((click == ClkTagBar || click == ClkTabBar) &&
                                          buttons[i].arg.i == 0) ? &arg : &buttons[i].arg);
 		}
@@ -1001,46 +1002,14 @@ void
 drawbar(Monitor *m)
 {
 	int x, w;
-        int wbar = m->ww;
+        int wbar;
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, nhid = 0, occ = 0, urg = 0;
         char halsymbol[43]; /* 10 + 1 + 15 + 1 + 15 + 1 */
 	Client *c;
 
-	/* draw status first so it can be overdrawn by tags later */
-	if (m == selmon) { /* status is only drawn on focused monitor */
-                char *stc = stextc;
-                char *stp = stextc;
-                char tmp;
-
-                if (showsystray)
-                        wbar -= getsystraywidth();
-                wsbar = wbar;
-                drw_setscheme(drw, scheme[SchemeStts]);
-                x = wbar - wstext;
-                drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
-                for (;;) {
-                        if ((unsigned char)*stc >= ' ') {
-                                stc++;
-                                continue;
-                        }
-                        tmp = *stc;
-                        if (stp != stc) {
-                                *stc = '\0';
-                                x = drw_text(drw, x, 0, TTEXTW(stp), bh, 0, stp, 0);
-                        }
-                        if (tmp == '\0')
-                                break;
-                        if (tmp - DELIMITERENDCHAR - 1 < LENGTH(colors))
-                                drw_setscheme(drw, scheme[tmp - DELIMITERENDCHAR - 1]);
-                        *stc = tmp;
-                        stp = ++stc;
-                }
-                drw_setscheme(drw, scheme[SchemeStts]);
-                drw_rect(drw, x, 0, wbar - x, bh, 1, 1); /* to keep right padding clean */
-	}
-
+        /* tags, number of hidden clients, attach and layout */
 	for (c = m->clients; c; c = c->next) {
                 if (c->ishidden && c->tags & m->tagset[m->seltags])
                         nhid++;
@@ -1059,7 +1028,6 @@ drawbar(Monitor *m)
 				m == selmon && selmon->sel && selmon->sel->tags & 1 << i, 0);
 		x = w;
 	}
-
         if (nhid)
                 snprintf(halsymbol, sizeof halsymbol, "%u %s %s", nhid, ATTACH(m)->symbol, m->ltsymbol);
         else
@@ -1068,14 +1036,22 @@ drawbar(Monitor *m)
         drw_setscheme(drw, scheme[SchemeLtSm]);
         x = drw_text(drw, x, 0, w, bh, lrpad / 2, halsymbol, 0);
 
+        /* window title and status */
         if (m == selmon) {
-                blw = w, ble = x;
+                blw = w;
+                ble = x;
+                wsbar = wbar = showsystray ? m->ww - getsystraywidth() : m->ww;
                 w = wbar - wstext - lrpad / 2 - x; /* - lrpad / 2 for right padding */
-        } else
+                if (w >= lrpad / 2)
+                        drawstatus();
+                else
+                        w += wstext;
+        } else {
+                wbar = m->ww;
                 w = wbar - lrpad / 2 - x; /* - lrpad / 2 for right padding */
-
+        }
         drw_setscheme(drw, scheme[SchemeNorm]);
-        if (m->sel && w > bh) {
+        if (m->sel && w > lrpad / 2) {
                 w = drw_text(drw, x, 0, w, bh, lrpad / 2, m->sel->name, 0);
                 if (m->sel->isfloating)
                         drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
@@ -1092,6 +1068,38 @@ drawbars(void)
 {
 	for (Monitor *m = mons; m; m = m->next)
 		drawbar(m);
+}
+
+void
+drawstatus(void)
+{
+        int x;
+        char *stc = stextc;
+        char *stp = stextc;
+        char tmp;
+
+        drw_setscheme(drw, scheme[SchemeStts]);
+        x = wsbar - wstext;
+        drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
+        for (;;) {
+                if ((unsigned char)*stc >= ' ') {
+                        stc++;
+                        continue;
+                }
+                tmp = *stc;
+                if (stp != stc) {
+                        *stc = '\0';
+                        x = drw_text(drw, x, 0, TTEXTW(stp), bh, 0, stp, 0);
+                }
+                if (tmp == '\0')
+                        break;
+                if (tmp - DELIMITERENDCHAR - 1 < LENGTH(colors))
+                        drw_setscheme(drw, scheme[tmp - DELIMITERENDCHAR - 1]);
+                *stc = tmp;
+                stp = ++stc;
+        }
+        drw_setscheme(drw, scheme[SchemeStts]);
+        drw_rect(drw, x, 0, wsbar - x, bh, 1, 1); /* to keep right padding clean */
 }
 
 void
@@ -1692,7 +1700,8 @@ motionnotify(XEvent *e)
         for (m = mons; m && m->barwin != ev->window; m = m->next);
         if (!m)
                 return;
-        if (m == selmon && (x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0)
+        if (m == selmon && wsbar - wstext - ble >= lrpad &&
+            (x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0)
                 updatedsblockssig(x);
         else if (m->statushandcursor) {
                 m->statushandcursor = 0;
@@ -2247,7 +2256,7 @@ setfullscreen(Client *c, int fullscreen)
 		c->isfloating = 1;
 		resizeclient(c, c->mon->mx, c->mon->my, c->mon->mw, c->mon->mh);
 		XRaiseWindow(dpy, c->win);
-	} else if (!fullscreen && c->isfullscreen){
+	} else if (!fullscreen && c->isfullscreen) {
 		XChangeProperty(dpy, c->win, netatom[NetWMState], XA_ATOM, 32,
 			PropModeReplace, (unsigned char*)0, 0);
 		c->isfullscreen = 0;
