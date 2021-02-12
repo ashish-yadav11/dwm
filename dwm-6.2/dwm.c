@@ -651,41 +651,49 @@ checkotherwm(void)
 void
 cleanup(void)
 {
-	size_t i;
+        int n;
+	unsigned int i;
         Arg v = {.ui = ~0}, lt = {.v = &layouts[1]};
-        Client *c, *s;
+        Client *c;
 	Monitor *m;
+        Window *wins;
 
-	view(&v);
-        setlayout(&lt);
-	for (m = mons; m; m = m->next) {
-                if (m == selmon)
-                        continue;
-                while (m->clients) {
-                        for (c = m->clients; c->next; c = c->next);
-                        sendmon(c, selmon);
-                }
+        for (n = 0, m = mons; m; m = m->next) {
+                selmon = m;
+                view(&v);
+                setlayout(&lt);
+                for (c = m->clients; c; c = c->next, n++)
+                        if (c->isfloating <= 0) {
+                                c->isfloating = 1;
+                                resize(c, c->sfx, c->sfy, c->sfw, c->sfh, 0);
+                        }
         }
-        s = NULL;
-        for (c = selmon->clients; c; c = c->next) {
-                if (c->isfloating <= 0) {
-                        c->isfloating = 1;
-                        resize(c, c->sfx, c->sfy, c->sfw, c->sfh, 0);
-                }
-                c->snext = s;
-                s = c;
+        wins = ecalloc(n, sizeof(Window));
+        n = 0;
+        for (m = mons; m; m = m->next) {
+                for (c = m->clients; c; c = c->next)
+                        if (c->scratchkey > 0) {
+                                wins[n++] = c->win;
+                                c->scratchkey = INT_MAX;
+                        }
+                for (i = 0; i < LENGTH(tags); i++)
+                        for (c = m->clients; c; c = c->next)
+                                if (c->scratchkey != INT_MAX && c->tags & 1 << i) {
+                                        wins[n++] = c->win;
+                                        c->scratchkey = INT_MAX;
+                                }
+                while (m->stack)
+                        unmanage(m->stack, 0);
+                cleanupmon(m);
         }
-        selmon->stack = s;
-        while (selmon->stack)
-                unmanage(selmon->stack, 0);
-	XUngrabKey(dpy, AnyKey, AnyModifier, root);
-	while (mons)
-		cleanupmon(mons);
+        XRestackWindows(dpy, wins, n);
+        free(wins);
 	if (showsystray) {
 		XUnmapWindow(dpy, systray->win);
 		XDestroyWindow(dpy, systray->win);
 		free(systray);
 	}
+	XUngrabKey(dpy, AnyKey, AnyModifier, root);
 	for (i = 0; i < CurLast; i++)
 		drw_cur_free(drw, cursor[i]);
 	for (i = 0; i < LENGTH(colors); i++)
