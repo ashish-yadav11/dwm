@@ -47,7 +47,7 @@ static const char col3[]                = "#cda091"; /* mail block - syncing */
 static const char col4[]                = "#9e95cd"; /* mail block - frozen */
 
 enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
-       SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm, SchemeTray }; /* color schemes */
+       SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm }; /* color schemes */
 
 static const char *colors[][3] = {
         /*                  fg            bg              border   */
@@ -60,7 +60,6 @@ static const char *colors[][3] = {
 	[SchemeSel]     = { col_white1,   col_cyan,       col_cyan },
 	[SchemeUrg]     = { col_white1,   col_red,        col_red },
 	[SchemeLtSm]    = { col_white2,   col_black,      col_gray2 },
-	[SchemeTray]    = { col_white2,   col_gray1,      col_gray2 },
 };
 
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };

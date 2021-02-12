@@ -64,6 +64,9 @@
 #define ATTACH(M)                       (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
 #define SPLUS(M)                        (M->pertag->splus[M->pertag->curtag])
 
+#define SCHEMETRAYNORM                  (wsbar - wstext - ble >= lrpad ? SchemeNorm : SchemeStts)
+#define SCHEMETRAYEMPT                  (wsbar - wstext - ble >= lrpad ? SchemeStts : SchemeNorm)
+
 #define STATUSLENGTH                    256
 #define ROOTNAMELENGTH                  320 /* fake signal + status */
 #define DSBLOCKSLOCKFILE                "/tmp/dsblocks.pid"
@@ -764,7 +767,7 @@ clientmessage(XEvent *e)
                         XSelectInput(dpy, c->win, StructureNotifyMask|PropertyChangeMask|ResizeRedirectMask);
 			XReparentWindow(dpy, c->win, systray->win, 0, 0);
 			/* use parent's background color */
-                        swa.background_pixel = scheme[SchemeTray][ColBg].pixel;
+                        swa.background_pixel = scheme[SCHEMETRAYNORM][ColBg].pixel;
 			XChangeWindowAttributes(dpy, c->win, CWBackPixel, &swa);
 			sendevent(c->win, netatom[Xembed], StructureNotifyMask, CurrentTime,
                                   XEMBED_EMBEDDED_NOTIFY, 0, systray->win, XEMBED_EMBEDDED_VERSION);
@@ -3389,7 +3392,7 @@ updatesystray(void)
 	}
 	for (w = 0, i = systray->icons; i; i = i->next) {
 		/* prevent corruption of background color */
-                wa.background_pixel = scheme[SchemeTray][ColBg].pixel;
+                wa.background_pixel = scheme[SCHEMETRAYNORM][ColBg].pixel;
 		XChangeWindowAttributes(dpy, i->win, CWBackPixel, &wa);
 		XMapRaised(dpy, i->win);
 		w += systrayspacing;
@@ -3412,7 +3415,7 @@ updatesystray(void)
 	XMapWindow(dpy, systray->win);
 	XMapSubwindows(dpy, systray->win);
 	/* redraw background */
-        XSetForeground(dpy, drw->gc, scheme[w > 1 ? SchemeTray : SchemeStts][ColBg].pixel);
+        XSetForeground(dpy, drw->gc, scheme[w > 1 ? SCHEMETRAYNORM : SCHEMETRAYEMPT][ColBg].pixel);
 	XFillRectangle(dpy, systray->win, drw->gc, 0, 0, w, bh);
 	XSync(dpy, False);
 }
