@@ -228,6 +228,7 @@ static void focusalt(Client *c);
 static void focusclient(Client *c, unsigned int tag);
 static void focusin(XEvent *e);
 static void focuslast(const Arg *arg);
+static void focuslastvisible(const Arg *arg);
 //static void focusmon(const Arg *arg);
 //static void focusstack(const Arg *arg);
 static void focuswin(const Arg* arg);
@@ -1317,11 +1318,25 @@ focusin(XEvent *e)
 void
 focuslast(const Arg *arg)
 {
+        int i = arg->i;
         Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
 
-        for (; c && (c->ishidden || !c->tags); c = c->snext);
+        for (; c && (c->ishidden || !c->tags || i-- > 0); c = c->snext);
         if (c)
                 focusclient(c, selmon->pertag->prevtag);
+}
+
+void
+focuslastvisible(const Arg *arg)
+{
+        int i = arg->i;
+        Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
+
+        for (; c && (!ISVISIBLE(c) || i-- > 0); c = c->snext);
+        if (c) {
+                focusalt(c);
+                restack(selmon, 0);
+        }
 }
 
 /*
@@ -1373,9 +1388,11 @@ void
 focuswin(const Arg* arg)
 {
         int i = arg->i;
-        Client *c;
+        Client *c = nexttiled(selmon->clients);
 
-        for (c = nexttiled(selmon->clients); c && i > 1; c = nexttiled(c->next), i--);
+        for (; c && i > 1; c = nexttiled(c->next), i--);
+        if (c == selmon->sel)
+                for (; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
         if (c) {
                 focusalt(c);
                 restack(selmon, 0);

@@ -150,7 +150,6 @@ static void floatmovex(const Arg *arg);
 static void floatmovey(const Arg *arg);
 static void floatresizeh(const Arg *arg);
 static void floatresizew(const Arg *arg);
-static void focuslastvisible(const Arg *arg);
 static void focusmaster(const Arg *arg);
 static void focusnthtiled(const Arg *arg);
 static void focusstackalt(const Arg *arg);
@@ -242,8 +241,10 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.v = &attachs[2]} },
 	{ MODLKEY,                      XK_F4,          setattorprev,           {.v = &attachs[3]} },
 	{ MODLKEY,                      XK_F5,          setattorprev,           {.v = &attachs[4]} },
-	{ MODLKEY,                      XK_Tab,         focuslast,              {0} },
-	{ SUPKEY,                       XK_Tab,         focuslastvisible,       {0} },
+	{ MODLKEY,                      XK_Tab,         focuslast,              {.i = 0} },
+	{ MODLKEY|ShiftMask,            XK_Tab,         focuslast,              {.i = 1} },
+	{ SUPKEY,                       XK_Tab,         focuslastvisible,       {.i = 0} },
+	{ SUPKEY|ShiftMask,             XK_Tab,         focuslastvisible,       {.i = 1} },
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
 	{ MODLKEY,                      XK_o,           winview,                {0} },
@@ -488,18 +489,6 @@ floatresizew(const Arg *arg)
         if (cx + selmon->sel->w < mw && cx + nw > mw)
                 nw = mw - cx;
         resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, 1);
-}
-
-void
-focuslastvisible(const Arg *arg)
-{
-        Client *c = selmon->sel ? selmon->sel->snext : selmon->stack;
-
-        for (; c && !ISVISIBLE(c); c = c->snext);
-        if (c) {
-                focusalt(c);
-                restack(selmon, 0);
-        }
 }
 
 void
