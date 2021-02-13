@@ -112,20 +112,17 @@ static const char *const *scratchcmds[] = {
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
 
-/* helper for spawning shell commands in pre dwm-5.0 fashion */
+#define CMD(...) { .v = (const char*[]){ __VA_ARGS__, NULL } }
 #define SHCMD(cmd) { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
-/* helpler for commands with no argument to be executed within a terminal */
 #define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
 
 #define SCRIPT(name) "/home/ashish/.scripts/"name
-
-#define CMD0(cmd) { .v = (const char*[]){ cmd, NULL } }
-#define CMD1(cmd, arg) { .v = (const char*[]){ cmd, arg, NULL } }
 #define SCRIPT0(name) { .v = (const char*[]){ SCRIPT(name), NULL } }
 #define SCRIPT1(name, arg) { .v = (const char*[]){ SCRIPT(name), arg, NULL } }
-#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
 
+#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
 #define REDSHIFTDEFAULT { .v = (const char*[]){ "redshift", "-x", NULL } }
+
 #define ROFIDRUN { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
@@ -143,7 +140,7 @@ static const char *const *scratchcmds[] = {
 #define NOTIFYSCRATCHED { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "scratched focused window", NULL } }
 #define NOTIFYUNSCRATCHED { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "unscratched focused window", NULL } }
 
-static const Win browser = { .cmd = CMD0("brave"), .tag = 8, .scratchkey = -1 };
+static const Win browser = { .cmd = CMD("brave"), .tag = 8, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 9, .scratchkey = -2 };
 
 /* custom function declarations */
@@ -184,7 +181,7 @@ static Key keys[] = {
 	/* modifier                     key             function                argument */
 	{ MODLKEY,                      XK_d,           spawn,                  ROFIDRUN },
 	{ MODLKEY|ShiftMask,            XK_d,           spawn,                  ROFIRUN },
-	{ MODLKEY,                      XK_Return,      spawn,                  CMD0("termite") },
+	{ MODLKEY,                      XK_Return,      spawn,                  CMD("termite") },
 	{ MODLKEY,                      XK_b,           togglebar,              {0} },
 	{ MODLKEY|ShiftMask,            XK_b,           tabmode,                {-1} },
 	{ MODLKEY,                      XK_j,           focusstackalt,          {.i = +1 } },
