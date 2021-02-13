@@ -381,7 +381,6 @@ struct Pertag {
 	float mfacts[LENGTH(tags) + 1]; /* mfacts per tag */
 	unsigned int sellts[LENGTH(tags) + 1]; /* selected layouts */
 	const Layout *ltidxs[LENGTH(tags) + 1][2]; /* matrix of tags and layouts indexes */
-	int showbars[LENGTH(tags) + 1]; /* display bar for the current tag */
         /* custom */
         unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions */
         const Attach *attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
@@ -401,9 +400,6 @@ applycurtagsettings(void)
 	selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag];
 	selmon->lt[0] = selmon->pertag->ltidxs[selmon->pertag->curtag][0];
 	selmon->lt[1] = selmon->pertag->ltidxs[selmon->pertag->curtag][1];
-
-	if (selmon->showbar != selmon->pertag->showbars[selmon->pertag->curtag])
-		togglebar(NULL);
 }
 
 int
@@ -930,7 +926,6 @@ createmon(void)
 		m->pertag->mfacts[i] = m->mfact;
 		m->pertag->ltidxs[i][0] = m->pertag->ltidxs[i][1] = &layouts[def_layouts[i]];
 		m->pertag->sellts[i] = m->sellt;
-		m->pertag->showbars[i] = m->showbar;
                 /* custom */
                 m->pertag->attidxs[i][0] = m->pertag->attidxs[i][1] = &attachs[def_attachs[i]];
                 m->pertag->showtabs[i] = showtab;
@@ -1902,7 +1897,6 @@ resettagifempty(unsigned int tag)
         selmon->pertag->nmasters[tag] = nmaster;
         selmon->pertag->mfacts[tag] = mfact;
         selmon->pertag->ltidxs[tag][0] = selmon->pertag->ltidxs[tag][1] = &layouts[def_layouts[tag]];
-        selmon->pertag->showbars[tag] = showbar;
         /* custom */
         selmon->pertag->attidxs[tag][0] = selmon->pertag->attidxs[tag][1] = &attachs[def_attachs[tag]];
         selmon->pertag->showtabs[tag] = showtab;
@@ -2600,8 +2594,6 @@ swaptags(const Arg *arg)
              selmon->pertag->ltidxs[selmon->pertag->curtag][0]);
         SWAP(selmon->pertag->ltidxs[newtag][1],
              selmon->pertag->ltidxs[selmon->pertag->curtag][1]);
-        SWAP(selmon->pertag->showbars[newtag],
-             selmon->pertag->showbars[selmon->pertag->curtag]);
         /* custom pertag swaps */
         SWAP(selmon->pertag->selatts[newtag],
              selmon->pertag->selatts[selmon->pertag->curtag]);
@@ -2811,7 +2803,7 @@ tiledeck(Monitor *m, int deck)
 void
 togglebar(const Arg *arg)
 {
-	selmon->showbar = selmon->pertag->showbars[selmon->pertag->curtag] = !selmon->showbar;
+	selmon->showbar = !selmon->showbar;
 	updatebarpos(selmon);
 	resizebarwin(selmon);
 	if (showsystray) {
