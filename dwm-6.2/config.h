@@ -5,7 +5,9 @@
 /* minimum allowed vertical height of a window when resizing with setsplus */
 #define MINWINHEIGHT                    26
 /* systray icon height, change to bh to keep it equal to font height */
-#define SH                              16
+#define SYSTRAYHEIGTH                   16
+/* spacing between systray icons */
+#define SYSTRAYSPACING                  4
 
 typedef struct {
         const Arg cmd;
@@ -21,7 +23,6 @@ static const int gappiv                         = 1;  /* vert inner gap between 
 static const int gappoh                         = 1;  /* horiz outer gap between windows and screen edge */
 static const int gappov                         = 1;  /* vert outer gap between windows and screen edge */
 static const int showsystray                    = 1;  /* 0 means no systray */
-static const unsigned int systrayspacing        = 4;  /* systray spacing */
 static const int showbar                        = 1;  /* 0 means no bar */
 static const int topbar                         = 1;  /* 0 means bottom bar */
 /* display modes of the tab bar
