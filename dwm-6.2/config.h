@@ -512,35 +512,38 @@ focusstackalt(const Arg *arg)
 		return;
         if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1 &&
             !selmon->sel->isfloating) {
-                int n, curidx;
-                Client *i;
+                int n;
 
+                for (n = 0, c = selmon->clients;
+                     c->isfloating || !ISVISIBLE(c) || (n++, c != selmon->sel);
+                     c = c->next);
                 c = NULL;
-                for (curidx = 1, i = nexttiled(selmon->clients);
-                     i != selmon->sel;
-                     i = nexttiled(i->next), curidx++);
                 if (arg->i > 0) {
-                        if (curidx == selmon->nmaster) /* focus first master client */
-                                c = nexttiled(selmon->clients);
-                        else if (curidx == selmon->ntiles) /* focus first stack client */
-                                for (n = selmon->nmaster, c = nexttiled(selmon->clients);
-                                     n > 0;
-                                     c = nexttiled(c->next), n--);
+                        if (n == selmon->nmaster) /* focus first master client */
+                                for (c = selmon->clients;
+                                     c->isfloating || !ISVISIBLE(c);
+                                     c = c->next);
+                        else if (n == selmon->ntiles) /* focus first stack client */
+                                for (n = selmon->nmaster, c = selmon->clients;
+                                     c->isfloating || !ISVISIBLE(c) || n-- > 0;
+                                     c = c->next);
                         else /* focus next client */
-                                c = nexttiled(selmon->sel->next);
+                                for (c = selmon->sel->next;
+                                     c->isfloating || !ISVISIBLE(c);
+                                     c = c->next);
                 } else {
-                        if (selmon->nmaster && curidx == 1) /* focus last master client */
-                                for (n = selmon->nmaster, c = nexttiled(selmon->clients);
-                                     n > 1;
-                                     c = nexttiled(c->next), n--);
-                        else if (curidx == selmon->nmaster + 1) /* focus last stack client */
-                                for (n = selmon->ntiles, c = nexttiled(selmon->clients);
-                                     n > 1;
-                                     c = nexttiled(c->next), n--);
+                        if (selmon->nmaster && n == 1) /* focus last master client */
+                                for (n = selmon->nmaster, c = selmon->clients;
+                                     c->isfloating || !ISVISIBLE(c) || --n > 0;
+                                     c = c->next);
+                        else if (n == selmon->nmaster + 1) /* focus last stack client */
+                                for (n = selmon->ntiles, c = selmon->clients;
+                                     c->isfloating || !ISVISIBLE(c) || --n > 0;
+                                     c = c->next);
                         else /* focus previous client */
-                                for (i = nexttiled(selmon->clients); i != selmon->sel; i = nexttiled(i->next))
-                                        if (i)
-                                                c = i;
+                                for (c = selmon->clients;
+                                     c->isfloating || !ISVISIBLE(c) || --n > 1;
+                                     c = c->next);
                 }
         } else if (selmon->lt[selmon->sellt]->arrange)
                 c = nextsamefloat(arg->i);
@@ -606,19 +609,19 @@ nextsamefloat(int next)
         if (next > 0) {
                 if (selmon->sel->isfloating) {
                         for (c = selmon->sel->next;
-                             c && (!ISVISIBLE(c) || !c->isfloating);
+                             c && (!c->isfloating || !ISVISIBLE(c));
                              c = c->next);
                         if (!c)
                                 for (c = selmon->clients;
-                                     c && (!ISVISIBLE(c) || !c->isfloating);
+                                     c && (!c->isfloating || !ISVISIBLE(c));
                                      c = c->next);
                 } else {
                         for (c = selmon->sel->next;
-                             c && (!ISVISIBLE(c) || c->isfloating);
+                             c && (c->isfloating || !ISVISIBLE(c));
                              c = c->next);
                         if (!c)
                                 for (c = selmon->clients;
-                                     c && (!ISVISIBLE(c) || c->isfloating);
+                                     c && (c->isfloating || !ISVISIBLE(c));
                                      c = c->next);
                 }
         } else {
@@ -627,19 +630,19 @@ nextsamefloat(int next)
                 c = NULL;
                 if (selmon->sel->isfloating) {
                         for (i = selmon->clients; i != selmon->sel; i = i->next)
-                                if (ISVISIBLE(i) && i->isfloating)
+                                if (i->isfloating && ISVISIBLE(i))
                                         c = i;
                         if (!c)
                                 for (; i; i = i->next)
-                                        if (ISVISIBLE(i) && i->isfloating)
+                                        if (i->isfloating && ISVISIBLE(i))
                                                 c = i;
                 } else {
                         for (i = selmon->clients; i != selmon->sel; i = i->next)
-                                if (ISVISIBLE(i) && !i->isfloating)
+                                if (!i->isfloating && ISVISIBLE(i))
                                         c = i;
                         if (!c)
                                 for (; i; i = i->next)
-                                        if (ISVISIBLE(i) && !i->isfloating)
+                                        if (!i->isfloating && ISVISIBLE(i))
                                                 c = i;
                 }
         }
@@ -770,20 +773,20 @@ togglefocusarea(const Arg *arg)
 
         if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
                 return;
-        for (curidx = 0, i = nexttiled(selmon->clients);
-             i != selmon->sel;
-             i = nexttiled(i->next), curidx++);
-        inrel = (curidx < selmon->nmaster);
+        for (curidx = 0, i = selmon->clients;
+             i->isfloating || !ISVISIBLE(i) || (curidx++, i != selmon->sel);
+             i = i->next);
+        inrel = (curidx <= selmon->nmaster);
         c = selmon->sel;
         do {
-                for (c = c->snext; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
+                for (c = c->snext; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
                 if (c)
-                        for (curidx = 0, i = nexttiled(selmon->clients);
-                             i != c;
-                             i = nexttiled(i->next), curidx++);
+                        for (curidx = 0, i = selmon->clients;
+                             i->isfloating || !ISVISIBLE(i) || (curidx++, i != c);
+                             i = i->next);
                 else
                         return;
-        } while ((curidx < selmon->nmaster) == inrel);
+        } while ((curidx <= selmon->nmaster) == inrel);
         focusalt(c);
         restack(selmon, 0);
 }
@@ -796,9 +799,9 @@ togglefocusfloat(const Arg *arg)
         if (!selmon->sel || !selmon->lt[selmon->sellt]->arrange)
                 return;
         if (selmon->sel->isfloating)
-                for (c = selmon->sel; c && (!ISVISIBLE(c) || c->isfloating); c = c->snext);
+                for (c = selmon->sel; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
         else
-                for (c = selmon->sel; c && (!ISVISIBLE(c) || !c->isfloating); c = c->snext);
+                for (c = selmon->sel; c && (!c->isfloating || !ISVISIBLE(c)); c = c->snext);
         if (c) {
                 focusalt(c);
                 restack(selmon, 0);
