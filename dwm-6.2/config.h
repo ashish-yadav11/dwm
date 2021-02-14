@@ -419,7 +419,7 @@ floatmovex(const Arg *arg)
 {
         int nx, cw, mw;
 
-        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
+        if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
@@ -439,7 +439,7 @@ floatmovey(const Arg *arg)
 {
         int ny, ch, mh;
 
-        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
+        if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
@@ -459,7 +459,7 @@ floatresizeh(const Arg *arg)
 {
         int nh, cy, mh;
 
-        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
+        if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
@@ -477,7 +477,7 @@ floatresizew(const Arg *arg)
 {
         int nw, cx, mw;
 
-        if (!selmon->sel || (selmon->lt[selmon->sellt]->arrange && !selmon->sel->isfloating))
+        if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
@@ -510,13 +510,13 @@ focusstackalt(const Arg *arg)
 
 	if (!selmon->sel)
 		return;
-        if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1 &&
-            !selmon->sel->isfloating) {
+        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange == deck
+                                     && selmon->ntiles > selmon->nmaster + 1) {
                 int n;
 
-                for (n = 0, c = selmon->clients;
-                     c->isfloating || !ISVISIBLE(c) || (n++, c != selmon->sel);
-                     c = c->next);
+                for (n = 1, c = selmon->clients; c != selmon->sel; c = c->next)
+                        if (!c->isfloating && ISVISIBLE(c))
+                                n++;
                 c = NULL;
                 if (arg->i > 0) {
                         if (n == selmon->nmaster) /* focus first master client */
@@ -773,20 +773,20 @@ togglefocusarea(const Arg *arg)
 
         if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
                 return;
-        for (curidx = 0, i = selmon->clients;
-             i->isfloating || !ISVISIBLE(i) || (curidx++, i != selmon->sel);
-             i = i->next);
-        inrel = (curidx <= selmon->nmaster);
+        for (curidx = 0, i = selmon->clients; i != selmon->sel; i = i->next)
+                if (!i->isfloating && ISVISIBLE(i))
+                        curidx++;
+        inrel = (curidx < selmon->nmaster);
         c = selmon->sel;
         do {
                 for (c = c->snext; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
-                if (c)
-                        for (curidx = 0, i = selmon->clients;
-                             i->isfloating || !ISVISIBLE(i) || (curidx++, i != c);
-                             i = i->next);
-                else
+                if (c) {
+                        for (curidx = 0, i = selmon->clients; i != selmon->sel; i = i->next)
+                                if (!i->isfloating && ISVISIBLE(i))
+                                        curidx++;
+                } else
                         return;
-        } while ((curidx <= selmon->nmaster) == inrel);
+        } while ((curidx < selmon->nmaster) == inrel);
         focusalt(c);
         restack(selmon, 0);
 }

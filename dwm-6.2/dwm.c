@@ -566,9 +566,9 @@ attachaside(Client *c)
                 attach(c);
                 return;
         }
-        for (n = c->mon->nmaster, i = nexttiled(c->mon->clients);
-             n > 1 && i;
-             i = nexttiled(i->next), n--);
+        for (n = c->mon->nmaster, i = c->mon->clients;
+             i && (i->isfloating || !ISVISIBLE(i) || --n > 0);
+             i = i->next);
         if (!i) {
                 attachbottom(c);
                 return;
@@ -1154,11 +1154,11 @@ drawtabhelper(Monitor *m, int onlystack)
         Client *c;
 
         if (onlystack) {
+                /* m->ntiles > m->nmaster */
                 ntabs = MIN(m->ntiles - m->nmaster, MAXTABS);
-                /* the following loop assumes m->ntiles > m->nmaster */
-                for (i = m->nmaster, c = nexttiled(m->clients);
-                     i > 0;
-                     c = nexttiled(c->next), i--);
+                for (i = m->nmaster, c = m->clients;
+                     c->isfloating || !ISVISIBLE(c) || i-- > 0;
+                     c = c->next);
         } else {
                 ntabs = MIN(m->ntiles, MAXTABS);
                 c = nexttiled(m->clients);
@@ -1178,9 +1178,7 @@ drawtabhelper(Monitor *m, int onlystack)
 
 void
 drawtabs(void) {
-	Monitor *m;
-
-	for (m = mons; m; m = m->next)
+	for (Monitor *m = mons; m; m = m->next)
                 drawtab(m);
 }
 
@@ -1388,14 +1386,23 @@ focusstack(const Arg *arg)
 void
 focustiled(const Arg *arg)
 {
-        int i = arg->i;
-        Client *c = selmon->clients;
+        int n = arg->i;
+        Client *c, *i;
 
-        for (; c && (c->isfloating || !ISVISIBLE(c) || i-- > 0); c = c->next);
-        if (c) {
-                focusalt(c);
-                restack(selmon, 0);
+        if (!(i = nexttiled(selmon->clients)))
+                return;
+        do
+                c = i;
+        while (n-- > 0 && (i = nexttiled(i->next)));
+        if (c == selmon->sel) {
+                do
+                        c = c->snext;
+                while (c && !ISVISIBLE(c));
+                if (!c)
+                        return;
         }
+        focusalt(c);
+        restack(selmon, 0);
 }
 
 void
@@ -1736,10 +1743,10 @@ monocle(Monitor *m)
 
                 wx = m->wx + gappoh;
                 wy = m->wy + gappih;
-                ww = m->ww - 2*gappoh;
-                wh = m->wh - 2*gappih;
+                ww = m->ww - 2 * gappoh;
+                wh = m->wh - 2 * gappih;
 
-                for (Client *c = nexttiled(m->clients); c; c = nexttiled(c->next))
+                for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
                         resize(c, wx, wy, ww - 2 * c->bw, wh - 2 * c->bw, 0);
         }
 }
@@ -2372,21 +2379,24 @@ setmfact(const Arg *arg)
 void
 setsplus(const Arg *arg)
 {
-        int selidx = 0;
+        int selidx;
+        Client *c;
 
 	if (!selmon->lt[selmon->sellt]->arrange || selmon->lt[selmon->sellt]->arrange == monocle)
 		return;
-        if (!selmon->sel)
+        if (!selmon->sel || !selmon->sel->isfloating)
                 return;
-        for (Client *c = nexttiled(selmon->clients); c != selmon->sel; c = nexttiled(c->next), selidx++);
+        for (selidx = 0, c = selmon->clients; c != selmon->sel; c = c->next)
+                if (!c->isfloating && ISVISIBLE(c))
+                        selidx++;
         if (selmon->lt[selmon->sellt]->arrange == tile) {
                 if (selidx < selmon->nmaster) {
                         if (MIN(selmon->nmaster, selmon->ntiles) > 1)
                                 SPLUS(selmon)[0] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
                         else
                                 return;
-                } else if ((selmon->ntiles - selmon->nmaster) > 1) {
-                        if ((selmon->ntiles - selmon->nmaster) > 2 && selidx == selmon->nmaster + 1)
+                } else if (selmon->ntiles > selmon->nmaster + 1) {
+                        if (selmon->ntiles > selmon->nmaster + 2 && selidx == selmon->nmaster + 1)
                                 SPLUS(selmon)[2] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[2] + arg->i, 0);
                         else
                                 SPLUS(selmon)[1] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
@@ -2752,8 +2762,8 @@ tiledeck(Monitor *m, int deck)
 
                 wx = m->wx + gappoh;
                 wy = m->wy + gappov;
-                ww = m->ww - 2*gappoh;
-                wh = m->wh - 2*gappov;
+                ww = m->ww - 2 * gappoh;
+                wh = m->wh - 2 * gappov;
 
                 /* masters */
                 w = m->ntiles > m->nmaster ? ww * m->mfact : ww;
@@ -2826,7 +2836,7 @@ tiledeck(Monitor *m, int deck)
                                                 h = h2;
                                         } else
                                                 h = h1;
-                                        resize(c, x, wy + y, w - (2*c->bw), h - (2*c->bw), 0);
+                                        resize(c, x, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
                                         y += HEIGHT(c) + gappih;
                                 }
                                 /* rest of the stack clients */
@@ -3283,7 +3293,9 @@ void
 updatentiles(Monitor *m)
 {
         m->ntiles = 0;
-        for (Client *c = nexttiled(m->clients); c; c = nexttiled(c->next), m->ntiles++);
+        for (Client *c = m->clients; c; c = c->next)
+                if (!c->isfloating && ISVISIBLE(c))
+                        m->ntiles++;
 }
 
 void
