@@ -658,9 +658,9 @@ buttonpress(XEvent *e)
                 }
                 tbw = selmon->ww / ntabs;
                 lft = selmon->ww - tbw * ntabs;
-                i = 0, x = -ev->x;
+                i = -1, x = -ev->x;
                 do
-                        x += (++i <= lft) ? tbw + 1 : tbw;
+                        x += (++i < lft) ? tbw + 1 : tbw;
                 while (x <= 0);
                 click = ClkTabBar;
                 arg.i = i + ofst;
@@ -1404,7 +1404,7 @@ focuswin(const Arg* arg)
         int i = arg->i;
         Client *c = selmon->clients;
 
-        for (; c && (c->isfloating || !ISVISIBLE(c) || i-- > 1); c = c->next);
+        for (; c && (c->isfloating || !ISVISIBLE(c) || i-- > 0); c = c->next);
         if (c == selmon->sel)
                 do
                         c = c->snext;
