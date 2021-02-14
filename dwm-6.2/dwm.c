@@ -2122,7 +2122,7 @@ restorestatus(void)
                 return;
         for (newstext = curstext; *newstext != '\n' && *newstext != '\0'; newstext++);
         if (*newstext != '\0')
-                XStoreName(dpy, DefaultRootWindow(dpy), ++newstext);
+                XStoreName(dpy, DefaultRootWindow(dpy), newstext + 1);
 }
 
 void
