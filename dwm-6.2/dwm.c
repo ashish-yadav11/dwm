@@ -2523,7 +2523,7 @@ shifttag(const Arg *arg)
                 return;
         if (arg->i > 0)
                 shifted.ui = selmon->pertag->curtag == LENGTH(tags) ?
-                        1 << 0 : 1 << (selmon->pertag->curtag);
+                        1 << 0 : 1 << selmon->pertag->curtag;
         else
                 shifted.ui = selmon->pertag->curtag == 1 ?
                         1 << (LENGTH(tags) - 1) : 1 << (selmon->pertag->curtag - 2);
