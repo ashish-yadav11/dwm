@@ -726,16 +726,17 @@ cleanup(void)
                                 }
                 while (m->stack)
                         unmanage(m->stack, 0);
-                cleanupmon(m);
         }
         XRestackWindows(dpy, wins, n);
         free(wins);
+	XUngrabKey(dpy, AnyKey, AnyModifier, root);
+	while (mons)
+		cleanupmon(mons);
 	if (systray) {
 		XUnmapWindow(dpy, systray->win);
 		XDestroyWindow(dpy, systray->win);
 		free(systray);
 	}
-	XUngrabKey(dpy, AnyKey, AnyModifier, root);
 	for (i = 0; i < CurLast; i++)
 		drw_cur_free(drw, cursor[i]);
 	for (i = 0; i < LENGTH(colors); i++)
