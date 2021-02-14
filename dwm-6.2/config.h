@@ -779,9 +779,11 @@ togglefocusarea(const Arg *arg)
         inrel = (curidx < selmon->nmaster);
         c = selmon->sel;
         do {
-                for (c = c->snext; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
+                do
+                        c = c->snext;
+                while (c && (c->isfloating || !ISVISIBLE(c)));
                 if (c) {
-                        for (curidx = 0, i = selmon->clients; i != selmon->sel; i = i->next)
+                        for (curidx = 0, i = selmon->clients; i != c; i = i->next)
                                 if (!i->isfloating && ISVISIBLE(i))
                                         curidx++;
                 } else
@@ -869,7 +871,9 @@ zoomswap(const Arg *arg)
         nmc = selmon->sel;
         omc = nexttiled(selmon->clients);
 	if (nmc == omc) {
-                for (nmc = nmc->snext; nmc && (nmc->isfloating || !ISVISIBLE(nmc)); nmc = nmc->snext);
+                do
+                        nmc = nmc->snext;
+                while (nmc && (nmc->isfloating || !ISVISIBLE(nmc)));
                 if (!nmc)
                         return;
         } else {
