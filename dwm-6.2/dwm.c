@@ -54,6 +54,7 @@
 #define INTERSECT(x,y,w,h,m)            (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
                                        * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
 #define ISVISIBLE(C)                    ((C->tags & C->mon->tagset[C->mon->seltags]) && !C->ishidden)
+#define ISSTATUSDRAWN                   (wsbar - wstext - ble >= lrpad)
 #define LENGTH(X)                       (sizeof X / sizeof X[0])
 #define MOUSEMASK                       (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                        ((X)->w + 2 * (X)->bw)
@@ -636,7 +637,7 @@ buttonpress(XEvent *e)
                         arg.ui = 1 << i;
                 } else if (ev->x < ble)
                         click = ClkLtSymbol;
-                else if (ev->x < wsbar - wstext || wsbar - wstext - ble < lrpad)
+                else if (ev->x < wsbar - wstext || !ISSTATUSDRAWN)
                         click = ClkWinTitle;
                 else if ((x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
                         updatedsblockssig(x);
@@ -1042,28 +1043,26 @@ drawbar(Monitor *m)
                 w = m->ww - x - wstext - lrpad; /* - lrpad for padding to window title */
                 wsbar = m->ww;
                 if (systray) {
-                        int s;
+                        int sw;
                         XSetWindowAttributes wa;
 
-                        for (s = SYSTRAYSPACING, c = systray->icons; c; c = c->next)
-                                s += c->w + SYSTRAYSPACING;
-                        if (s == SYSTRAYSPACING) {
-                                XMoveResizeWindow(dpy, systray->win, 0, m->by - bh, 1, bh);
+                        for (sw = SYSTRAYSPACING, c = systray->icons; c; c = c->next)
+                                sw += c->w + SYSTRAYSPACING;
+                        if (sw == SYSTRAYSPACING) {
+                                XMoveResizeWindow(dpy, systray->win, 0, -bh, 1, bh);
                                 goto out;
                         }
-                        w -= s;
-                        wsbar -= s;
-                        XMoveResizeWindow(dpy, systray->win, m->wx + m->ww - s, m->by, s, bh);
-                        XSetForeground(dpy, drw->gc, scheme[w >= 0 ? SchemeNorm : SchemeStts][ColBg].pixel);
-                        XFillRectangle(dpy, systray->win, drw->gc, 0, 0, s, bh);
-                        XMapWindow(dpy, systray->win);
-
+                        w -= sw;
+                        wsbar -= sw;
+                        XMoveResizeWindow(dpy, systray->win, m->wx + wsbar, m->by, sw, bh);
                         wa.background_pixel = scheme[w >= 0 ? SchemeNorm : SchemeStts][ColBg].pixel;
-                        for (s = SYSTRAYSPACING, c = systray->icons; c; c = c->next) {
+                        XSetForeground(dpy, drw->gc, wa.background_pixel);
+                        XFillRectangle(dpy, systray->win, drw->gc, 0, 0, sw, bh);
+                        for (sw = SYSTRAYSPACING, c = systray->icons; c; c = c->next) {
                                 XChangeWindowAttributes(dpy, c->win, CWBackPixel, &wa);
-                                XMoveResizeWindow(dpy, c->win, s, (bh - SYSTRAYHEIGTH) / 2, c->w, c->h);
+                                XMoveResizeWindow(dpy, c->win, sw, (bh - SYSTRAYHEIGTH) / 2, c->w, c->h);
                                 XMapRaised(dpy, c->win);
-                                s += c->w + SYSTRAYSPACING;
+                                sw += c->w + SYSTRAYSPACING;
                         }
                 }
 out:
@@ -1084,7 +1083,6 @@ out:
         } else if ((w += lrpad) > 0)
                 drw_rect(drw, x, 0, w, bh, 1, 1); /* to keep title area clean */
 
-	XLowerWindow(dpy, m->barwin);
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
 
@@ -1570,14 +1568,14 @@ initsystray(void)
         };
 
         systray = ecalloc(1, sizeof(Systray));
-        systray->win = XCreateWindow(dpy, root, 0, 0, 1, bh, 0, DefaultDepth(dpy, screen),
+        systray->win = XCreateWindow(dpy, root, 0, -bh, 1, bh, 0, DefaultDepth(dpy, screen),
                                      CopyFromParent, DefaultVisual(dpy, screen),
                                      CWOverrideRedirect|CWBackPixmap|CWEventMask, &wa);
         XSelectInput(dpy, systray->win, SubstructureNotifyMask);
         XChangeProperty(dpy, systray->win, netatom[NetSystemTrayOrientation], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *)&netatom[NetSystemTrayOrientationHorz], 1);
         XSetSelectionOwner(dpy, netatom[NetSystemTray], systray->win, CurrentTime);
-        XMapRaised(dpy, systray->win);
+        XMapWindow(dpy, systray->win);
         if (XGetSelectionOwner(dpy, netatom[NetSystemTray]) == systray->win) {
                 sendevent(root, xatom[Manager], StructureNotifyMask, CurrentTime,
                           netatom[NetSystemTray], systray->win, 0, 0);
@@ -1785,8 +1783,8 @@ motionnotify(XEvent *e)
         for (m = mons; m && m->barwin != ev->window; m = m->next);
         if (!m)
                 return;
-        if (m == selmon && wsbar - wstext - ble >= lrpad &&
-            (x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0)
+        if (m == selmon && ISSTATUSDRAWN && (x = wsbar - lrpad / 2 - ev->x) > 0
+                                         && (x -= wstext - lrpad) <= 0)
                 updatedsblockssig(x);
         else if (m->statushandcursor) {
                 m->statushandcursor = 0;
@@ -3129,6 +3127,8 @@ updatebars(void)
 		XMapRaised(dpy, m->tabwin);
 		XSetClassHint(dpy, m->tabwin, &ch);
 	}
+        if (systray)
+                XRaiseWindow(dpy, systray->win);
 }
 
 void
