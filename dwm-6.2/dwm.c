@@ -1810,10 +1810,10 @@ movemouse(const Arg *arg)
         restack(selmon, 1);
 	ocx = c->x;
 	ocy = c->y;
+	if (!getrootptr(&x, &y))
+		return;
 	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
 		None, cursor[CurMove]->cursor, CurrentTime) != GrabSuccess)
-		return;
-	if (!getrootptr(&x, &y))
 		return;
 	do {
 		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
@@ -2037,11 +2037,11 @@ resizemouse(const Arg *arg)
 	ocy = c->y;
         ocw = c->w;
         och = c->h;
+        if (!getwinptr(c->win, &px, &py))
+	        return;
 	if (XGrabPointer(dpy, root, False, MOUSEMASK, GrabModeAsync, GrabModeAsync,
 		None, cursor[CurResize]->cursor, CurrentTime) != GrabSuccess)
 		return;
-        if (!getwinptr(c->win, &px, &py))
-	        return;
 	XWarpPointer(dpy, None, c->win, 0, 0, 0, 0, c->w + c->bw - 1, c->h + c->bw - 1);
 	do {
 		XMaskEvent(dpy, MOUSEMASK|ExposureMask|SubstructureRedirectMask, &ev);
