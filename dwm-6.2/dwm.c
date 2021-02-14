@@ -2170,8 +2170,7 @@ scan(void)
 			&& (wa.map_state == IsViewable || getstate(wins[i]) == IconicState))
 				manage(wins[i], &wa);
 		}
-		if (wins)
-			XFree(wins);
+                XFree(wins);
 	}
 }
 
