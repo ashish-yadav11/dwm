@@ -231,6 +231,7 @@ static void focuslast(const Arg *arg);
 static void focuslastvisible(const Arg *arg);
 //static void focusmon(const Arg *arg);
 //static void focusstack(const Arg *arg);
+static void focustiled(const Arg *arg);
 static void focuswin(const Arg* arg);
 static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
@@ -1385,14 +1386,29 @@ focusstack(const Arg *arg)
 */
 
 void
+focustiled(const Arg *arg)
+{
+        int i = arg->i;
+        Client *c = selmon->clients;
+
+        for (; c && (c->isfloating || !ISVISIBLE(c) || i-- > 0); c = c->next);
+        if (c) {
+                focusalt(c);
+                restack(selmon, 0);
+        }
+}
+
+void
 focuswin(const Arg* arg)
 {
         int i = arg->i;
-        Client *c = nexttiled(selmon->clients);
+        Client *c = selmon->clients;
 
-        for (; c && i > 1; c = nexttiled(c->next), i--);
+        for (; c && (c->isfloating || !ISVISIBLE(c) || i-- > 1); c = c->next);
         if (c == selmon->sel)
-                for (; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
+                do
+                        c = c->snext;
+                while (c && !ISVISIBLE(c));
         if (c) {
                 focusalt(c);
                 restack(selmon, 0);

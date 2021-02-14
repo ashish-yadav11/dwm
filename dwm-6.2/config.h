@@ -151,7 +151,6 @@ static void floatmovey(const Arg *arg);
 static void floatresizeh(const Arg *arg);
 static void floatresizew(const Arg *arg);
 static void focusmaster(const Arg *arg);
-static void focusnthtiled(const Arg *arg);
 static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
@@ -324,26 +323,26 @@ static Key keys[] = {
 	{ MODRKEY,           XK_F11,                    spawn,                  REDSHIFT("2200") },
 	{ MODRKEY,           XK_F12,                    spawn,                  REDSHIFT("2000") },
 
-	{ SUPKEY|MODRKEY,               XK_1,           focusnthtiled,          {.i = 1  } },
-	{ SUPKEY|MODRKEY,               XK_2,           focusnthtiled,          {.i = 2  } },
-	{ SUPKEY|MODRKEY,               XK_3,           focusnthtiled,          {.i = 3  } },
-	{ SUPKEY|MODRKEY,               XK_4,           focusnthtiled,          {.i = 4  } },
-	{ SUPKEY|MODRKEY,               XK_5,           focusnthtiled,          {.i = 5  } },
-	{ SUPKEY|MODRKEY,               XK_6,           focusnthtiled,          {.i = 6  } },
-	{ SUPKEY|MODRKEY,               XK_7,           focusnthtiled,          {.i = 7  } },
-	{ SUPKEY|MODRKEY,               XK_8,           focusnthtiled,          {.i = 8  } },
-	{ SUPKEY|MODRKEY,               XK_9,           focusnthtiled,          {.i = 9  } },
-	{ SUPKEY|MODRKEY,               XK_0,           focusnthtiled,          {.i = 10 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_1,           focusnthtiled,          {.i = 11 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_2,           focusnthtiled,          {.i = 12 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_3,           focusnthtiled,          {.i = 13 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_4,           focusnthtiled,          {.i = 14 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_5,           focusnthtiled,          {.i = 15 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_6,           focusnthtiled,          {.i = 16 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_7,           focusnthtiled,          {.i = 17 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_8,           focusnthtiled,          {.i = 18 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_9,           focusnthtiled,          {.i = 19 } },
-	{ SUPKEY|MODRKEY|ShiftMask,     XK_0,           focusnthtiled,          {.i = 20 } },
+	{ SUPKEY|MODRKEY,               XK_1,           focustiled,             {.i = 0  } },
+	{ SUPKEY|MODRKEY,               XK_2,           focustiled,             {.i = 1  } },
+	{ SUPKEY|MODRKEY,               XK_3,           focustiled,             {.i = 2  } },
+	{ SUPKEY|MODRKEY,               XK_4,           focustiled,             {.i = 3  } },
+	{ SUPKEY|MODRKEY,               XK_5,           focustiled,             {.i = 4  } },
+	{ SUPKEY|MODRKEY,               XK_6,           focustiled,             {.i = 5  } },
+	{ SUPKEY|MODRKEY,               XK_7,           focustiled,             {.i = 6  } },
+	{ SUPKEY|MODRKEY,               XK_8,           focustiled,             {.i = 7  } },
+	{ SUPKEY|MODRKEY,               XK_9,           focustiled,             {.i = 8  } },
+	{ SUPKEY|MODRKEY,               XK_0,           focustiled,             {.i = 9  } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_1,           focustiled,             {.i = 10 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_2,           focustiled,             {.i = 11 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_3,           focustiled,             {.i = 12 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_4,           focustiled,             {.i = 13 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_5,           focustiled,             {.i = 14 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_6,           focustiled,             {.i = 15 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_7,           focustiled,             {.i = 16 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_8,           focustiled,             {.i = 17 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_9,           focustiled,             {.i = 18 } },
+	{ SUPKEY|MODRKEY|ShiftMask,     XK_0,           focustiled,             {.i = 19 } },
 	{ MODLKEY,                      XK_0,           vieworprev,             {.ui = ~0 } },
 	{ MODLKEY|ShiftMask,            XK_0,           tag,                    {.ui = ~0 } },
 	TAGKEYS(                        XK_1,                                   0)
@@ -502,26 +501,6 @@ focusmaster(const Arg *arg)
                 focusalt(c);
                 restack(selmon, 0);
         }
-}
-
-void
-focusnthtiled(const Arg *arg)
-{
-        int n = arg->i;
-        Client *c, *i;
-
-        if (!(i = nexttiled(selmon->clients)))
-                return;
-        do
-                c = i;
-        while (--n > 0 && (i = nexttiled(i->next)));
-        if (c == selmon->sel) {
-                for (c = c->snext; c && !ISVISIBLE(c); c = c->snext);
-                if (!c)
-                        return;
-        }
-        focusalt(c);
-        restack(selmon, 0);
 }
 
 void
