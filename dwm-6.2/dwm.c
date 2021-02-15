@@ -54,7 +54,7 @@
 #define INTERSECT(x,y,w,h,m)            (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
                                        * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
 #define ISVISIBLE(C)                    ((C->tags & C->mon->tagset[C->mon->seltags]) && !C->ishidden)
-#define ISSTATUSDRAWN                   (wsbar - wstext - ble >= lrpad)
+#define ISSTATUSDRAWN                   (selmon->ww - stw - wstext - ble >= lrpad)
 #define LENGTH(X)                       (sizeof X / sizeof X[0])
 #define MOUSEMASK                       (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                        ((X)->w + 2 * (X)->bw)
@@ -319,6 +319,7 @@ static void updatestatus(void);
 static void updatesystray(void);
 static void updatesystrayicongeom(Client *c, int w, int h);
 static void updatesystrayiconstate(Client *c, XPropertyEvent *ev);
+static void updatesystraymon();
 static void updatetitle(Client *c);
 static void updatewindowtype(Client *c);
 static void updatewmhints(Client *c);
@@ -338,7 +339,7 @@ static char stexts[STATUSLENGTH];
 static int screen;
 static int sw, sh;           /* X display screen geometry width, height */
 static int bh, blw, ble;     /* bar geometry */
-static int wsbar;            /* width of bar with systray */
+static int stw;              /* systray width */
 static int wstext;           /* width of status text */
 static int th;               /* tab bar geometry */
 static int lrpad;            /* sum of left and right paddings for text */
@@ -637,9 +638,10 @@ buttonpress(XEvent *e)
                         arg.ui = 1 << i;
                 } else if (ev->x < ble)
                         click = ClkLtSymbol;
-                else if (ev->x < wsbar - wstext || !ISSTATUSDRAWN)
+                else if (ev->x < selmon->ww - stw - wstext || !ISSTATUSDRAWN)
                         click = ClkWinTitle;
-                else if ((x = wsbar - lrpad / 2 - ev->x) > 0 && (x -= wstext - lrpad) <= 0) {
+                else if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 &&
+                         (x -= wstext - lrpad) <= 0) {
                         updatedsblockssig(x);
                         if (dirty)
                                 return;
@@ -1009,7 +1011,6 @@ drawbar(Monitor *m)
         char halsymbol[43]; /* 10 + 1 + 15 + 1 + 15 + 1 */
 	Client *c;
 
-        /* tags, number of hidden clients, attach and layout */
 	for (c = m->clients; c; c = c->next) {
                 if (c->ishidden && c->tags & m->tagset[m->seltags])
                         nhid++;
@@ -1036,51 +1037,27 @@ drawbar(Monitor *m)
         drw_setscheme(drw, scheme[SchemeLtSm]);
         x = drw_text(drw, x, 0, w, bh, lrpad / 2, halsymbol, 0);
 
-        /* systray, status and window title */
         if (m == selmon) {
+                if (systray)
+                        updatesystraymon();
                 blw = w;
                 ble = x;
-                w = m->ww - x - wstext - lrpad; /* - lrpad for padding to window title */
-                wsbar = m->ww;
-                if (systray) {
-                        int sw;
-                        XSetWindowAttributes wa;
-
-                        for (sw = SYSTRAYSPACING, c = systray->icons; c; c = c->next)
-                                sw += c->w + SYSTRAYSPACING;
-                        if (sw == SYSTRAYSPACING) {
-                                XMoveResizeWindow(dpy, systray->win, 0, -bh, 1, bh);
-                                goto out;
-                        }
-                        w -= sw;
-                        wsbar -= sw;
-                        XMoveResizeWindow(dpy, systray->win, m->wx + wsbar, m->by, sw, bh);
-                        wa.background_pixel = scheme[w >= 0 ? SchemeNorm : SchemeStts][ColBg].pixel;
-                        XSetForeground(dpy, drw->gc, wa.background_pixel);
-                        XFillRectangle(dpy, systray->win, drw->gc, 0, 0, sw, bh);
-                        for (sw = SYSTRAYSPACING, c = systray->icons; c; c = c->next) {
-                                XChangeWindowAttributes(dpy, c->win, CWBackPixel, &wa);
-                                XMoveResizeWindow(dpy, c->win, sw, (bh - SYSTRAYHEIGTH) / 2, c->w, c->h);
-                                XMapRaised(dpy, c->win);
-                                sw += c->w + SYSTRAYSPACING;
-                        }
-                }
-out:
-                if (w >= 0)
+                w = m->ww - stw - x - wstext;
+                if (w >= lrpad)
                         drawstatus();
                 else
                         w += wstext;
         } else
-                w = m->ww - x - lrpad; /* - lrpad for padding to window title */
+                w = m->ww - x;
 
         drw_setscheme(drw, scheme[SchemeNorm]);
-        if (m->sel && w > 0) {
+        if (m->sel && w > lrpad) {
                 /* lrpad / 2 below for padding */
-                w = drw_text(drw, x, 0, w + lrpad / 2, bh, lrpad / 2, m->sel->name, 0);
+                w = drw_text(drw, x, 0, w - lrpad / 2, bh, lrpad / 2, m->sel->name, 0);
                 if (m->sel->isfloating)
                         drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
                 drw_rect(drw, w, 0, lrpad / 2, bh, 1, 1); /* to keep right padding clean */
-        } else if ((w += lrpad) > 0)
+        } else if (w > 0)
                 drw_rect(drw, x, 0, w, bh, 1, 1); /* to keep title area clean */
 
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
@@ -1102,7 +1079,7 @@ drawstatus(void)
         char tmp;
 
         drw_setscheme(drw, scheme[SchemeStts]);
-        x = wsbar - wstext;
+        x = selmon->ww - stw - wstext;
         drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
         for (;;) {
                 if ((unsigned char)*stc >= ' ') {
@@ -1122,7 +1099,7 @@ drawstatus(void)
                 stp = ++stc;
         }
         drw_setscheme(drw, scheme[SchemeStts]);
-        drw_rect(drw, x, 0, wsbar - x, bh, 1, 1); /* to keep right padding clean */
+        drw_rect(drw, x, 0, selmon->ww - stw - x, bh, 1, 1); /* to keep right padding clean */
 }
 
 void
@@ -1205,13 +1182,22 @@ enternotify(XEvent *e)
 void
 expose(XEvent *e)
 {
-	Monitor *m;
 	XExposeEvent *ev = &e->xexpose;
 
-	if (ev->count == 0 && (m = wintomon(ev->window))) {
-		drawbar(m);
-		drawtab(m);
-	}
+        if (ev->count != 0)
+                return;
+        if (ev->window == systray->win) {
+                updatesystray();
+                return;
+        }
+	for (Monitor *m = mons; m; m = m->next)
+                if (ev->window == m->barwin) {
+                        drawbar(m);
+                        return;
+                } else if (ev->window == m->tabwin) {
+                        drawtab(m);
+                        return;
+                }
 }
 
 void
@@ -1564,14 +1550,13 @@ initsystray(void)
         XSetWindowAttributes wa = {
                 .override_redirect = True,
                 .background_pixmap = ParentRelative,
-                .event_mask = ButtonPressMask|ExposureMask
+                .event_mask = ExposureMask|SubstructureNotifyMask
         };
 
         systray = ecalloc(1, sizeof(Systray));
         systray->win = XCreateWindow(dpy, root, 0, -bh, 1, bh, 0, DefaultDepth(dpy, screen),
                                      CopyFromParent, DefaultVisual(dpy, screen),
                                      CWOverrideRedirect|CWBackPixmap|CWEventMask, &wa);
-        XSelectInput(dpy, systray->win, SubstructureNotifyMask);
         XChangeProperty(dpy, systray->win, netatom[NetSystemTrayOrientation], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *)&netatom[NetSystemTrayOrientationHorz], 1);
         XSetSelectionOwner(dpy, netatom[NetSystemTray], systray->win, CurrentTime);
@@ -1783,7 +1768,7 @@ motionnotify(XEvent *e)
         for (m = mons; m && m->barwin != ev->window; m = m->next);
         if (!m)
                 return;
-        if (m == selmon && ISSTATUSDRAWN && (x = wsbar - lrpad / 2 - ev->x) > 0
+        if (m == selmon && ISSTATUSDRAWN && (x = selmon->ww - stw - lrpad / 2 - ev->x) > 0
                                          && (x -= wstext - lrpad) <= 0)
                 updatedsblockssig(x);
         else if (m->statushandcursor) {
@@ -2883,14 +2868,12 @@ togglebar(const Arg *arg)
 	selmon->showbar = !selmon->showbar;
 	updatebarpos(selmon);
 	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, selmon->ww, bh);
-        /*
 	if (systray) {
 		XWindowChanges wc;
 
                 wc.y = selmon->by;
 		XConfigureWindow(dpy, systray->win, CWY, &wc);
 	}
-        */
 	arrange(selmon);
 }
 
@@ -3435,7 +3418,32 @@ updatestatus(void)
 void
 updatesystray(void)
 {
-        drawbar(selmon);
+        int w = 0;
+
+        for (Client *c = systray->icons; c; c = c->next)
+                w += c->w + SYSTRAYSPACING;
+        if (w) {
+                int x;
+                XSetWindowAttributes wa;
+
+                w += SYSTRAYSPACING;
+                wa.background_pixel = scheme[SCHEMESYSTRAY][ColBg].pixel;
+                XMoveResizeWindow(dpy, systray->win, selmon->wx + selmon->ww - w, selmon->by, w, bh);
+                XSetForeground(dpy, drw->gc, wa.background_pixel);
+                XFillRectangle(dpy, systray->win, drw->gc, 0, 0, w, bh);
+                x = SYSTRAYSPACING;
+                for (Client *c = systray->icons; c; c = c->next) {
+                        XChangeWindowAttributes(dpy, c->win, CWBackPixel, &wa);
+                        XMoveResizeWindow(dpy, c->win, x, (bh - SYSTRAYHEIGTH) / 2, c->w, c->h);
+                        XMapRaised(dpy, c->win);
+                        x += c->w + SYSTRAYSPACING;
+                }
+        } else
+                XMoveResizeWindow(dpy, systray->win, 0, -bh, 1, bh);
+        if (w != stw) {
+                stw = w;
+                drawbar(selmon);
+        }
 }
 
 void
@@ -3471,6 +3479,17 @@ updatesystrayiconstate(Client *c, XPropertyEvent *ev)
                 sendevent(c->win, xatom[Xembed], StructureNotifyMask, CurrentTime,
                           XEMBED_WINDOW_DEACTIVATE, 0, systray->win, XEMBED_EMBEDDED_VERSION);
 	}
+}
+
+void
+updatesystraymon(void)
+{
+        static Monitor *pselmon = NULL;
+
+        if (selmon != pselmon) {
+                pselmon = selmon;
+                updatesystray();
+        }
 }
 
 void

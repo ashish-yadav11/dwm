@@ -8,6 +8,8 @@
 #define SYSTRAYHEIGTH                   16
 /* spacing between systray icons */
 #define SYSTRAYSPACING                  4
+/* colorscheme used for background of systray */
+#define SCHEMESYSTRAY                   SchemeNorm
 
 typedef struct {
         const Arg cmd;
