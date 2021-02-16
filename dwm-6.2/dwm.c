@@ -243,7 +243,7 @@ static void focustiled(const Arg *arg);
 static void focuswin(const Arg* arg);
 static Atom getatomprop(Client *c, Atom prop);
 static int getrootptr(int *x, int *y);
-static int getwinptr(Window win, int *x, int *y);
+static int getwinptr(Window w, int *x, int *y);
 static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static long getxembedflags(Window w);
@@ -1450,13 +1450,13 @@ getrootptr(int *x, int *y)
 }
 
 int
-getwinptr(Window win, int *x, int *y)
+getwinptr(Window w, int *x, int *y)
 {
 	int di;
 	unsigned int dui;
 	Window dummy;
 
-	return XQueryPointer(dpy, win, &dummy, &dummy, &di, &di, x, y, &dui);
+	return XQueryPointer(dpy, w, &dummy, &dummy, &di, &di, x, y, &dui);
 }
 
 long
