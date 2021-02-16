@@ -3064,7 +3064,6 @@ void
 unmapnotify(XEvent *e)
 {
 	Client *c;
-        Icon *i;
 	XUnmapEvent *ev = &e->xunmap;
 
 	if ((c = wintoclient(ev->window))) {
@@ -3072,12 +3071,7 @@ unmapnotify(XEvent *e)
 			setclientstate(c, WithdrawnState);
 		else
 			unmanage(c, 0);
-        } else if ((i = wintosystrayicon(ev->window)) && i->ismapped) {
-		/* KLUDGE! sometimes icons occasionally unmap their windows, but do
-		 * not destroy them. We map those windows back */
-                XMapWindow(dpy, i->win);
-                updatesystray();
-        }
+	}
 }
 
 void
@@ -3508,15 +3502,15 @@ updatesystrayiconstate(Icon *i, XPropertyEvent *ev)
         if (!flags)
                 return;
         if (flags & XEMBED_MAPPED) {
-                if (i->ismapped)
-                        return;
-                i->ismapped = 1;
-                XMapWindow(dpy, i->win);
+                if (!i->ismapped) {
+                        i->ismapped = 1;
+                        XMapWindow(dpy, i->win);
+                }
         } else {
-                if (!i->ismapped)
-                        return;
-                i->ismapped = 0;
-                XUnmapWindow(dpy, i->win);
+                if (i->ismapped) {
+                        i->ismapped = 0;
+                        XUnmapWindow(dpy, i->win);
+                }
 	}
 }
 
