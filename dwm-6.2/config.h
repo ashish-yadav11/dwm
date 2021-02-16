@@ -128,6 +128,7 @@ static const char *const *scratchcmds[] = {
 #define ROFIDRUN { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
+#define ROFIWINREGEX { .v = (const char*[]){ "rofi", "-show", "window", "-matching", "regex", NULL } }
 #define VOLUMEL { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
 #define VOLUMEM { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
 #define VOLUMER { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
@@ -249,7 +250,8 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
 	{ MODLKEY,                      XK_o,           winview,                {0} },
-	{ MODLKEY,                      XK_q,           windowswitcher,         {0} },
+	{ MODLKEY,                      XK_q,           windowswitcher,         {.i = 0} },
+	{ MODLKEY|ControlMask,          XK_q,           windowswitcher,         {.i = 1} },
 	{ MODLKEY,                      XK_comma,       shiftview,              {.i = -1 } },
 	{ MODLKEY,                      XK_period,      shiftview,              {.i = +1 } },
 	{ MODLKEY|ShiftMask,            XK_comma,       shifttag,               {.i = -1 } },
@@ -846,7 +848,10 @@ windowswitcher(const Arg *arg)
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
         }
-        spawn(&((Arg)ROFIWIN));
+        if (arg->i)
+                spawn(&((Arg)ROFIWINREGEX));
+        else
+                spawn(&((Arg)ROFIWIN));
 }
 
 void
