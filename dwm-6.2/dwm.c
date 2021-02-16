@@ -3507,10 +3507,10 @@ updatesystrayiconstate(Icon *i, XPropertyEvent *ev)
 void
 updatesystraymon(void)
 {
-        static Monitor *pselmon = NULL;
+        static Monitor *p = NULL;
 
-        if (selmon != pselmon) {
-                pselmon = selmon;
+        if (selmon != p) {
+                p = selmon;
                 updatesystray();
         }
 }
