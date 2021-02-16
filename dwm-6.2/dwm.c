@@ -338,7 +338,6 @@ static Client *wintoclient(Window w);
 static Monitor *wintomon(Window w);
 static Icon *wintosystrayicon(Window w);
 static int xerror(Display *dpy, XErrorEvent *ee);
-static int xerrordummy(Display *dpy, XErrorEvent *ee);
 static int xerrorstart(Display *dpy, XErrorEvent *ee);
 static void zoom(const Arg *arg);
 
@@ -770,9 +769,9 @@ cleanupsystray(void)
 {
         Icon *i;
 
-        XGrabServer(dpy); /* avoid race conditions */
-        XSetErrorHandler(xerrordummy);
+        XSelectInput(dpy, systray->win, NoEventMask);
         while ((i = systray->icons)) {
+                XSelectInput(dpy, i->win, NoEventMask);
                 XUnmapWindow(dpy, i->win);
                 XReparentWindow(dpy, i->win, root, 0, 0);
                 systray->icons = i->next;
@@ -780,8 +779,6 @@ cleanupsystray(void)
         }
         XSetSelectionOwner(dpy, netatom[NetSystemTray], None, CurrentTime);
         XSync(dpy, False);
-        XSetErrorHandler(xerror);
-        XUngrabServer(dpy);
         XUnmapWindow(dpy, systray->win);
         XDestroyWindow(dpy, systray->win);
         free(systray);
@@ -1631,15 +1628,11 @@ killclient(const Arg *arg)
 {
 	if (!selmon->sel)
 		return;
+        XSelectInput(dpy, selmon->sel->win, NoEventMask);
 	if (!sendevent(selmon->sel->win, wmatom[WMDelete], NoEventMask,
                        wmatom[WMDelete], CurrentTime, 0, 0, 0)) {
-		XGrabServer(dpy);
-		XSetErrorHandler(xerrordummy);
-		XSetCloseDownMode(dpy, DestroyAll);
 		XKillClient(dpy, selmon->sel->win);
 		XSync(dpy, False);
-		XSetErrorHandler(xerror);
-		XUngrabServer(dpy);
 	}
 }
 
@@ -3045,14 +3038,11 @@ unmanage(Client *c, int destroyed)
 	detachstack(c);
 	if (!destroyed) {
 		wc.border_width = c->oldbw;
-		XGrabServer(dpy); /* avoid race conditions */
-		XSetErrorHandler(xerrordummy);
+                XSelectInput(dpy, c->win, NoEventMask);
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc); /* restore border */
 		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
 		setclientstate(c, WithdrawnState);
 		XSync(dpy, False);
-		XSetErrorHandler(xerror);
-		XUngrabServer(dpy);
 	}
 	free(c);
 	focus(NULL);
@@ -3654,12 +3644,6 @@ xerror(Display *dpy, XErrorEvent *ee)
 	fprintf(stderr, "dwm: fatal error: request code=%d, error code=%d\n",
 		ee->request_code, ee->error_code);
 	return xerrorxlib(dpy, ee); /* may call exit */
-}
-
-int
-xerrordummy(Display *dpy, XErrorEvent *ee)
-{
-	return 0;
 }
 
 /* Startup Error handler to check if another window manager
