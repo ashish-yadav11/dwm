@@ -283,7 +283,7 @@ static int sendevent(Window w, Atom proto, int m, long d0, long d1, long d2, lon
 static void sendmon(Client *c, Monitor *m);
 static void setattach(const Arg *arg);
 static void setattorprev(const Arg *arg);
-static void setwindowstate(Window win, long state);
+static void setclientstate(Client *c, long state);
 static void setdesktopnames(void);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
@@ -422,7 +422,6 @@ addsystrayicon(Icon *i)
         XReparentWindow(dpy, i->win, systray->win, 0, 0);
         sendevent(i->win, netatom[Xembed], StructureNotifyMask, CurrentTime,
                   XEMBED_EMBEDDED_NOTIFY, 0, systray->win, XEMBED_EMBEDDED_VERSION);
-        setwindowstate(i->win, NormalState);
         XSync(dpy, False);
         i->ismapped = 1;
         updatesystray();
@@ -776,7 +775,6 @@ cleanupsystray(void)
         while ((i = systray->icons)) {
                 XUnmapWindow(dpy, i->win);
                 XReparentWindow(dpy, i->win, root, 0, 0);
-                setwindowstate(i->win, WithdrawnState);
                 systray->icons = i->next;
                 free(i);
         }
@@ -1702,7 +1700,7 @@ manage(Window w, XWindowAttributes *wa)
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
 		(unsigned char *) &(c->win), 1);
 	XMoveResizeWindow(dpy, c->win, c->x + 2 * sw, c->y, c->w, c->h); /* some windows require this */
-	setwindowstate(c->win, NormalState);
+	setclientstate(c, NormalState);
 	if (c->mon == selmon)
 		unfocus(selmon->sel);
 	c->mon->sel = c;
@@ -2300,11 +2298,11 @@ setattorprev(const Arg *arg)
 }
 
 void
-setwindowstate(Window w, long state)
+setclientstate(Client *c, long state)
 {
 	long data[] = { state, None };
 
-	XChangeProperty(dpy, w, wmatom[WMState], wmatom[WMState], 32,
+	XChangeProperty(dpy, c->win, wmatom[WMState], wmatom[WMState], 32,
                         PropModeReplace, (unsigned char *)data, 2);
 }
 
@@ -3051,7 +3049,7 @@ unmanage(Client *c, int destroyed)
 		XSetErrorHandler(xerrordummy);
 		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc); /* restore border */
 		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
-		setwindowstate(c->win, WithdrawnState);
+		setclientstate(c, WithdrawnState);
 		XSync(dpy, False);
 		XSetErrorHandler(xerror);
 		XUngrabServer(dpy);
@@ -3071,7 +3069,7 @@ unmapnotify(XEvent *e)
 
 	if ((c = wintoclient(ev->window))) {
 		if (ev->send_event)
-			setwindowstate(c->win, WithdrawnState);
+			setclientstate(c, WithdrawnState);
 		else
 			unmanage(c, 0);
         } else if ((i = wintosystrayicon(ev->window)) && i->ismapped) {
@@ -3514,13 +3512,11 @@ updatesystrayiconstate(Icon *i, XPropertyEvent *ev)
                         return;
                 i->ismapped = 1;
                 XMapWindow(dpy, i->win);
-                setwindowstate(i->win, NormalState);
         } else {
                 if (!i->ismapped)
                         return;
                 i->ismapped = 0;
                 XUnmapWindow(dpy, i->win);
-                setwindowstate(i->win, WithdrawnState);
 	}
 }
 
