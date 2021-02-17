@@ -1721,8 +1721,6 @@ maprequest(XEvent *e)
 
 	if (!XGetWindowAttributes(dpy, ev->window, &wa))
 		return;
-	if (wa.override_redirect)
-		return;
 	if (!wintoclient(ev->window))
 		manage(ev->window, &wa);
 }
