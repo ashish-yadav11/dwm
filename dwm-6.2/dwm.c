@@ -3122,12 +3122,8 @@ updatebars(void)
 		XMapRaised(dpy, m->tabwin);
 		XSetClassHint(dpy, m->tabwin, &ch);
 	}
-        /* keep systray above barwin and systray icons above systray */
-        if (systray) {
+        if (systray) /* keep systray above barwin */
                 XRaiseWindow(dpy, systray->win);
-                for (Icon *i = systray->icons; i; i = i->next)
-                        XRaiseWindow(dpy, i->win);
-        }
 }
 
 void
