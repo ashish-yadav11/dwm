@@ -3316,20 +3316,6 @@ updatentiles(Monitor *m)
 }
 
 void
-updateselmon(Monitor *m)
-{
-        Client *c;
-        Monitor *p = selmon;
-
-        selmon = m;
-        if (p)
-                for (c = p->clients; c; c = c->next)
-                        updateclientdesktop(c);
-        for (c = selmon->clients; c; c = c->next)
-                updateclientdesktop(c);
-}
-
-void
 updatenumlockmask(void)
 {
 	unsigned int i, j;
@@ -3343,6 +3329,20 @@ updatenumlockmask(void)
 				== XKeysymToKeycode(dpy, XK_Num_Lock))
 				numlockmask = (1 << i);
 	XFreeModifiermap(modmap);
+}
+
+void
+updateselmon(Monitor *m)
+{
+        Client *c;
+        Monitor *p = selmon;
+
+        selmon = m;
+        if (p)
+                for (c = p->clients; c; c = c->next)
+                        updateclientdesktop(c);
+        for (c = selmon->clients; c; c = c->next)
+                updateclientdesktop(c);
 }
 
 void
@@ -3491,16 +3491,12 @@ updatesystrayiconstate(Icon *i, XPropertyEvent *ev)
 
         if (!flags)
                 return;
-        if (flags & XEMBED_MAPPED) {
-                if (!i->ismapped) {
-                        i->ismapped = 1;
-                        XMapWindow(dpy, i->win);
-                }
-        } else {
-                if (i->ismapped) {
-                        i->ismapped = 0;
-                        XUnmapWindow(dpy, i->win);
-                }
+        if (!i->ismapped && flags & XEMBED_MAPPED) {
+                i->ismapped = 1;
+                XMapWindow(dpy, i->win);
+        } else if (i->ismapped && !(flags & XEMBED_MAPPED)) {
+                i->ismapped = 0;
+                XUnmapWindow(dpy, i->win);
 	}
 }
 
