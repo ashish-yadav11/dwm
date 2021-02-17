@@ -1828,7 +1828,7 @@ movemouse(const Arg *arg)
 			else if (abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
 				ny = selmon->wy + selmon->wh - HEIGHT(c);
                         if (!c->isfloating && selmon->lt[selmon->sellt]->arrange &&
-                            (abs(nw - c->w) > snap || abs(nh - c->h) > snap)) {
+                            (abs(nx - c->x) > snap || abs(ny - c->y) > snap)) {
                                 c->isfloating = -1;
                                 arrange(selmon);
                         }
@@ -1905,7 +1905,7 @@ propertynotify(XEvent *e)
                         }
                         return;
 		case XA_WM_NORMAL_HINTS:
-			updatesizehints(c);
+			updategeomhints(c);
                         return;
 		case XA_WM_HINTS:
 			updatewmhints(c);
