@@ -2920,11 +2920,7 @@ togglefloating(const Arg *arg)
                         selmon->sel->sfh = selmon->sel->h;
                 }
         } else
-                if (selmon->sel->isfloating) {
-                        selmon->sel->isfloating = -1;
-                        resize(selmon->sel, selmon->sel->x, selmon->sel->y,
-                                selmon->sel->w, selmon->sel->h, 0);
-                }
+                selmon->sel->isfloating = -selmon->sel->isfloating;
 	arrange(selmon);
 }
 
