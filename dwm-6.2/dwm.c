@@ -331,7 +331,7 @@ static void updatesystrayicongeom(Icon *i, int w, int h);
 static void updatesystrayiconstate(Icon *i, XPropertyEvent *ev);
 static void updatesystraymon();
 static void updatetitle(Client *c);
-static void updatewindowtype(Client *c);
+static void updatewindowtype(Client *c, int new);
 static void updatewmhints(Client *c);
 static void view(const Arg *arg);
 static Client *wintoclient(Window w);
@@ -704,11 +704,7 @@ cleanup(void)
                 selmon = m;
                 view(&v);
                 setlayout(&lt);
-                for (c = m->clients; c; c = c->next, n++)
-                        if (c->isfloating <= 0) {
-                                c->isfloating = 1;
-                                resize(c, c->sfx, c->sfy, c->sfw, c->sfh, 0);
-                        }
+                for (c = m->clients; c; c = c->next, n++);
         }
         wins = ecalloc(n, sizeof(Window));
         n = 0;
@@ -1675,7 +1671,7 @@ manage(Window w, XWindowAttributes *wa)
 	XConfigureWindow(dpy, w, CWBorderWidth, &wc);
 	XSetWindowBorder(dpy, w, scheme[SchemeNorm][ColBorder].pixel);
 	configure(c); /* propagates border_width, if size doesn't change */
-	updatewindowtype(c);
+	updatewindowtype(c, 1);
 	updategeomhints(c);
 	updatewmhints(c);
 	c->sfx = c->x;
@@ -1831,10 +1827,12 @@ movemouse(const Arg *arg)
 				ny = selmon->wy;
 			else if (abs((selmon->wy + selmon->wh) - (ny + HEIGHT(c))) < snap)
 				ny = selmon->wy + selmon->wh - HEIGHT(c);
-			if (!c->isfloating && selmon->lt[selmon->sellt]->arrange
-			&& (abs(nx - c->x) > snap || abs(ny - c->y) > snap))
-				togglefloating(NULL);
-			if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+                        if (!c->isfloating && selmon->lt[selmon->sellt]->arrange &&
+                            (abs(nw - c->w) > snap || abs(nh - c->h) > snap)) {
+                                c->isfloating = -1;
+                                arrange(selmon);
+                        }
+                        if (c->isfloating || !selmon->lt[selmon->sellt]->arrange)
 				resize(c, nx, ny, c->w, c->h, 1);
 			break;
 		}
@@ -1899,29 +1897,29 @@ propertynotify(XEvent *e)
 		return; /* ignore */
 	else if ((c = wintoclient(ev->window))) {
 		switch (ev->atom) {
-		default: break;
 		case XA_WM_TRANSIENT_FOR:
-			if (!c->isfloating && (XGetTransientForHint(dpy, c->win, &trans)) &&
-				(c->isfloating = (wintoclient(trans)) != NULL))
+			if (!c->isfloating && XGetTransientForHint(dpy, c->win, &trans)
+                                           && wintoclient(trans)) {
+                                c->isfloating = -1;
 				arrange(c->mon);
-			break;
+                        }
+                        return;
 		case XA_WM_NORMAL_HINTS:
-			updategeomhints(c);
-			break;
+			updatesizehints(c);
+                        return;
 		case XA_WM_HINTS:
 			updatewmhints(c);
-			drawbars();
-			drawtabs();
-			break;
+                        drawbar(c->mon);
+                        drawtab(c->mon);
+			return;
 		}
 		if (ev->atom == XA_WM_NAME || ev->atom == netatom[NetWMName]) {
 			updatetitle(c);
 			if (c == c->mon->sel)
 				drawbar(c->mon);
 			drawtab(c->mon);
-		}
-		if (ev->atom == netatom[NetWMWindowType])
-			updatewindowtype(c);
+		} else if (ev->atom == netatom[NetWMWindowType])
+			updatewindowtype(c, 0);
         } else if ((i = wintosystrayicon(ev->window))) {
                 if (ev->atom == XA_WM_NORMAL_HINTS) {
                         updatesizehints(i->win, &i->sh);
@@ -2065,14 +2063,14 @@ resizemouse(const Arg *arg)
 
 			nw = MAX(ev.xmotion.x - ocx - 2 * c->bw + 1, 1);
 			nh = MAX(ev.xmotion.y - ocy - 2 * c->bw + 1, 1);
-			if (c->mon->wx + nw >= selmon->wx && c->mon->wx + nw <= selmon->wx + selmon->ww
-			&& c->mon->wy + nh >= selmon->wy && c->mon->wy + nh <= selmon->wy + selmon->wh)
-			{
-				if (!c->isfloating && selmon->lt[selmon->sellt]->arrange
-				&& (abs(nw - c->w) > snap || abs(nh - c->h) > snap))
-					togglefloating(NULL);
-			}
-			if (!selmon->lt[selmon->sellt]->arrange || c->isfloating)
+                        if (!c->isfloating && selmon->lt[selmon->sellt]->arrange &&
+                            (abs(nw - c->w) > snap || abs(nh - c->h) > snap) &&
+                            BETWEEN(c->mon->wx + nw, selmon->wx, selmon->wx + selmon->ww) &&
+                            BETWEEN(c->mon->wy + nh, selmon->wy, selmon->wy + selmon->wh)) {
+                                        c->isfloating = -1;
+                                        arrange(selmon);
+                        }
+                        if (c->isfloating || !selmon->lt[selmon->sellt]->arrange)
 				resize(c, c->x, c->y, nw, nh, 1);
 			break;
 		}
@@ -2909,7 +2907,7 @@ togglefloating(const Arg *arg)
 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-        if (arg && arg->i) {
+        if (arg->i) {
                 if (selmon->sel->isfloating)
                         /* restore last known float dimensions */
                         resize(selmon->sel, selmon->sel->sfx, selmon->sel->sfy,
@@ -3030,14 +3028,17 @@ void
 unmanage(Client *c, int destroyed)
 {
 	Monitor *m = c->mon;
-	XWindowChanges wc;
 
 	detach(c);
 	detachstack(c);
 	if (!destroyed) {
-		wc.border_width = c->oldbw;
                 XSelectInput(dpy, c->win, NoEventMask);
-		XConfigureWindow(dpy, c->win, CWBorderWidth, &wc); /* restore border */
+                if (c->isfullscreen)
+                        setfullscreen(c, 0);
+                if (c->isfloating <= 0) {
+                        c->isfloating = 1;
+                        resize(c, c->sfx, c->sfy, c->sfw, c->sfh, 0);
+                }
 		XUngrabButton(dpy, AnyButton, AnyModifier, c->win);
 		setclientstate(c, WithdrawnState);
 		XSync(dpy, False);
@@ -3519,7 +3520,7 @@ updatetitle(Client *c)
 }
 
 void
-updatewindowtype(Client *c)
+updatewindowtype(Client *c, int new)
 {
 	Atom state = getatomprop(c, netatom[NetWMState]);
 	Atom wtype = getatomprop(c, netatom[NetWMWindowType]);
@@ -3527,7 +3528,7 @@ updatewindowtype(Client *c)
 	if (state == netatom[NetWMFullscreen])
 		setfullscreen(c, 1);
 	if (wtype == netatom[NetWMWindowTypeDialog])
-		c->isfloating = 1;
+                c->isfloating = new ? 1 : -1;
 }
 
 void
