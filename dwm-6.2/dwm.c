@@ -2577,7 +2577,7 @@ showhide(Client *c)
 	} else {
 		/* hide clients bottom up */
 		showhide(c->snext);
-		XMoveWindow(dpy, c->win, WIDTH(c) * -2, c->y);
+		XMoveWindow(dpy, c->win, -2 * WIDTH(c), c->y);
 	}
 }
 
@@ -3463,7 +3463,7 @@ updatesystray(void)
                                 x += i->w + SYSTRAYSPACING;
                         }
         } else
-                XMoveResizeWindow(dpy, systray->win, 0, -bh, 1, bh);
+                XMoveWindow(dpy, systray->win, 0, -bh);
         if (w != stw) {
                 stw = w;
                 drawbar(selmon);
