@@ -3122,7 +3122,7 @@ updatebars(void)
 		XMapRaised(dpy, m->tabwin);
 		XSetClassHint(dpy, m->tabwin, &ch);
 	}
-        if (systray) /* keep systray above barwin */
+        if (systray) /* keep systray above barwins */
                 XRaiseWindow(dpy, systray->win);
 }
 
