@@ -878,7 +878,6 @@ void
 configurerequest(XEvent *e)
 {
 	Client *c;
-	Monitor *m;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 	XWindowChanges wc;
 
@@ -886,14 +885,13 @@ configurerequest(XEvent *e)
 		if (ev->value_mask & CWBorderWidth)
 			c->bw = ev->border_width;
 		if (c->isfloating || !selmon->lt[selmon->sellt]->arrange) {
-			m = c->mon;
 			if (ev->value_mask & CWX) {
 				c->oldx = c->x;
-				c->x = m->mx + ev->x;
+				c->x = selmon->mx + ev->x;
 			}
 			if (ev->value_mask & CWY) {
 				c->oldy = c->y;
-				c->y = m->my + ev->y;
+				c->y = selmon->my + ev->y;
 			}
 			if (ev->value_mask & CWWidth) {
 				c->oldw = c->w;
@@ -903,10 +901,10 @@ configurerequest(XEvent *e)
 				c->oldh = c->h;
 				c->h = ev->height;
 			}
-			if ((c->x + c->w) > m->mx + m->mw && c->isfloating)
-				c->x = m->mx + (m->mw / 2 - WIDTH(c) / 2); /* center in x direction */
-			if ((c->y + c->h) > m->my + m->mh && c->isfloating)
-				c->y = m->my + (m->mh / 2 - HEIGHT(c) / 2); /* center in y direction */
+			if ((c->x + c->w) > selmon->mx + selmon->mw && c->isfloating)
+				c->x = selmon->mx + (selmon->mw / 2 - WIDTH(c) / 2); /* center in x direction */
+			if ((c->y + c->h) > selmon->my + selmon->mh && c->isfloating)
+				c->y = selmon->my + (selmon->mh / 2 - HEIGHT(c) / 2); /* center in y direction */
 			if ((ev->value_mask & (CWX|CWY)) && !(ev->value_mask & (CWWidth|CWHeight)))
 				configure(c);
 			if (ISVISIBLE(c))
