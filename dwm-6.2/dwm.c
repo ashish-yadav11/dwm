@@ -3445,30 +3445,22 @@ updatestatus(void)
 void
 updatesystray(void)
 {
+        int oldstw = stw;
         Icon *i;
-        int w = 0;
 
+        stw = SYSTRAYSPACING;
         for (i = systray->icons; i; i = i->next)
-                if (i->ismapped)
-                        w += i->w + SYSTRAYSPACING;
-        if (w) {
-                int x;
-
-                w += SYSTRAYSPACING;
-                XMoveResizeWindow(dpy, systray->win, selmon->wx + selmon->ww - w, selmon->by, w, bh);
-                x = SYSTRAYSPACING;
-                for (i = systray->icons; i; i = i->next)
-                        if (i->ismapped) {
-                                XMoveResizeWindow(dpy, i->win, x, (bh - SYSTRAYHEIGTH) / 2, i->w, i->h);
-                                x += i->w + SYSTRAYSPACING;
-                        }
-        } else
+                if (i->ismapped) {
+                        XMoveResizeWindow(dpy, i->win, stw, (bh - SYSTRAYHEIGTH) / 2, i->w, i->h);
+                        stw += i->w + SYSTRAYSPACING;
+                }
+        if (stw == SYSTRAYSPACING) {
+                stw = 0;
                 XMoveWindow(dpy, systray->win, 0, -bh);
-        if (w > stw) { /* expose event will handle w < stw */
-                stw = w;
-                drawbar(selmon);
         } else
-                stw = w;
+                XMoveResizeWindow(dpy, systray->win, selmon->wx + selmon->ww - stw, selmon->by, stw, bh);
+        if (stw > oldstw) /* expose event handles w < stw */
+                drawbar(selmon);
 }
 
 int
