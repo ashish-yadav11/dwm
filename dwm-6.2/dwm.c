@@ -407,12 +407,12 @@ addsystrayicon(Icon *i)
         long flags;
         XWindowAttributes wa;
 
-        i->next = systray->icons;
-        systray->icons = i;
         if (!XGetWindowAttributes(dpy, i->win, &wa)) { /* i->win may not be valid */
-                removesystrayicon(i);
+                free(i);
                 return;
         }
+        i->next = systray->icons;
+        systray->icons = i;
         updatesizehints(i->win, &i->sh);
         updatesystrayicongeom(i, wa.width, wa.height);
         XSelectInput(dpy, i->win, PropertyChangeMask);
@@ -969,11 +969,8 @@ destroynotify(XEvent *e)
 
 	if ((c = wintoclient(ev->window)))
 		unmanage(c, 1);
-        else if ((i = wintosystrayicon(ev->window))) {
+        else if ((i = wintosystrayicon(ev->window)))
                 removesystrayicon(i);
-                if (i->ismapped)
-                        updatesystray();
-        }
 }
 
 void
@@ -1973,6 +1970,8 @@ removesystrayicon(Icon *i)
 
         for (ti = &systray->icons; *ti && *ti != i; ti = &(*ti)->next);
         *ti = i->next;
+        if (i->ismapped)
+                updatesystray();
         free(i);
 }
 
@@ -1982,11 +1981,8 @@ reparentnotify(XEvent *e)
         Icon *i;
 	XReparentEvent *ev = &e->xreparent;
 
-        if ((i = wintosystrayicon(ev->window)) && ev->parent != systray->win) {
+        if ((i = wintosystrayicon(ev->window)) && ev->parent != systray->win)
                 removesystrayicon(i);
-                if (i->ismapped)
-                        updatesystray();
-        }
 }
 
 void
