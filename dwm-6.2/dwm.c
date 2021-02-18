@@ -3515,7 +3515,12 @@ updatesystraymon(void)
 
         if (selmon != p) {
                 p = selmon;
-                updatesystray();
+                if (stw) {
+                        XWindowChanges wc;
+
+                        wc.x = selmon->wx + selmon->ww - stw;
+                        XConfigureWindow(dpy, systray->win, CWX, &wc);
+                }
         }
 }
 
