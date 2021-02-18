@@ -2891,7 +2891,7 @@ togglebar(const Arg *arg)
 	selmon->showbar = !selmon->showbar;
 	updatebarpos(selmon);
 	XMoveResizeWindow(dpy, selmon->barwin, selmon->wx, selmon->by, selmon->ww, bh);
-        if (systray) {
+        if (systray && stw) {
                 XWindowChanges wc;
 
                 wc.y = selmon->by;
