@@ -99,7 +99,6 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "termite", "--name=calcurse_Termite", "-t", "Calcurse", "-e", "calcurse", NULL },
 	(const char *[]){ "signal-desktop", NULL },
 	(const char *[]){ "telegram-desktop", NULL },
-        (const char *[]){ "sxiv", "-N", "schedule_Sxiv", "/media/storage/sem6dat/schedule.png", NULL },
 };
 
 /* key definitions */
@@ -263,7 +262,6 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_c,           scratchtoggle,          {.i = 4} },
 	{ SUPKEY,                       XK_s,           scratchtoggle,          {.i = 5} },
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
-	{ SUPKEY|ShiftMask,             XK_s,           scratchtoggle,          {.i = 7} },
 	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = 8} },
 	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = 8} },
 	{ MODLKEY,                      XK_y,           dynscratchtoggle,       {.i = 9} },
@@ -958,10 +956,6 @@ applyrules(Client *c)
                 c->isfloating = 1;
                 c->w = 750;
                 c->h = 450;
-                center(c);
-        } else if (strcmp(instance, "schedule_Sxiv") == 0) {
-                markscratch(c, 7);
-                c->isfloating = 1;
                 center(c);
         } else if (strcmp(instance, "brave-browser") == 0) {
                 markscratch(c, -1);
