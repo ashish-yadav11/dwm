@@ -252,7 +252,6 @@ static void initsystray(void);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
 static void manage(Window w, XWindowAttributes *wa);
-static void mapnotify(XEvent *e);
 static void mappingnotify(XEvent *e);
 static void maprequest(XEvent *e);
 static void monocle(Monitor *m);
@@ -271,7 +270,6 @@ static void resetsplus(const Arg *arg);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
-static void resizerequest(XEvent *e);
 static void restack(Monitor *m, int dbr);
 static void restorestatus(void);
 static void run(void);
@@ -326,7 +324,7 @@ static void updateselmon(Monitor *m);
 static void updatesizehints(Window w, Sizehints *sh);
 static void updatestatus(void);
 static void updatesystray(void);
-static void updatesystrayicongeom(Icon *i);
+static int updatesystrayicongeom(Icon *i, int w, int h);
 static void updatesystrayiconstate(Icon *i, XPropertyEvent *ev);
 static void updatesystraymon();
 static void updatetitle(Client *c);
@@ -367,13 +365,11 @@ static void (*handler[LASTEvent]) (XEvent *) = {
 	[Expose] = expose,
 	[FocusIn] = focusin,
 	[KeyPress] = keypress,
-        [MapNotify] = mapnotify,
 	[MappingNotify] = mappingnotify,
 	[MapRequest] = maprequest,
 	[MotionNotify] = motionnotify,
 	[PropertyNotify] = propertynotify,
         [ReparentNotify] = reparentnotify,
-	[ResizeRequest] = resizerequest,
 	[UnmapNotify] = unmapnotify
 };
 static Atom wmatom[WMLast], netatom[NetLast], xatom[XLast];
@@ -417,11 +413,9 @@ addsystrayicon(Icon *i)
                 removesystrayicon(i);
                 return;
         }
-        i->w = wa.width;
-        i->h = wa.height;
         updatesizehints(i->win, &i->sh);
-        updatesystrayicongeom(i);
-        XSelectInput(dpy, i->win, PropertyChangeMask|ResizeRedirectMask|StructureNotifyMask);
+        updatesystrayicongeom(i, wa.width, wa.height);
+        XSelectInput(dpy, i->win, PropertyChangeMask);
         XAddToSaveSet(dpy, i->win);
         XReparentWindow(dpy, i->win, systray->win, 0, 0);
         sendevent(i->win, netatom[Xembed], NoEventMask, CurrentTime,
@@ -794,8 +788,7 @@ clientmessage(XEvent *e)
         Icon *i;
 	XClientMessageEvent *cme = &e->xclient;
 
-        if (systray && cme->window == systray->win &&
-            cme->data.l[1] == SYSTEM_TRAY_REQUEST_DOCK) {
+        if (systray && cme->window == systray->win && cme->data.l[1] == SYSTEM_TRAY_REQUEST_DOCK) {
                 i = ecalloc(1, sizeof(Icon));
                 i->win = cme->data.l[2];
                 addsystrayicon(i);
@@ -878,6 +871,7 @@ void
 configurerequest(XEvent *e)
 {
 	Client *c;
+        Icon *i;
 	XConfigureRequestEvent *ev = &e->xconfigurerequest;
 	XWindowChanges wc;
 
@@ -911,7 +905,11 @@ configurerequest(XEvent *e)
 				XMoveResizeWindow(dpy, c->win, c->x, c->y, c->w, c->h);
 		} else
 			configure(c);
-	} else {
+        } else if ((i = wintosystrayicon(ev->window)) &&
+                   ev->value_mask & (CWWidth|CWHeight) && (i->w != ev->width || i->h != ev->height) &&
+                   updatesystrayicongeom(i, ev->width, ev->height) && i->ismapped)
+                updatesystray();
+        else {
 		wc.x = ev->x;
 		wc.y = ev->y;
 		wc.width = ev->width;
@@ -973,7 +971,8 @@ destroynotify(XEvent *e)
 		unmanage(c, 1);
         else if ((i = wintosystrayicon(ev->window))) {
                 removesystrayicon(i);
-                updatesystray();
+                if (i->ismapped)
+                        updatesystray();
         }
 }
 
@@ -1707,19 +1706,6 @@ manage(Window w, XWindowAttributes *wa)
 	updateclientdesktop(c);
 }
 
-/* i3bar mentions that some icons set override_redirect */
-void
-mapnotify(XEvent *e)
-{
-        Icon *i;
-	XMapEvent *ev = &e->xmap;
-
-        if ((i = wintosystrayicon(ev->window)) && !i->ismapped) {
-                i->ismapped = 1;
-                updatesystray();
-        }
-}
-
 void
 mappingnotify(XEvent *e)
 {
@@ -1951,12 +1937,10 @@ propertynotify(XEvent *e)
         } else if ((i = wintosystrayicon(ev->window))) {
                 if (ev->atom == XA_WM_NORMAL_HINTS) {
                         updatesizehints(i->win, &i->sh);
-                        updatesystrayicongeom(i);
-                        updatesystray();
-                } else if (ev->atom == xatom[XembedInfo]) {
+                        if (updatesystrayicongeom(i, i->w, i->h) && i->ismapped)
+                                updatesystray();
+                } else if (ev->atom == xatom[XembedInfo])
                         updatesystrayiconstate(i, ev);
-                        updatesystray();
-                }
         }
 }
 
@@ -2000,7 +1984,8 @@ reparentnotify(XEvent *e)
 
         if ((i = wintosystrayicon(ev->window)) && ev->parent != systray->win) {
                 removesystrayicon(i);
-                updatesystray();
+                if (i->ismapped)
+                        updatesystray();
         }
 }
 
@@ -2110,20 +2095,6 @@ resizemouse(const Arg *arg)
                 updateselmon(m);
 		sendmon(c, selmon);
 	}
-}
-
-void
-resizerequest(XEvent *e)
-{
-	Icon *i;
-	XResizeRequestEvent *ev = &e->xresizerequest;
-
-        if ((i = wintosystrayicon(ev->window)) && (i->w != ev->width || i->h != ev->height)) {
-                i->w = ev->width;
-                i->h = ev->height;
-                updatesystrayicongeom(i);
-                updatesystray();
-        }
 }
 
 void
@@ -3499,10 +3470,12 @@ updatesystray(void)
         }
 }
 
-void
-updatesystrayicongeom(Icon *i)
+int
+updatesystrayicongeom(Icon *i, int w, int h)
 {
-        i->w = (SYSTRAYHEIGTH * i->w) / i->h;
+        int oldw = i->w, oldh = i->h;
+
+        i->w = (SYSTRAYHEIGTH * w) / h;
         i->h = SYSTRAYHEIGTH;
         applysizehints(&i->sh, &i->w, &i->h);
         /* force icon into systray dimensions */
@@ -3510,6 +3483,7 @@ updatesystrayicongeom(Icon *i)
                 i->w = (SYSTRAYHEIGTH * i->w) / i->h;
                 i->h = SYSTRAYHEIGTH;
         }
+        return i->w != oldw || i->h != oldh;
 }
 
 void
@@ -3519,13 +3493,18 @@ updatesystrayiconstate(Icon *i, XPropertyEvent *ev)
 
         if (!(flags = getxembedflags(i->win)))
                 return;
-        if (!i->ismapped && flags & XEMBED_MAPPED) {
+        if (flags & XEMBED_MAPPED) {
+                if (i->ismapped)
+                        return;
                 i->ismapped = 1;
                 XMapWindow(dpy, i->win);
-        } else if (i->ismapped && !(flags & XEMBED_MAPPED)) {
+        } else {
+                if (!i->ismapped)
+                        return;
                 i->ismapped = 0;
                 XUnmapWindow(dpy, i->win);
 	}
+        updatesystray();
 }
 
 void
@@ -3626,7 +3605,7 @@ wintosystrayicon(Window w)
 {
         Icon *i;
 
-        if (!systray || !w)
+        if (!systray)
                 return NULL;
         for (i = systray->icons; i && i->win != w; i = i->next);
         return i;
