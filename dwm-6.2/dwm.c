@@ -3464,10 +3464,11 @@ updatesystray(void)
                         }
         } else
                 XMoveWindow(dpy, systray->win, 0, -bh);
-        if (w != stw) {
+        if (w > stw) { /* expose event will handle w < stw */
                 stw = w;
                 drawbar(selmon);
-        }
+        } else
+                stw = w;
 }
 
 int
