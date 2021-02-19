@@ -905,8 +905,7 @@ configurerequest(XEvent *e)
 				XMoveResizeWindow(dpy, c->win, c->x, c->y, c->w, c->h);
 		} else
 			configure(c);
-        } else if ((i = wintosystrayicon(ev->window)) &&
-                   ev->value_mask & (CWWidth|CWHeight) && (i->w != ev->width || i->h != ev->height) &&
+        } else if ((i = wintosystrayicon(ev->window)) && ev->value_mask & (CWWidth|CWHeight) &&
                    updatesystrayicongeom(i, ev->width, ev->height) && i->ismapped)
                 updatesystray();
         else {
