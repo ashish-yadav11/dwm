@@ -117,9 +117,8 @@ static const char *const *scratchcmds[] = {
 #define SHCMD(cmd) { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
 #define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
 
-#define SCRIPT(name) "/home/ashish/.scripts/"name
-#define SCRIPT0(name) { .v = (const char*[]){ SCRIPT(name), NULL } }
-#define SCRIPT1(name, arg) { .v = (const char*[]){ SCRIPT(name), arg, NULL } }
+#define SCRIPTPATH(name) "/home/ashish/.scripts/"name
+#define SCRIPT(...) { .v = (const char*[]){ "/home/ashish/.scripts/"__VA_ARGS__, NULL } }
 
 #define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
 #define REDSHIFTDEFAULT { .v = (const char*[]){ "redshift", "-x", NULL } }
@@ -128,13 +127,15 @@ static const char *const *scratchcmds[] = {
 #define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 #define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
 #define ROFIWINREGEX { .v = (const char*[]){ "rofi", "-show", "window", "-matching", "regex", NULL } }
+
 #define VOLUMEL { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
 #define VOLUMEM { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
 #define VOLUMER { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
 
-#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
-#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend0.sh"), NULL } }
-#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend1.sh"), NULL } }
+#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", "-t", "Dictionary", "-e", SCRIPTPATH("dictionary_history.sh") } }
+
+#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPTPATH("inhibitsuspend0.sh"), NULL } }
+#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPTPATH("inhibitsuspend1.sh"), NULL } }
 
 #define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
@@ -143,7 +144,7 @@ static const char *const *scratchcmds[] = {
 #define NOTIFYUNSCRATCHED { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "unscratched focused window", NULL } }
 
 static const Win browser = { .cmd = CMD("brave"), .tag = 8, .scratchkey = -1 };
-static const Win mail = { .cmd = SCRIPT0("neomutt.sh"), .tag = 9, .scratchkey = -2 };
+static const Win mail = { .cmd = SCRIPT("neomutt.sh"), .tag = 9, .scratchkey = -2 };
 
 /* custom function declarations */
 static void dynscratchtoggle(const Arg *arg);
@@ -271,35 +272,35 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
-	{ 0,                            XK_Print,       spawn,                  SCRIPT0("screenshot.sh") },
-	{ MODLKEY,                      XK_c,           spawn,                  SCRIPT0("color_under_cursor.sh") },
+	{ 0,                            XK_Print,       spawn,                  SCRIPT("screenshot.sh") },
+	{ MODLKEY,                      XK_c,           spawn,                  SCRIPT("color_under_cursor.sh") },
 	{ MODLKEY,                      XK_F7,          spawn,                  DISABLEDEMODE },
 	{ MODLKEY,                      XK_F8,          spawn,                  ENABLEDEMODE },
-	{ MODLKEY,                      XK_semicolon,   spawn,                  SCRIPT1("dictionary.sh", "selection") },
-	{ MODLKEY|ShiftMask,            XK_semicolon,   spawn,                  SCRIPT0("dictionary.sh") },
-	{ MODLKEY|ControlMask,          XK_semicolon,   spawn,                  SCRIPT0("dictionary_last.sh") },
-	{ SUPKEY,                       XK_semicolon,   spawn,                  SCRIPT1("espeak.sh", "selection") },
-	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,                  SCRIPT0("espeak.sh") },
-	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,                  SCRIPT0("espeak_last.sh") },
+	{ MODLKEY,                      XK_semicolon,   spawn,                  SCRIPT("dictionary.sh", "selection") },
+	{ MODLKEY|ShiftMask,            XK_semicolon,   spawn,                  SCRIPT("dictionary.sh") },
+	{ MODLKEY|ControlMask,          XK_semicolon,   spawn,                  SCRIPT("dictionary_last.sh") },
+	{ SUPKEY,                       XK_semicolon,   spawn,                  SCRIPT("espeak.sh", "selection") },
+	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,                  SCRIPT("espeak.sh") },
+	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,                  SCRIPT("espeak_last.sh") },
 	{ MODLKEY|ControlMask,          XK_apostrophe,  spawn,                  DICTIONARYHISTORY },
-	{ MODLKEY|ShiftMask,            XK_q,           spawn,                  SCRIPT0("quit.sh") },
-	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPT0("hotspot_launch.sh") },
-	{ MODLKEY|ControlMask,          XK_m,           spawn,                  SCRIPT0("toggletouchpad.sh") },
-	{ MODLKEY|ControlMask,          XK_r,           spawn,                  SCRIPT0("reflector_launch.sh") },
-	{ MODLKEY,                      XK_F10,         spawn,                  SCRIPT1("systemctl_timeout.sh", "restart") },
-	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPT1("systemctl_timeout.sh", "toggle") },
-	{ MODLKEY|ControlMask,          XK_F10,         spawn,                  SCRIPT1("systemctl_timeout.sh", "status") },
-	{ SUPKEY,                       XK_b,           spawn,                  SCRIPT0("gbtns.sh") },
+	{ MODLKEY|ShiftMask,            XK_q,           spawn,                  SCRIPT("quit.sh") },
+	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPT("hotspot_launch.sh") },
+	{ MODLKEY|ControlMask,          XK_m,           spawn,                  SCRIPT("toggletouchpad.sh") },
+	{ MODLKEY|ControlMask,          XK_r,           spawn,                  SCRIPT("reflector_launch.sh") },
+	{ MODLKEY,                      XK_F10,         spawn,                  SCRIPT("systemctl_timeout.sh", "restart") },
+	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPT("systemctl_timeout.sh", "toggle") },
+	{ MODLKEY|ControlMask,          XK_F10,         spawn,                  SCRIPT("systemctl_timeout.sh", "status") },
+	{ SUPKEY,                       XK_b,           spawn,                  SCRIPT("gbtns.sh") },
 	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger --cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
 	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop -s PERCENT_CPU") },
 	{ MODRKEY,                      XK_s,           spawn,                  INHIBITSUSPEND1 },
 	{ MODRKEY|ShiftMask,            XK_s,           spawn,                  INHIBITSUSPEND0 },
-	{ MODRKEY,                      XK_l,           spawn,                  SCRIPT1("ytmsclu.sh", "1") },
-	{ MODRKEY,                      XK_k,           spawn,                  SCRIPT1("ytmsclu.sh", "0") },
-	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPT0("ytresume.sh") },
-	{ MODRKEY,                      XK_Delete,      spawn,                  SCRIPT0("usbmount.sh") },
+	{ MODRKEY,                      XK_l,           spawn,                  SCRIPT("ytmsclu.sh", "1") },
+	{ MODRKEY,                      XK_k,           spawn,                  SCRIPT("ytmsclu.sh", "0") },
+	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPT("ytresume.sh") },
+	{ MODRKEY,                      XK_Delete,      spawn,                  SCRIPT("usbmount.sh") },
 
 	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
 	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
@@ -307,10 +308,10 @@ static Key keys[] = {
 	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
 	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  VOLUMEL },
 	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  VOLUMER },
-	{ 0,                 XF86XK_MonBrightnessDown,  spawn,                  SCRIPT0("btnsd.sh") },
-	{ 0,                 XF86XK_MonBrightnessUp,    spawn,                  SCRIPT0("btnsi.sh") },
-	{ ShiftMask,         XK_F2,                     spawn,                  SCRIPT0("btnsds.sh") },
-	{ ShiftMask,         XK_F3,                     spawn,                  SCRIPT0("btnsis.sh") },
+	{ 0,                 XF86XK_MonBrightnessDown,  spawn,                  SCRIPT("btnsd.sh") },
+	{ 0,                 XF86XK_MonBrightnessUp,    spawn,                  SCRIPT("btnsi.sh") },
+	{ ShiftMask,         XK_F2,                     spawn,                  SCRIPT("btnsds.sh") },
+	{ ShiftMask,         XK_F3,                     spawn,                  SCRIPT("btnsis.sh") },
 	{ MODRKEY,           XK_Escape,                 spawn,                  REDSHIFTDEFAULT },
 	{ MODRKEY,           XK_F1,                     spawn,                  REDSHIFT("5500") },
 	{ MODRKEY,           XK_F2,                     spawn,                  REDSHIFT("5000") },
