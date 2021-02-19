@@ -1,0 +1,11 @@
+update dwm manpage
+send patch regarding title padding bug in drw.c
+send patch regarding memory leaks in pertag (cleanupmon), gettextprop and setdesktopnames in dwm
+send patch regarding don't return while grabbing pointer in movemouse
+send patch to remove unnecessary XSetCloseDownMode in killclient
+send patch why drawbars() on updatewmhints in propertynotify and not drawbar(c->mon)
+send patch propertynotify, why default: break and why break instead of return and why not else if
+send patch why recover oldbw in unmanage, it becomes dirty when setfullscreen is called
+send patch, no need to check for override_redirect in maprequest
+send patch, configurerequest typo else if (from 12ea925076c4f1c013502651b0be90c05e0febac commit)
+send improved systray, tabbed and other patches
