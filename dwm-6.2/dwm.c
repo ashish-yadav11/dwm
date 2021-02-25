@@ -2390,7 +2390,7 @@ setsplus(const Arg *arg)
 
 	if (!selmon->lt[selmon->sellt]->arrange || selmon->lt[selmon->sellt]->arrange == monocle)
 		return;
-        if (!selmon->sel || !selmon->sel->isfloating)
+        if (!selmon->sel || selmon->sel->isfloating)
                 return;
         for (selidx = 0, c = selmon->clients; c != selmon->sel; c = c->next)
                 if (!c->isfloating && ISVISIBLE(c))
