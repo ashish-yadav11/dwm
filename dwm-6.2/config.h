@@ -295,7 +295,7 @@ static Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
 	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop -s PERCENT_CPU") },
-	{ SUPKEY|ShiftMask,             XK_m,           spawn,                  TERMCMD(SCRIPT("neomutt.sh")) },
+	{ SUPKEY|ShiftMask,             XK_m,           spawn,                  SCRIPTCMD("neomutt.sh") },
 	{ MODRKEY,                      XK_s,           spawn,                  INHIBITSUSPEND1 },
 	{ MODRKEY|ShiftMask,            XK_s,           spawn,                  INHIBITSUSPEND0 },
 	{ MODRKEY,                      XK_l,           spawn,                  SCRIPTCMD("ytmsclu.sh", "1") },
