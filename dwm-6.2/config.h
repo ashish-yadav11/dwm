@@ -119,7 +119,6 @@ static const char *const *scratchcmds[] = {
 #define SCRIPTCMD(...) { .v = (const char*[]){ "/home/ashish/.scripts/"__VA_ARGS__, NULL } }
 #define SHCMD(cmd) { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
 #define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
-#define TERMSCRIPTCMD(cmd) { .v = (const char*[]){ "termite", "-e", SCRIPT(cmd), NULL } }
 
 #define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
 #define REDSHIFTDEFAULT { .v = (const char*[]){ "redshift", "-x", NULL } }
@@ -296,7 +295,7 @@ static Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
 	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop -s PERCENT_CPU") },
-	{ SUPKEY|ShiftMask,             XK_m,           spawn,                  TERMSCRIPTCMD("neomutt.sh") },
+	{ SUPKEY|ShiftMask,             XK_m,           spawn,                  TERMCMD(SCRIPT("neomutt.sh")) },
 	{ MODRKEY,                      XK_s,           spawn,                  INHIBITSUSPEND1 },
 	{ MODRKEY|ShiftMask,            XK_s,           spawn,                  INHIBITSUSPEND0 },
 	{ MODRKEY,                      XK_l,           spawn,                  SCRIPTCMD("ytmsclu.sh", "1") },
