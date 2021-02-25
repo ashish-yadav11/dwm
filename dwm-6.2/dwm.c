@@ -394,7 +394,7 @@ struct Pertag {
         unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions */
         const Attach *attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
         int showtabs[LENGTH(tags) + 1]; /* display tab per tag */
-        int splus[LENGTH(tags) + 1][3]; /* extra size per tag - first master and first two stack clients */
+        int splus[LENGTH(tags) + 1][2]; /* extra size per tag - first master and first slave */
 };
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
@@ -947,7 +947,7 @@ createmon(void)
                 /* custom */
                 m->pertag->attidxs[i][0] = m->pertag->attidxs[i][1] = &attachs[def_attachs[i]];
                 m->pertag->showtabs[i] = showtab;
-                m->pertag->splus[i][0] = m->pertag->splus[i][1] = m->pertag->splus[i][2] = 0;
+                m->pertag->splus[i][0] = m->pertag->splus[i][1] = 0;
 	}
 
 	return m;
@@ -1999,13 +1999,13 @@ resettagifempty(unsigned int tag)
         /* custom */
         selmon->pertag->attidxs[tag][0] = selmon->pertag->attidxs[tag][1] = &attachs[def_attachs[tag]];
         selmon->pertag->showtabs[tag] = showtab;
-        selmon->pertag->splus[tag][0] = selmon->pertag->splus[tag][1] = selmon->pertag->splus[tag][2] = 0;
+        selmon->pertag->splus[tag][0] = selmon->pertag->splus[tag][1] = 0;
 }
 
 void
 resetsplus(const Arg *arg)
 {
-        SPLUS(selmon)[0] = SPLUS(selmon)[1] = SPLUS(selmon)[2] = 0;
+        SPLUS(selmon)[0] = SPLUS(selmon)[1] = 0;
 	if (selmon->ntiles > 0 && selmon->lt[selmon->sellt]->arrange)
                 selmon->lt[selmon->sellt]->arrange(selmon);
 }
@@ -2385,37 +2385,27 @@ setmfact(const Arg *arg)
 void
 setsplus(const Arg *arg)
 {
-        int selidx;
+        int f;
         Client *c;
 
 	if (!selmon->lt[selmon->sellt]->arrange || selmon->lt[selmon->sellt]->arrange == monocle)
 		return;
         if (!selmon->sel || selmon->sel->isfloating)
                 return;
-        for (selidx = 0, c = selmon->clients; c != selmon->sel; c = c->next)
-                if (!c->isfloating && ISVISIBLE(c))
-                        selidx++;
-        if (selmon->lt[selmon->sellt]->arrange == tile) {
-                if (selidx < selmon->nmaster) {
-                        if (MIN(selmon->nmaster, selmon->ntiles) > 1)
-                                SPLUS(selmon)[0] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
-                        else
-                                return;
-                } else if (selmon->ntiles > selmon->nmaster + 1) {
-                        if (selmon->ntiles > selmon->nmaster + 2 && selidx == selmon->nmaster + 1)
-                                SPLUS(selmon)[2] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[2] + arg->i, 0);
-                        else
-                                SPLUS(selmon)[1] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
-                } else
-                        return;
+        for (f = selmon->nmaster, c = selmon->clients; c != selmon->sel; c = c->next)
+                if (!c->isfloating && ISVISIBLE(c) && !(--f))
+                        break;
+        if (!f && selmon->lt[selmon->sellt]->arrange == tile) {
+                if (selmon->ntiles > selmon->nmaster + 1) {
+                        SPLUS(selmon)[1] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
+                        selmon->lt[selmon->sellt]->arrange(selmon);
+                }
         } else {
-                if (MIN(selmon->nmaster, selmon->ntiles) > 1)
+                if (selmon->ntiles > 1 && selmon->nmaster > 1) {
                         SPLUS(selmon)[0] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
-                else
-                        return;
+                        selmon->lt[selmon->sellt]->arrange(selmon);
+                }
         }
-	if (selmon->ntiles > 0 && selmon->lt[selmon->sellt]->arrange)
-                selmon->lt[selmon->sellt]->arrange(selmon);
 }
 
 void
@@ -2687,8 +2677,6 @@ swaptags(const Arg *arg)
              selmon->pertag->splus[selmon->pertag->curtag][0]);
         SWAP(selmon->pertag->splus[newtag][1],
              selmon->pertag->splus[selmon->pertag->curtag][1]);
-        SWAP(selmon->pertag->splus[newtag][2],
-             selmon->pertag->splus[selmon->pertag->curtag][2]);
         /* change curtag */
         selmon->pertag->curtag = newtag;
         drawbar(selmon);
@@ -2763,119 +2751,60 @@ tiledeck(Monitor *m, int deck)
                 c = nexttiled(m->clients);
 		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
         } else {
-                int x, y, w, h, wx, wy, ww, wh;
                 int r;
-
-                wx = m->wx + gappoh;
-                wy = m->wy + gappov;
-                ww = m->ww - 2 * gappoh;
-                wh = m->wh - 2 * gappov;
+                int x, y, w, h;
+                int wx = m->wx + gappoh;
+                int wy = m->wy + gappov;
+                int ww = m->ww - 2 * gappoh;
+                int wh = m->wh - 2 * gappov;
 
                 /* masters */
-                w = m->ntiles > m->nmaster ? ww * m->mfact : ww;
-                r = MIN(m->ntiles, m->nmaster);
-                c = nexttiled(m->clients);
-
-                if (r > 1 && SPLUS(m)[0]) {
-                        int h1, h2, hleft;
-
-                        /* first master */
-                        hleft = wh - gappih * (r - 1);
-                        h = hleft / r; /* height without including splus */
-                        h1 = h + SPLUS(m)[0]; /* provisional height after including splus */
-                        h2 = MAX(h, hleft - MINWINHEIGHT * (r - 1)); /* maximum allowed height */
-                        if (h1 > h2) {
-                                SPLUS(m)[0] = h2 - h;
-                                h = h2;
-                        } else
-                                h = h1;
-                        resize(c, wx, wy, w - (2 * c->bw), h - (2 * c->bw), 0);
-                        y = HEIGHT(c) + gappih;
-                        c = nexttiled(c->next);
-                        r--;
-                        /* rest of the masters */
-                        for (; r; c = nexttiled(c->next), r--) {
-                                h = (wh - y - gappih * (r - 1)) / r;
-                                resize(c, wx, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
-                                y += HEIGHT(c) + gappih;
-                        }
+                y = 0;
+                if (m->ntiles > m->nmaster) {
+                        w = ww * m->mfact;
+                        r = m->nmaster;
                 } else {
-                        y = 0;
-                        for (; r; c = nexttiled(c->next), r--) {
-                                h = (wh - y - gappih * (r - 1)) / r;
-                                resize(c, wx, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
-                                y += HEIGHT(c) + gappih;
-                        }
+                        w = ww;
+                        r = m->ntiles;
                 }
-
-                /* stack */
-                if (m->ntiles > m->nmaster)
-                        r = m->ntiles - m->nmaster;
-                else
+                c = nexttiled(m->clients);
+                if (r > 1 && SPLUS(m)[0]) {
+                        if ((h = (wh - gappih * (r - 1)) / r + SPLUS(m)[0]) > wh) {
+                                SPLUS(m)[0] -= wh - h;
+                                h = wh;
+                        }
+                        goto mloop;
+                }
+                for (; r > 0; c = nexttiled(c->next), r--) {
+                        h = (wh - y - gappih * (r - 1)) / r;
+mloop:
+                        resize(c, wx, wy + y, w - 2 * c->bw, h - 2 * c->bw, 0);
+                        y += HEIGHT(c) + gappih;
+                }
+                /* slaves */
+                if ((r = m->ntiles - m->nmaster) < 0)
                         return;
-
                 x = m->nmaster ? wx + w + gappiv : wx;
                 w = ww - x + wx;
-
                 if (deck) {
-                        /* override layout symbol */
                         snprintf(m->ltsymbol, sizeof m->ltsymbol, "[D%d]", r);
-
                         for (; c; c = nexttiled(c->next))
-                                resize(c, x, wy, w - (2 * c->bw), wh - (2 * c->bw), 0);
+                                resize(c, x, wy, w - 2 * c->bw, wh - 2 * c->bw, 0);
                         return;
                 }
-
-                if (r > 1 && (SPLUS(m)[1] || SPLUS(m)[2])) {
-                        int h1, h2, hleft;
-
-                        if (r > 2) {
-                                y = 0;
-                                /* first two stack clients */
-                                for (int i = 1; i < 3; c = nexttiled(c->next), r--, i++) {
-                                        hleft = wh - y - gappih * (r - 1);
-                                        h = hleft / r; /* height without including splus */
-                                        h1 = h + SPLUS(m)[i]; /* provisional height after including splus */
-                                        h2 = MAX(h, hleft - MINWINHEIGHT * (r - 1)); /* maximum allowed height */
-                                        if (h1 > h2) {
-                                                SPLUS(m)[i] = h2 - h;
-                                                h = h2;
-                                        } else
-                                                h = h1;
-                                        resize(c, x, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
-                                        y += HEIGHT(c) + gappih;
-                                }
-                                /* rest of the stack clients */
-                                for (; r; c = nexttiled(c->next), r--) {
-                                        h = (wh - y - gappih * (r - 1)) / r;
-                                        resize(c, x, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
-                                        y += HEIGHT(c) + gappih;
-                                }
-                        } else {
-                                /* first stack client */
-                                hleft = wh - gappih;
-                                h = hleft / 2; /* height without including splus */
-                                h1 = h + SPLUS(m)[1]; /* provisional height after including splus */
-                                h2 = MAX(h, hleft - MINWINHEIGHT); /* maximum allowed height */
-                                if (h1 > h2) {
-                                        SPLUS(m)[1] = h2 - h;
-                                        h = h2;
-                                } else
-                                        h = h1;
-                                resize(c, x, wy, w - (2 * c->bw), h - (2 * c->bw), 0);
-                                y = HEIGHT(c) + gappih;
-                                c = nexttiled(c->next);
-                                /* last stack client */
-                                h = (wh - y);
-                                resize(c, x, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
+                y = 0;
+                if (r > 1 && SPLUS(m)[1]) {
+                        if ((h = (wh - gappih * (r - 1)) / r + SPLUS(m)[1]) > wh) {
+                                SPLUS(m)[1] -= wh - h;
+                                h = wh;
                         }
-                } else {
-                        y = 0;
-                        for (; r; c = nexttiled(c->next), r--) {
-                                h = (wh - y - gappih * (r - 1)) / r;
-                                resize(c, x, wy + y, w - (2 * c->bw), h - (2 * c->bw), 0);
-                                y += HEIGHT(c) + gappih;
-                        }
+                        goto sloop;
+                }
+                for (; r > 0; c = nexttiled(c->next), r--) {
+                        h = (wh - y - gappih * (r - 1)) / r;
+sloop:
+                        resize(c, x, wy + y, w - 2 * c->bw, h - 2 * c->bw, 0);
+                        y += HEIGHT(c) + gappih;
                 }
         }
 }
