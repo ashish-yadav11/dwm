@@ -1,4 +1,4 @@
-update dwm manpage
+update manpage
 send patch regarding title padding bug in drw.c
 send patch regarding memory leaks in pertag (cleanupmon), gettextprop and setdesktopnames in dwm
 send patch: don't return while grabbing pointer in movemouse
