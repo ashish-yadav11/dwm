@@ -9,3 +9,4 @@ send patch why recover oldbw in unmanage, it becomes dirty when setfullscreen is
 send patch: no need to check for override_redirect in maprequest
 send patch: configurerequest typo else if (from 12ea925076c4f1c013502651b0be90c05e0febac commit)
 send improved systray, tabbed and other patches to dwm's site
+send patch: in tile function, why unsigned ints, size check won't be required if they were ints.
