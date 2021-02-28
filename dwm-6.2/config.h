@@ -825,7 +825,7 @@ togglefullscreen(const Arg *arg)
                         setfullscreen(c, 0);
                 }
         if (!found && selmon->sel)
-                setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
+                setfullscreen(selmon->sel, 1);
 }
 
 void
