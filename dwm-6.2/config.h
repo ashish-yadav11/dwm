@@ -950,8 +950,8 @@ applyrules(Client *c)
         } else if (strcmp(instance, "pyfzf_Termite") == 0) {
                 markscratch(c, 3);
                 c->isfloating = 1;
-                c->w = 750;
-                c->h = 450;
+                c->w = 820;
+                c->h = 480;
                 center(c);
         } else if (strcmp(instance, "scratch_Termite") == 0) {
                 markscratch(c, 1);
