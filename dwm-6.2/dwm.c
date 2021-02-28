@@ -394,7 +394,7 @@ struct Pertag {
         unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions */
         const Attach *attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
         int showtabs[LENGTH(tags) + 1]; /* display tab per tag */
-        int splus[LENGTH(tags) + 1][2]; /* extra size per tag - first master and first slave */
+        int splus[LENGTH(tags) + 1][2]; /* extra size per tag - first master and first stack */
 };
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
@@ -2781,7 +2781,7 @@ mloop:
                         resize(c, wx, wy + y, w - 2 * c->bw, h - 2 * c->bw, 0);
                         y += HEIGHT(c) + gappih;
                 }
-                /* slaves */
+                /* stack */
                 if ((r = m->ntiles - m->nmaster) < 0)
                         return;
                 x = m->nmaster ? wx + w + gappiv : wx;
