@@ -11,6 +11,15 @@
 /* colorscheme used for background of systray */
 #define SCHEMESYSTRAY                   SchemeNorm
 
+/* command used to notify that a client has been added to dynamic scratchpad */
+#define NOTIFYSCRATCHED                 { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "scratched focused window", NULL } }
+/* command used to notify that a client has been removed from dynamic scratchpad */
+#define NOTIFYUNSCRATCHED               { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "unscratched focused window", NULL } }
+/* window switcher command */
+#define ROFIWIN                         { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
+/* alternate window switcher command */
+#define ROFIWINREGEX                    { .v = (const char*[]){ "rofi", "-show", "window", "-matching", "regex", NULL } }
+
 typedef struct {
         const Arg cmd;
         const unsigned int tag;
@@ -101,6 +110,8 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "telegram-desktop", NULL },
 };
 
+#define DYNSCRATCHKEY(i)                (LENGTH(scratchcmds) + i)
+
 /* key definitions */
 #define MODLKEY Mod3Mask
 #define MODRKEY Mod1Mask
@@ -113,35 +124,30 @@ static const char *const *scratchcmds[] = {
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
 
-#define SCRIPT(name) "/home/ashish/.scripts/"name
+#define SCRIPT(name)                    "/home/ashish/.scripts/"name
 
-#define CMD(...) { .v = (const char*[]){ __VA_ARGS__, NULL } }
-#define SCRIPTCMD(...) { .v = (const char*[]){ "/home/ashish/.scripts/"__VA_ARGS__, NULL } }
-#define SHCMD(cmd) { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
-#define TERMCMD(cmd) { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
+#define CMD(...)                        { .v = (const char*[]){ __VA_ARGS__, NULL } }
+#define SCRIPTCMD(...)                  { .v = (const char*[]){ "/home/ashish/.scripts/"__VA_ARGS__, NULL } }
+#define SHCMD(cmd)                      { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
+#define TERMCMD(cmd)                    { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
 
-#define REDSHIFT(arg) { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
-#define REDSHIFTDEFAULT { .v = (const char*[]){ "redshift", "-x", NULL } }
+#define REDSHIFT(arg)                   { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
+#define REDSHIFTDEFAULT                 { .v = (const char*[]){ "redshift", "-x", NULL } }
 
-#define ROFIDRUN { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
-#define ROFIRUN { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
-#define ROFIWIN { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
-#define ROFIWINREGEX { .v = (const char*[]){ "rofi", "-show", "window", "-matching", "regex", NULL } }
+#define ROFIDRUN                        { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
+#define ROFIRUN                         { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 
-#define VOLUMEL { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
-#define VOLUMEM { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
-#define VOLUMER { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
+#define VOLUMEL                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
+#define VOLUMEM                         { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
+#define VOLUMER                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
 
-#define DICTIONARYHISTORY { .v = (const char*[]){ "termite", "--name=floating_Termite", "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
+#define DICTIONARYHISTORY               { .v = (const char*[]){ "termite", "--name=floating_Termite", "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
 
-#define INHIBITSUSPEND0 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend0.sh"), NULL } }
-#define INHIBITSUSPEND1 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend1.sh"), NULL } }
+#define INHIBITSUSPEND0                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend0.sh"), NULL } }
+#define INHIBITSUSPEND1                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend1.sh"), NULL } }
 
-#define DISABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
-#define ENABLEDEMODE SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
-
-#define NOTIFYSCRATCHED { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "scratched focused window", NULL } }
-#define NOTIFYUNSCRATCHED { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "unscratched focused window", NULL } }
+#define DISABLEDEMODE                   SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
+#define ENABLEDEMODE                    SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
 
 static const Win browser = { .cmd = CMD("brave"), .tag = 8, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPTCMD("neomutt.sh"), .tag = 9, .scratchkey = -2 };
@@ -263,12 +269,12 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_c,           scratchtoggle,          {.i = 4} },
 	{ SUPKEY,                       XK_s,           scratchtoggle,          {.i = 5} },
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
-	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = 8} },
-	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = 8} },
-	{ MODLKEY,                      XK_y,           dynscratchtoggle,       {.i = 9} },
-	{ MODLKEY|ShiftMask,            XK_y,           dynscratchunmark,       {.i = 9} },
-	{ MODLKEY,                      XK_u,           dynscratchtoggle,       {.i = 10} },
-	{ MODLKEY|ShiftMask,            XK_u,           dynscratchunmark,       {.i = 10} },
+	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(1) } },
+	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = DYNSCRATCHKEY(1) } },
+	{ MODLKEY,                      XK_y,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(2) } },
+	{ MODLKEY|ShiftMask,            XK_y,           dynscratchunmark,       {.i = DYNSCRATCHKEY(2) } },
+	{ MODLKEY,                      XK_u,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(3) } },
+	{ MODLKEY|ShiftMask,            XK_u,           dynscratchunmark,       {.i = DYNSCRATCHKEY(3) } },
 	{ MODLKEY,                      XK_s,           togglefocusarea,        {0} },
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
