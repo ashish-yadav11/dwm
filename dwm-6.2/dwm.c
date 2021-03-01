@@ -3070,8 +3070,8 @@ updateclientdesktop(Client *c)
         else {
                 for (t = 0; t < LENGTH(tags) && !(1 << t & c->tags); t++);
                 if (++t > LENGTH(tags)) {
-                        t = c->scratchkey > LENGTH(scratchcmds) ?
-                                30 + c->scratchkey - LENGTH(scratchcmds) : 0;
+                        t = c->scratchkey > DYNSCRATCHKEY(0) ?
+                                30 + c->scratchkey - DYNSCRATCHKEY(0) : 0;
                         goto update;
                 }
         }
