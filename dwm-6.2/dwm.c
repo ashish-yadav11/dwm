@@ -421,7 +421,7 @@ addsystrayicon(Icon *i)
         sendevent(i->win, netatom[Xembed], NoEventMask, CurrentTime,
                   XEMBED_EMBEDDED_NOTIFY, 0, systray->win, XEMBED_EMBEDDED_VERSION);
         XSync(dpy, False);
-        i->ismapped = !(flags = getxembedflags(i->win)) || flags & XEMBED_MAPPED ? 1 : 0;
+        i->ismapped = !(flags = getxembedflags(i->win)) || flags & XEMBED_MAPPED;
         if (i->ismapped) {
                 updatesystray();
                 XMapWindow(dpy, i->win);
