@@ -614,26 +614,27 @@ hidefloating(const Arg *arg)
 Client *
 nextsamefloat(int next)
 {
+        _Bool f = selmon->sel->isfloating;
         Client *c;
 
         if (next > 0) {
                 for (c = selmon->sel->next;
-                     c && ((_Bool)c->isfloating != (_Bool)selmon->sel->isfloating || !ISVISIBLE(c));
+                     c && ((_Bool)c->isfloating != f || !ISVISIBLE(c));
                      c = c->next);
                 if (!c)
                         for (c = selmon->clients;
-                             c && ((_Bool)c->isfloating != (_Bool)selmon->sel->isfloating || !ISVISIBLE(c));
+                             c && ((_Bool)c->isfloating != f || !ISVISIBLE(c));
                              c = c->next);
         } else {
                 Client *i;
 
                 c = NULL;
                 for (i = selmon->clients; i != selmon->sel; i = i->next)
-                        if ((_Bool)i->isfloating == (_Bool)selmon->sel->isfloating && ISVISIBLE(i))
+                        if ((_Bool)i->isfloating == f && ISVISIBLE(i))
                                 c = i;
                 if (!c)
                         for (; i; i = i->next)
-                                if ((_Bool)i->isfloating == (_Bool)selmon->sel->isfloating && ISVISIBLE(i))
+                                if ((_Bool)i->isfloating == f && ISVISIBLE(i))
                                         c = i;
         }
         return c;
@@ -893,17 +894,11 @@ zoomswap(const Arg *arg)
 void
 zoomvar(const Arg *arg)
 {
-        if (selmon->lt[selmon->sellt]->arrange == deck && selmon->ntiles > selmon->nmaster + 1) {
-                if (arg->i)
+        if ((selmon->lt[selmon->sellt]->arrange == deck &&
+             selmon->ntiles > selmon->nmaster + 1) == (_Bool)arg->i)
                         zoomswap(&((Arg){0}));
-                else
+        else
                         zoom(&((Arg){0}));
-        } else {
-                if (arg->i)
-                        zoom(&((Arg){0}));
-                else
-                        zoomswap(&((Arg){0}));
-        }
 }
 
 /* Window rules */
