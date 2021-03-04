@@ -1,5 +1,4 @@
-bugs?
------
+# bugs?
 
 * why no applygeomhints in configurerequest
 
@@ -21,8 +20,7 @@ bugs?
 * update manpage
 
 
-upstreaming
------------
+# upstreaming
 
 * send patch regarding title padding bug in drw.c
 
