@@ -617,44 +617,24 @@ nextsamefloat(int next)
         Client *c;
 
         if (next > 0) {
-                if (selmon->sel->isfloating) {
-                        for (c = selmon->sel->next;
-                             c && (!c->isfloating || !ISVISIBLE(c));
+                for (c = selmon->sel->next;
+                     c && (c->isfloating != selmon->sel->isfloating || !ISVISIBLE(c));
+                     c = c->next);
+                if (!c)
+                        for (c = selmon->clients;
+                             c && (c->isfloating != selmon->sel->isfloating || !ISVISIBLE(c));
                              c = c->next);
-                        if (!c)
-                                for (c = selmon->clients;
-                                     c && (!c->isfloating || !ISVISIBLE(c));
-                                     c = c->next);
-                } else {
-                        for (c = selmon->sel->next;
-                             c && (c->isfloating || !ISVISIBLE(c));
-                             c = c->next);
-                        if (!c)
-                                for (c = selmon->clients;
-                                     c && (c->isfloating || !ISVISIBLE(c));
-                                     c = c->next);
-                }
         } else {
                 Client *i;
 
                 c = NULL;
-                if (selmon->sel->isfloating) {
-                        for (i = selmon->clients; i != selmon->sel; i = i->next)
-                                if (i->isfloating && ISVISIBLE(i))
+                for (i = selmon->clients; i != selmon->sel; i = i->next)
+                        if (i->isfloating == selmon->sel->isfloating && ISVISIBLE(i))
+                                c = i;
+                if (!c)
+                        for (; i; i = i->next)
+                                if (i->isfloating == selmon->sel->isfloating && ISVISIBLE(i))
                                         c = i;
-                        if (!c)
-                                for (; i; i = i->next)
-                                        if (i->isfloating && ISVISIBLE(i))
-                                                c = i;
-                } else {
-                        for (i = selmon->clients; i != selmon->sel; i = i->next)
-                                if (!i->isfloating && ISVISIBLE(i))
-                                        c = i;
-                        if (!c)
-                                for (; i; i = i->next)
-                                        if (!i->isfloating && ISVISIBLE(i))
-                                                c = i;
-                }
         }
         return c;
 }
