@@ -321,6 +321,7 @@ static void updategeomhints(Client *c);
 static void updatentiles(Monitor *m);
 static void updatenumlockmask(void);
 static void updateselmon(Monitor *m);
+static void updateselmonhelper(Monitor *p);
 static void updatesizehints(Window w, Sizehints *sh);
 static void updatestatus(void);
 static void updatesystray(void);
@@ -3214,15 +3215,8 @@ updategeom(void)
 		selmon = mons;
 		selmon = wintomon(root);
 	}
-        if (selmon != p) {
-                Client *c;
-
-                if (p)
-                        for (c = p->clients; c; c = c->next)
-                                updateclientdesktop(c);
-                for (c = selmon->clients; c; c = c->next)
-                        updateclientdesktop(c);
-        }
+        if (selmon != p)
+                updateselmonhelper(p);
 	return dirty;
 }
 
@@ -3262,10 +3256,17 @@ updatenumlockmask(void)
 void
 updateselmon(Monitor *m)
 {
-        Client *c;
         Monitor *p = selmon;
 
         selmon = m;
+        updateselmonhelper(p);
+}
+
+void
+updateselmonhelper(Monitor *p)
+{
+        Client *c;
+
         if (p)
                 for (c = p->clients; c; c = c->next)
                         updateclientdesktop(c);
