@@ -788,10 +788,12 @@ clientmessage(XEvent *e)
         Icon *i;
 	XClientMessageEvent *cme = &e->xclient;
 
-        if (systray && cme->window == systray->win && cme->data.l[1] == SYSTEM_TRAY_REQUEST_DOCK) {
-                i = ecalloc(1, sizeof(Icon));
-                i->win = cme->data.l[2];
-                addsystrayicon(i);
+        if (systray && cme->window == systray->win) {
+                if (cme->data.l[1] == SYSTEM_TRAY_REQUEST_DOCK) {
+                        i = ecalloc(1, sizeof(Icon));
+                        i->win = cme->data.l[2];
+                        addsystrayicon(i);
+                }
                 return;
         }
 	if (!(c = wintoclient(cme->window)))
@@ -905,10 +907,11 @@ configurerequest(XEvent *e)
 				XMoveResizeWindow(dpy, c->win, c->x, c->y, c->w, c->h);
 		} else
 			configure(c);
-        } else if ((i = wintosystrayicon(ev->window)) && ev->value_mask & (CWWidth|CWHeight) &&
-                   updatesystrayicongeom(i, ev->width, ev->height) && i->ismapped)
-                updatesystray();
-        else {
+        } else if ((i = wintosystrayicon(ev->window))) {
+                if (ev->value_mask & (CWWidth|CWHeight) &&
+                    updatesystrayicongeom(i, ev->width, ev->height) && i->ismapped)
+                        updatesystray();
+        } else {
 		wc.x = ev->x;
 		wc.y = ev->y;
 		wc.width = ev->width;
@@ -1719,7 +1722,9 @@ maprequest(XEvent *e)
         Icon *i;
 	XMapRequestEvent *ev = &e->xmaprequest;
 
-        if ((i = wintosystrayicon(ev->window)) && !i->ismapped) {
+        if ((i = wintosystrayicon(ev->window))) {
+                if (i->ismapped)
+                        return;
                 i->ismapped = 1;
                 updatesystray();
                 XMapWindow(dpy, i->win);
