@@ -24,25 +24,30 @@ typedef struct {
         const int scratchkey;
 } Win;
 
-/* appearance */
-static const unsigned int borderpx              = 2;  /* border pixel of windows */
-static const unsigned int snap                  = 10; /* snap pixel */
-static const int gappih                         = 1;  /* horiz inner gap between windows */
-static const int gappiv                         = 1;  /* vert inner gap between windows */
-static const int gappoh                         = 1;  /* horiz outer gap between windows and screen edge */
-static const int gappov                         = 1;  /* vert outer gap between windows and screen edge */
-static const int showsystray                    = 1;  /* 0 means no systray */
-static const int showbar                        = 1;  /* 0 means no bar */
-static const int topbar                         = 1;  /* 0 means bottom bar */
-/* display modes of the tab bar
- * modes after showtab_nmodes are disabled */
-enum showtab_modes { showtab_never, showtab_auto, showtab_nmodes, showtab_always};
-static const int showtab                        = showtab_auto; /* default tab bar show mode */
-static const int toptab                         = 0;            /* 0 means bottom tab bar */
+static const unsigned int borderpx      = 2;    /* border pixel of windows */
+static const unsigned int snap          = 10;   /* snap pixel */
+static const float mfact                = 0.60; /* factor of master area size (0.05 - 0.95) */
+static const int nmaster                = 1;    /* number of clients in master area */
+static const int resizehints            = 0;    /* 1 means respect size hints in tiled resizals */
+static const int gappih                 = 1;    /* horiz inner gap between windows */
+static const int gappiv                 = 1;    /* vert inner gap between windows */
+static const int gappoh                 = 1;    /* horiz outer gap between windows and screen edge */
+static const int gappov                 = 1;    /* vert outer gap between windows and screen edge */
+static const int showsystray            = 1;    /* 0 means no systray */
+static const int showbar                = 1;    /* 0 means no bar */
+static const int topbar                 = 1;    /* 0 means bottom bar */
 
-static const char *fonts[] = { "Fira Sans:size=12",
-                               "Siji:pixelsize=12",
-                               "Noto Color Emoji:pixelsize=12" };
+/* display modes of the tab bar, modes after ShowtabPivot are disabled */
+enum { ShowtabNever, ShowtabAuto, ShowtabPivot, ShowtabAlways};
+
+static const int showtab                = ShowtabAuto; /* default tab bar display mode */
+static const int toptab                 = 0;           /* 0 means bottom tab bar */
+
+static const char *fonts[] = {
+        "Fira Sans:size=12",
+        "Siji:pixelsize=12",
+        "Noto Color Emoji:pixelsize=12",
+};
 
 static const char col_black[]           = "#222222";
 static const char col_cyan[]            = "#005577";
@@ -75,12 +80,8 @@ static const char *colors[][3] = {
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 
 /* first element is for all-tag view */
-static int def_layouts[1 + LENGTH(tags)]  = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
+static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
 static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
-
-static const float mfact        = 0.60; /* factor of master area size (0.05 - 0.95) */
-static const int nmaster        = 1;    /* number of clients in master area */
-static const int resizehints    = 0;    /* 1 means respect size hints in tiled resizals */
 
 static const Layout layouts[] = {
 	/* symbol       arrange function */
@@ -110,7 +111,6 @@ static const char *const *scratchcmds[] = {
 
 #define DYNSCRATCHKEY(i)                (LENGTH(scratchcmds) + i)
 
-/* key definitions */
 #define MODLKEY Mod3Mask
 #define MODRKEY Mod1Mask
 #define SUPKEY  Mod4Mask
@@ -364,7 +364,6 @@ static Key keys[] = {
 	TAGKEYS(                        XK_9,                                   8)
 };
 
-/* button definitions */
 /* click can be ClkTabBar, ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
 static Button buttons[] = {
 	/* click                event mask      button          function        argument */

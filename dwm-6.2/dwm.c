@@ -651,7 +651,7 @@ buttonpress(XEvent *e)
                 int ntabs, ofst, tbw, lft;
 
                 if (selmon->lt[selmon->sellt]->arrange == deck &&
-                    selmon->pertag->showtabs[selmon->pertag->curtag] == showtab_auto) {
+                    selmon->pertag->showtabs[selmon->pertag->curtag] == ShowtabAuto) {
                         ntabs = MIN(selmon->ntiles - selmon->nmaster, MAXTABS);
                         ofst = selmon->nmaster;
                 } else {
@@ -1120,14 +1120,14 @@ drawstatus(void)
 void
 drawtab(Monitor *m)
 {
-        if (m->pertag->showtabs[m->pertag->curtag] == showtab_always) {
+        if (m->pertag->showtabs[m->pertag->curtag] == ShowtabAlways) {
                 updatentiles(m);
                 if (m->ntiles == 0) {
                         drw_rect(drw, 0, 0, m->ww, th, 1, 1);
                         drw_map(drw, m->tabwin, 0, 0, m->ww, th);
                 } else
                         drawtabhelper(m, 0);
-        } else if (m->pertag->showtabs[m->pertag->curtag] == showtab_auto) {
+        } else if (m->pertag->showtabs[m->pertag->curtag] == ShowtabAuto) {
                 updatentiles(m);
                 if (m->lt[m->sellt]->arrange == monocle && m->ntiles > 1)
                         drawtabhelper(m, 0);
@@ -2692,10 +2692,10 @@ void
 tabmode(const Arg *arg)
 {
 	if (arg->i >= 0)
-                selmon->pertag->showtabs[selmon->pertag->curtag] = arg->ui % showtab_nmodes;
+                selmon->pertag->showtabs[selmon->pertag->curtag] = arg->ui % ShowtabPivot;
 	else
                 selmon->pertag->showtabs[selmon->pertag->curtag] =
-                        (selmon->pertag->showtabs[selmon->pertag->curtag] + 1) % showtab_nmodes;
+                        (selmon->pertag->showtabs[selmon->pertag->curtag] + 1) % ShowtabPivot;
 	arrange(selmon);
 }
 
@@ -3013,8 +3013,8 @@ updatebarpos(Monitor *m)
 	} else
 		m->by = -bh;
 
-        if (m->pertag->showtabs[m->pertag->curtag] == showtab_always ||
-            (m->pertag->showtabs[m->pertag->curtag] == showtab_auto &&
+        if (m->pertag->showtabs[m->pertag->curtag] == ShowtabAlways ||
+            (m->pertag->showtabs[m->pertag->curtag] == ShowtabAuto &&
              ((m->lt[m->sellt]->arrange == monocle && m->ntiles > 1) ||
               (m->lt[m->sellt]->arrange == deck && m->ntiles > m->nmaster + 1)))) {
 		m->wh -= th;
