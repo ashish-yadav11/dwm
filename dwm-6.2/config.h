@@ -2,8 +2,6 @@
 
 /* maximum number of tabs to show */
 #define MAXTABS                         15
-/* minimum allowed vertical height of a window when resizing with setsplus */
-#define MINWINHEIGHT                    26
 /* systray icon height, change to bh to keep it equal to font height */
 #define SYSTRAYHEIGTH                   16
 /* spacing between systray icons */
