@@ -1751,10 +1751,10 @@ monocle(Monitor *m)
         } else {
                 int wx, wy, ww, wh;
 
-                wx = m->wx + gappoh;
-                wy = m->wy + gappih;
-                ww = m->ww - 2 * gappoh;
-                wh = m->wh - 2 * gappih;
+                wx = m->wx + gappov;
+                wy = m->wy + gappoh;
+                ww = m->ww - 2 * gappov;
+                wh = m->wh - 2 * gappoh;
 
                 for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
                         resize(c, wx, wy, ww - 2 * c->bw, wh - 2 * c->bw, 0);
@@ -2759,10 +2759,10 @@ tiledeck(Monitor *m, int deck)
         } else {
                 int r;
                 int x, y, w, h;
-                int wx = m->wx + gappoh;
-                int wy = m->wy + gappov;
-                int ww = m->ww - 2 * gappoh;
-                int wh = m->wh - 2 * gappov;
+                int wx = m->wx + gappov;
+                int wy = m->wy + gappoh;
+                int ww = m->ww - 2 * gappov;
+                int wh = m->wh - 2 * gappoh;
 
                 /* masters */
                 y = 0;
