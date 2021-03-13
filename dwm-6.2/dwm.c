@@ -1243,6 +1243,8 @@ focusalt(Client *c)
 {
         if (selmon->sel && selmon->sel != c)
                 unfocus(selmon->sel);
+        if (c->isurgent)
+                seturgent(c, 0);
         detachstack(c);
         attachstack(c);
         grabbuttons(c, 1);
@@ -1260,8 +1262,6 @@ focusclient(Client *c, unsigned int tag)
                 unfocus(selmon->sel);
                 updateselmon(c->mon);
         }
-        if (c->isurgent)
-                seturgent(c, 0);
         if (c->tags & selmon->tagset[selmon->seltags]) {
                 if (c->ishidden) {
                         c->ishidden = 0;
