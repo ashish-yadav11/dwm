@@ -10,9 +10,9 @@
 #define SCHEMESYSTRAY                   SchemeNorm
 
 /* command used to notify that a client has been added to dynamic scratchpad */
-#define NOTIFYSCRATCHED                 { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "scratched focused window", NULL } }
+#define NOTIFYSCRATCHED                 { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "scratched focused window", NULL } }
 /* command used to notify that a client has been removed from dynamic scratchpad */
-#define NOTIFYUNSCRATCHED               { .v = (const char*[]){ "notify-send", "-t", "1500", "dwm", "unscratched focused window", NULL } }
+#define NOTIFYUNSCRATCHED               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "unscratched focused window", NULL } }
 /* window switcher command */
 #define ROFIWIN                         { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
 /* alternate window switcher command */
