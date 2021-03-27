@@ -83,14 +83,6 @@ static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
 static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
 static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 
-static const Layout layouts[] = {
-	/* symbol       arrange function */
-	{ "[ ]=",       tile },
-	{ "[ . ]",      NULL },    /* no layout function means floating behavior */
-	{ "[M]",        monocle },
-	{ "[D]",        deck },
-};
-
 static const Attach attachs[] = {
 	/* symbol       attach function */
 	{ "T",          attach },
@@ -98,6 +90,14 @@ static const Attach attachs[] = {
 	{ "U",          attachabove },
 	{ "S",          attachaside },
 	{ "B",          attachbottom },
+};
+
+static const Layout layouts[] = {
+       /* symbol       arrange function        default attach */
+       { "[ ]=",       tile,                   &attachs[0] },
+       { "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
+       { "[M]",        monocle,                &attachs[1] },
+       { "[D]",        deck,                   &attachs[3] },
 };
 
 static const char *const *scratchcmds[] = {
