@@ -946,7 +946,7 @@ applyrules(Client *c)
         } else if (strcmp(class, "Signal") == 0) {
                 markscratch(c, 5);
                 c->isfloating = 1;
-                c->w = 880;
+                c->w = 960;
                 c->h = 620;
                 center(c);
         } else if (strcmp(class, "TelegramDesktop") == 0) {
