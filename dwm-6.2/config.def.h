@@ -139,8 +139,6 @@ static const char *const *scratchcmds[] = {
 #define VOLUMEM                         { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
 #define VOLUMER                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
 
-#define DICTIONARYHISTORY               { .v = (const char*[]){ "termite", "--name=floating_Termite", "-t", "Dictionary", "-e", SCRIPT("dictionary_history.sh") } }
-
 #define INHIBITSUSPEND0                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend.sh"), NULL } }
 #define INHIBITSUSPEND1                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend.sh"), "lock", NULL } }
 
@@ -286,7 +284,6 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_semicolon,   spawn,                  SCRIPTCMD("espeak.sh", "selection") },
 	{ SUPKEY|ShiftMask,             XK_semicolon,   spawn,                  SCRIPTCMD("espeak.sh") },
 	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,                  SCRIPTCMD("espeak_last.sh") },
-	{ MODLKEY|ControlMask,          XK_apostrophe,  spawn,                  DICTIONARYHISTORY },
 	{ MODLKEY|ShiftMask,            XK_q,           spawn,                  SCRIPTCMD("quit.sh") },
 	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPTCMD("hotspot_launch.sh") },
 	{ MODLKEY|ControlMask,          XK_m,           spawn,                  SCRIPTCMD("toggletouchpad.sh") },
