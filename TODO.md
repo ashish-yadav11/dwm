@@ -15,8 +15,6 @@
 
 * improve handling of updatentiles
 
-* reconnect layout and attach
-
 * update manpage
 
 
