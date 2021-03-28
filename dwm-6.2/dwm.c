@@ -1873,7 +1873,7 @@ moveprevtag(const Arg *arg)
                 selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << (selmon->pertag->prevtag - 1);
                 t = selmon->pertag->prevtag;
         } else {
-                selmon->sel->tags = selmon->tagset[selmon->seltags] = ~0 & TAGMASK;
+                selmon->sel->tags = selmon->tagset[selmon->seltags] = TAGMASK;
                 t = 10;
         }
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
@@ -1995,7 +1995,7 @@ void
 resettagifempty(unsigned int tag)
 {
         Client *c;
-        unsigned int tagm = tag ? 1 << (tag - 1) : ~0 & TAGMASK;
+        unsigned int tagm = tag ? 1 << (tag - 1) : TAGMASK;
 
         for (c = selmon->clients; c && !(c->tags & tagm); c = c->next);
         if (c)
@@ -2900,7 +2900,7 @@ toggleview(const Arg *arg)
                         }
                 free(masters);
 
-                if (newtagset == (~0 & TAGMASK)) {
+                if (newtagset == TAGMASK) {
                         resettagifempty(selmon->pertag->curtag);
                         selmon->pertag->prevtag = selmon->pertag->curtag;
                         selmon->pertag->curtag = 0;
@@ -3074,7 +3074,7 @@ updateclientdesktop(Client *c)
 {
         unsigned long t;
 
-        if (c->tags == (~0 & TAGMASK))
+        if (c->tags == TAGMASK)
                 t = 10;
         else if (selmon->pertag->curtag && c->tags & 1 << (selmon->pertag->curtag - 1))
                 t = selmon->pertag->curtag;
@@ -3506,7 +3506,6 @@ view(const Arg *arg)
 	if (arg->ui & TAGMASK) {
 		selmon->tagset[selmon->seltags] = arg->ui & TAGMASK;
 		selmon->pertag->prevtag = selmon->pertag->curtag;
-
 		if (arg->ui == ~0)
 			selmon->pertag->curtag = 0;
 		else {
