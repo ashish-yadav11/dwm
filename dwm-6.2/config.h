@@ -1,1 +1,1 @@
-/media/storage/.temporary/dwm/dwm-6.2/config.def.h
+config.def.h
