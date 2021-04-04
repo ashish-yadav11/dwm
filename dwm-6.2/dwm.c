@@ -108,7 +108,7 @@ typedef struct {
 typedef struct {
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
 	float mina, maxa;
-} Sizehints;
+} SizeHints;
 
 typedef struct Monitor Monitor;
 typedef struct Client Client;
@@ -121,7 +121,7 @@ struct Client {
 	unsigned int tags;
         int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, ishidden;
 	int scratchkey;
-        Sizehints sh;
+        SizeHints sh;
 	Client *next;
 	Client *snext;
 	Monitor *mon;
@@ -183,7 +183,7 @@ typedef struct Icon Icon;
 struct Icon {
         int w, h;
         int ismapped;
-        Sizehints sh;
+        SizeHints sh;
         Icon *next;
         Window win;
 };
@@ -198,7 +198,7 @@ static void addsystrayicon(Icon *i);
 static void applycurtagsettings(void);
 static int applygeomhints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void applyrules(Client *c); /* defined in config.h */
-static void applysizehints(Sizehints *sh, int *w, int *h);
+static void applysizehints(SizeHints *sh, int *w, int *h);
 static void arrange(Monitor *m);
 static void arrangemon(Monitor *m);
 static void attach(Client *c);
@@ -323,7 +323,7 @@ static void updatentiles(Monitor *m);
 static void updatenumlockmask(void);
 static void updateselmon(Monitor *m);
 static void updateselmonhelper(Monitor *p);
-static void updatesizehints(Window w, Sizehints *sh);
+static void updatesizehints(Window w, SizeHints *sh);
 static void updatestatus(void);
 static void updatesystray(void);
 static int updatesystrayicongeom(Icon *i, int w, int h);
@@ -477,7 +477,7 @@ applygeomhints(Client *c, int *x, int *y, int *w, int *h, int interact)
 }
 
 void
-applysizehints(Sizehints *sh, int *w, int *h)
+applysizehints(SizeHints *sh, int *w, int *h)
 {
         int baseismin;
 
@@ -3280,7 +3280,7 @@ updateselmonhelper(Monitor *p)
 }
 
 void
-updatesizehints(Window w, Sizehints *sh)
+updatesizehints(Window w, SizeHints *sh)
 {
 	long msize;
 	XSizeHints size;
