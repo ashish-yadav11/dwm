@@ -302,7 +302,8 @@ static Key keys[] = {
 	{ MODRKEY,                      XK_l,           spawn,                  SCRIPTCMD("ytmsclu.sh", "1") },
 	{ MODRKEY,                      XK_k,           spawn,                  SCRIPTCMD("ytmsclu.sh", "0") },
 	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPTCMD("ytresume.sh") },
-	{ MODRKEY,                      XK_Delete,      spawn,                  SCRIPTCMD("usbmount.sh") },
+	{ MODLKEY,                      XK_Delete,      spawn,                  SCRIPTCMD("usbmount.sh") },
+	{ MODLKEY|ShiftMask,            XK_Delete,      spawn,                  SCRIPTCMD("mtpmount.sh") },
 
 	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
 	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
