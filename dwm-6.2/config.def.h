@@ -148,13 +148,12 @@ static const char *const *scratchcmds[] = {
 static const Win browser = { .cmd = CMD("brave"), .tag = 8, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPTCMD("neomutt.sh"), .tag = 9, .scratchkey = -2 };
 
+enum { MoveX, MoveY, ResizeX, ResizeY, ResizeA }; /* floatmoveresize */
+
 /* custom function declarations */
 static void dynscratchtoggle(const Arg *arg);
 static void dynscratchunmark(const Arg *arg);
-static void floatmovex(const Arg *arg);
-static void floatmovey(const Arg *arg);
-static void floatresizeh(const Arg *arg);
-static void floatresizew(const Arg *arg);
+static void floatmoveresize(const Arg *arg);
 static void focusmaster(const Arg *arg);
 static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
@@ -209,22 +208,26 @@ static Key keys[] = {
 	{ SUPKEY,                       XK_period,      inplacerotate,          {.i = +2 } },
 	{ SUPKEY|ShiftMask,             XK_comma,       inplacerotate,          {.i = -1 } },
 	{ SUPKEY|ShiftMask,             XK_period,      inplacerotate,          {.i = -2 } },
-	{ SUPKEY,                       XK_j,           floatmovey,             {.i = +20} },
-	{ SUPKEY,                       XK_Down,        floatmovey,             {.i = +20} },
-	{ SUPKEY,                       XK_k,           floatmovey,             {.i = -20} },
-	{ SUPKEY,                       XK_Up,          floatmovey,             {.i = -20} },
-	{ SUPKEY,                       XK_h,           floatmovex,             {.i = -20} },
-	{ SUPKEY,                       XK_Left,        floatmovex,             {.i = -20} },
-	{ SUPKEY,                       XK_l,           floatmovex,             {.i = +20} },
-	{ SUPKEY,                       XK_Right,       floatmovex,             {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_j,           floatresizeh,           {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_Down,        floatresizeh,           {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_k,           floatresizeh,           {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_Up,          floatresizeh,           {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_h,           floatresizew,           {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_Left,        floatresizew,           {.i = -20} },
-	{ SUPKEY|ShiftMask,             XK_l,           floatresizew,           {.i = +20} },
-	{ SUPKEY|ShiftMask,             XK_Right,       floatresizew,           {.i = +20} },
+	{ SUPKEY,                       XK_j,           floatmoveresize,        {.v = (int []){MoveY,   +20} }},
+	{ SUPKEY,                       XK_Down,        floatmoveresize,        {.v = (int []){MoveY,   +20} }},
+	{ SUPKEY,                       XK_k,           floatmoveresize,        {.v = (int []){MoveY,   -20} }},
+	{ SUPKEY,                       XK_Up,          floatmoveresize,        {.v = (int []){MoveY,   -20} }},
+	{ SUPKEY,                       XK_h,           floatmoveresize,        {.v = (int []){MoveX,   -20} }},
+	{ SUPKEY,                       XK_Left,        floatmoveresize,        {.v = (int []){MoveX,   -20} }},
+	{ SUPKEY,                       XK_l,           floatmoveresize,        {.v = (int []){MoveX,   +20} }},
+	{ SUPKEY,                       XK_Right,       floatmoveresize,        {.v = (int []){MoveX,   +20} }},
+	{ SUPKEY|ShiftMask,             XK_j,           floatmoveresize,        {.v = (int []){ResizeY, +20} }},
+	{ SUPKEY|ShiftMask,             XK_Down,        floatmoveresize,        {.v = (int []){ResizeY, +20} }},
+	{ SUPKEY|ShiftMask,             XK_k,           floatmoveresize,        {.v = (int []){ResizeY, -20} }},
+	{ SUPKEY|ShiftMask,             XK_Up,          floatmoveresize,        {.v = (int []){ResizeY, -20} }},
+	{ SUPKEY|ShiftMask,             XK_h,           floatmoveresize,        {.v = (int []){ResizeX, -20} }},
+	{ SUPKEY|ShiftMask,             XK_Left,        floatmoveresize,        {.v = (int []){ResizeX, -20} }},
+	{ SUPKEY|ShiftMask,             XK_l,           floatmoveresize,        {.v = (int []){ResizeX, +20} }},
+	{ SUPKEY|ShiftMask,             XK_Right,       floatmoveresize,        {.v = (int []){ResizeX, +20} }},
+	{ SUPKEY|ControlMask,           XK_j,           floatmoveresize,        {.v = (int []){ResizeA, +20} }},
+	{ SUPKEY|ControlMask,           XK_Down,        floatmoveresize,        {.v = (int []){ResizeA, +20} }},
+	{ SUPKEY|ControlMask,           XK_k,           floatmoveresize,        {.v = (int []){ResizeA, -20} }},
+	{ SUPKEY|ControlMask,           XK_Up,          floatmoveresize,        {.v = (int []){ResizeA, -20} }},
 	{ MODLKEY,                      XK_i,           incnmaster,             {.i = +1 } },
 	{ MODLKEY|ShiftMask,            XK_i,           incnmaster,             {.i = -1 } },
 	{ MODLKEY,                      XK_space,       zoomvar,                {.i = 1} },
@@ -420,79 +423,83 @@ dynscratchunmark(const Arg *arg)
 }
 
 void
-floatmovex(const Arg *arg)
+floatmoveresize(const Arg *arg)
 {
-        int nx, cw, mw;
-
         if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
                 return;
         if (selmon->sel->isfullscreen)
                 return;
-        nx = selmon->sel->x + arg->i;
-        cw = WIDTH(selmon->sel);
-        mw = selmon->wx + selmon->ww;
-        /* snap to monitor edge on first try of crossover */
-        if (selmon->sel->x > selmon->wx && nx < selmon->wx)
-                nx = selmon->wx;
-        else if (selmon->sel->x + cw < mw && nx + cw > mw)
-                nx = mw - cw;
-        resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, 1);
-}
+        switch (((int *)arg->v)[0]) {
+                case MoveX:
+                {
+                        int nx = selmon->sel->x + ((int *)arg->v)[1];
+                        int cw = WIDTH(selmon->sel);
+                        int mw = selmon->wx + selmon->ww;
 
-void
-floatmovey(const Arg *arg)
-{
-        int ny, ch, mh;
+                        /* snap to monitor edge on first try of crossover */
+                        if (nx < selmon->wx && selmon->sel->x > selmon->wx)
+                                nx = selmon->wx;
+                        else if (nx + cw > mw && selmon->sel->x + cw < mw)
+                                nx = mw - cw;
+                        resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, 1);
+                }
+                        break;
+                case MoveY:
+                {
+                        int ny = selmon->sel->y + ((int *)arg->v)[1];
+                        int ch = HEIGHT(selmon->sel);
+                        int mh = selmon->wy + selmon->wh;
 
-        if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
-                return;
-        if (selmon->sel->isfullscreen)
-                return;
-        ny = selmon->sel->y + arg->i;
-        ch = HEIGHT(selmon->sel);
-        mh = selmon->wy + selmon->wh;
-        /* snap to monitor edge on first try of crossover */
-        if (selmon->sel->y > selmon->wy && ny < selmon->wy)
-                ny = selmon->wy;
-        else if (selmon->sel->y + ch < mh && ny + ch > mh)
-                ny = mh - ch;
-        resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, 1);
-}
+                        /* snap to monitor edge on first try of crossover */
+                        if (ny < selmon->wy && selmon->sel->y > selmon->wy)
+                                ny = selmon->wy;
+                        else if (ny + ch > mh && selmon->sel->y + ch < mh)
+                                ny = mh - ch;
+                        resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, 1);
+                }
+                        break;
+                case ResizeX:
+                {
+                        int nw = selmon->sel->w + ((int *)arg->v)[1];
+                        int cx = selmon->sel->x + 2 * selmon->sel->bw;
+                        int mw = selmon->wx + selmon->ww;
 
-void
-floatresizeh(const Arg *arg)
-{
-        int nh, cy, mh;
+                        /* snap to monitor edge on first try of crossover */
+                        if (cx + nw > mw && cx + selmon->sel->w < mw)
+                                nw = mw - cx;
+                        resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, 1);
+                }
+                        break;
+                case ResizeY:
+                {
+                        int nh = selmon->sel->h + ((int *)arg->v)[1];
+                        int cy = selmon->sel->y + 2 * selmon->sel->bw;
+                        int mh = selmon->wy + selmon->wh;
 
-        if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
-                return;
-        if (selmon->sel->isfullscreen)
-                return;
-        nh = selmon->sel->h + arg->i;
-        cy = selmon->sel->y + 2 * selmon->sel->bw;
-        mh = selmon->wy + selmon->wh;
-        /* snap to monitor edge on first try of crossover */
-        if (cy + selmon->sel->h < mh && cy + nh > mh)
-                nh = mh - cy;
-        resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, nh, 1);
-}
+                        /* snap to monitor edge on first try of crossover */
+                        if (cy + nh > mh && cy + selmon->sel->h < mh)
+                                nh = mh - cy;
+                        resize(selmon->sel, selmon->sel->x, selmon->sel->y, selmon->sel->w, nh, 1);
+                }
+                        break;
+                case ResizeA:
+                {
+                        int nw = selmon->sel->w + ((int *)arg->v)[1];
+                        int nh = (nw * selmon->sel->h) / selmon->sel->w;
+                        int cx = selmon->sel->x + 2 * selmon->sel->bw;
+                        int cy = selmon->sel->y + 2 * selmon->sel->bw;
+                        int mw = selmon->wx + selmon->ww;
+                        int mh = selmon->wy + selmon->wh;
 
-void
-floatresizew(const Arg *arg)
-{
-        int nw, cx, mw;
-
-        if (!selmon->sel || (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange))
-                return;
-        if (selmon->sel->isfullscreen)
-                return;
-        nw = selmon->sel->w + arg->i;
-        cx = selmon->sel->x + 2 * selmon->sel->bw;
-        mw = selmon->wx + selmon->ww;
-        /* snap to monitor edge on first try of crossover */
-        if (cx + selmon->sel->w < mw && cx + nw > mw)
-                nw = mw - cx;
-        resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, selmon->sel->h, 1);
+                        /* snap to monitor edge on first try of crossover */
+                        if (cx + nw > mw && cx + selmon->sel->w < mw)
+                                nw = mw - cx;
+                        if (cy + nh > mh && cy + selmon->sel->h < mh)
+                                nh = mh - cy;
+                        resize(selmon->sel, selmon->sel->x, selmon->sel->y, nw, nh, 1);
+                }
+                        break;
+        }
 }
 
 void
