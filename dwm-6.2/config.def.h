@@ -600,14 +600,11 @@ hideclient(const Arg *arg)
 void
 hidefloating(const Arg *arg)
 {
-        for (Client *c = selmon->clients; c; c = c->next) {
-                if (c->isfullscreen)
-                        continue;
-                if (c->isfloating && ISVISIBLE(c)) {
+        for (Client *c = selmon->clients; c; c = c->next)
+                if (c->isfloating && ISVISIBLE(c) && !c->isfullscreen) {
                         c->ishidden = 1;
                         updateclientdesktop(c);
                 }
-        }
         focus(NULL);
         arrange(selmon);
 }
