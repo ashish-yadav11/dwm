@@ -2696,11 +2696,8 @@ swaptags(const Arg *arg)
 void
 tabmode(const Arg *arg)
 {
-	if (arg->i >= 0)
-                selmon->pertag->showtabs[selmon->pertag->curtag] = arg->ui % ShowtabPivot;
-	else
-                selmon->pertag->showtabs[selmon->pertag->curtag] =
-                        (selmon->pertag->showtabs[selmon->pertag->curtag] + 1) % ShowtabPivot;
+        selmon->pertag->showtabs[selmon->pertag->curtag] =
+                (selmon->pertag->showtabs[selmon->pertag->curtag] + 1) % ShowtabPivot;
 	arrange(selmon);
 }
 
