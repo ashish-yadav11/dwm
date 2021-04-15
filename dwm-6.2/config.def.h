@@ -9,10 +9,12 @@
 /* colorscheme used for background of systray */
 #define SCHEMESYSTRAY                   SchemeNorm
 
-/* command used to notify that a client has been added to dynamic scratchpad */
-#define NOTIFYSCRATCHED                 { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "scratched focused window", NULL } }
 /* command used to notify that a client has been removed from dynamic scratchpad */
-#define NOTIFYUNSCRATCHED               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "unscratched focused window", NULL } }
+#define NOTIFYDYNSCRATCH0               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "unscratched focused window", NULL } }
+/* command used to notify that a client has been added to dynamic scratchpad */
+#define NOTIFYDYNSCRATCH1               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "scratched focused window", NULL } }
+/* command used to notify that a client already has a scratch mark */
+#define NOTIFYDYNSCRATCH2               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "focused window already scratched", NULL } }
 /* window switcher command */
 #define ROFIWIN                         { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
 /* alternate window switcher command */
@@ -408,8 +410,11 @@ dynscratchtoggle(const Arg *arg)
         else if (selmon->sel->scratchkey == arg->i)
                 scratchhidehelper();
         else if (!scratchshowhelper(arg->i)) {
-                selmon->sel->scratchkey = arg->i;
-                spawn(&((Arg)NOTIFYSCRATCHED));
+                if (selmon->sel->scratchkey == 0) {
+                        selmon->sel->scratchkey = arg->i;
+                        spawn(&((Arg)NOTIFYDYNSCRATCH1));
+                } else
+                        spawn(&((Arg)NOTIFYDYNSCRATCH2));
         }
 }
 
@@ -418,7 +423,7 @@ dynscratchunmark(const Arg *arg)
 {
         if (selmon->sel && selmon->sel->scratchkey == arg->i) {
                 selmon->sel->scratchkey = 0;
-                spawn(&((Arg)NOTIFYUNSCRATCHED));
+                spawn(&((Arg)NOTIFYDYNSCRATCH0));
         }
 }
 
