@@ -630,16 +630,17 @@ buttonpress(XEvent *e)
 		focus(NULL);
 	}
 	if (ev->window == selmon->barwin) {
-                if (ev->x < ble - blw) {
-                        i = -1, x = -ev->x;
-                        do
-                                x += TEXTW(tags[++i]);
-                        while (x <= 0);
-                        click = ClkTagBar;
-                        arg.ui = 1 << i;
-                } else if (ev->x < ble)
-                        click = ClkLtSymbol;
-                else if (ev->x < selmon->ww - stw - wstext || !ISSTATUSDRAWN)
+                if (ev->x < ble) {
+                        if (ev->x < ble - blw) {
+                                i = -1, x = -ev->x;
+                                do
+                                        x += TEXTW(tags[++i]);
+                                while (x <= 0);
+                                click = ClkTagBar;
+                                arg.ui = 1 << i;
+                        } else
+                                click = ClkLtSymbol;
+                } else if (ev->x < selmon->ww - stw - wstext || !ISSTATUSDRAWN)
                         click = ClkWinTitle;
                 else if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 &&
                          (x -= wstext - lrpad) <= 0) {
