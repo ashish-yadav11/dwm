@@ -710,7 +710,7 @@ scratchhidevisible(const Arg *arg)
         unsigned long t = 0;
 
         for (Client *c = selmon->clients; c; c = c->next)
-                if ((c->scratchkey > 0) && ISVISIBLE(c)) {
+                if (c->scratchkey > 0 && ISVISIBLE(c)) {
                         c->tags = 0;
                         XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                                         PropModeReplace, (unsigned char *) &t, 1);
