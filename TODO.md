@@ -10,8 +10,9 @@
   root), wmctrl might prove helpful in debugging after the changes
 
 * see if there is any more scope of improvement or bugs to fix in systray
-  implementation (see configurerequest - ICCCM and subtle, we might need to send
-  synthetic configurenotify, also should we set border width to 0 when adding an icon)
+  implementation (see configurerequest - ICCCM and subtle wm, we might need to
+  send synthetic configurenotify, also should we set border width to 0 when
+  adding an icon)
 
 * improve handling of updatentiles
 
