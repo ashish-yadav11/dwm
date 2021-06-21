@@ -68,7 +68,7 @@
 
 #define STATUSLENGTH                    256
 #define ROOTNAMELENGTH                  320 /* fake signal + status */
-#define DSBLOCKSLOCKFILE                "/tmp/dsblocks.pid"
+#define DSBLOCKSLOCKFILE                "/var/local/dsblocks/dsblocks.pid"
 #define DELIMITERENDCHAR                10
 
 #define NET_WM_STATE_ADD                1
