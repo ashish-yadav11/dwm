@@ -9,6 +9,13 @@
 /* colorscheme used for background of systray */
 #define SCHEMESYSTRAY                   SchemeNorm
 
+#define SCRIPT(name)                    "/home/ashish/.scripts/"name
+
+#define CMD(...)                        { .v = (const char*[]){ __VA_ARGS__, NULL } }
+#define SCRIPTCMD(...)                  { .v = (const char*[]){ SCRIPT("")__VA_ARGS__, NULL } }
+#define SHCMD(cmd)                      { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
+#define TERMCMD(cmd)                    { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
+
 /* command used to notify that a client has been removed from dynamic scratchpad */
 #define NOTIFYDYNSCRATCH0               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "unscratched focused window", NULL } }
 /* command used to notify that a client has been added to dynamic scratchpad */
@@ -102,16 +109,21 @@ static const Layout layouts[] = {
        { "[D]",        deck,                   &attachs[3] },
 };
 
+#define ASKLAUNCH(name, ...)            (const char *[]){ SCRIPT("asklaunch.sh"), name, __VA_ARGS__, NULL }
+
 static const char *const *scratchcmds[] = {
 	(const char *[]){ "termite", "--name=scratch_Termite", NULL },
-	(const char *[]){ "brave", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod", NULL },
-	(const char *[]){ "termite", "--name=pyfzf_Termite", "-e", "/home/ashish/.local/bin/pyfzf", NULL },
+	ASKLAUNCH("YouTube Music", "brave", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod"),
+	(const char *[]){ "termite", "--name=pyfzf_Termite", "-e", "pyfzf", NULL },
 	(const char *[]){ "termite", "--name=calcurse_Termite", "-t", "Calcurse", "-e", "calcurse", NULL },
-	(const char *[]){ "signal-desktop", NULL },
-	(const char *[]){ "telegram-desktop", NULL },
+	ASKLAUNCH("Signal", "signal-desktop"),
+	ASKLAUNCH("Telegram", "telegram-desktop"),
 };
 
 #define DYNSCRATCHKEY(i)                (LENGTH(scratchcmds) + i)
+
+#include "inplacerotate.c"
+#include <X11/XF86keysym.h>
 
 #define MODLKEY Mod3Mask
 #define MODRKEY Mod1Mask
@@ -123,13 +135,6 @@ static const char *const *scratchcmds[] = {
 	{ SUPKEY,                       KEY,      tagandview,     {.ui = TAG} }, \
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
-
-#define SCRIPT(name)                    "/home/ashish/.scripts/"name
-
-#define CMD(...)                        { .v = (const char*[]){ __VA_ARGS__, NULL } }
-#define SCRIPTCMD(...)                  { .v = (const char*[]){ "/home/ashish/.scripts/"__VA_ARGS__, NULL } }
-#define SHCMD(cmd)                      { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
-#define TERMCMD(cmd)                    { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
 
 #define REDSHIFT(arg)                   { .v = (const char*[]){ "redshift", "-PO" arg, NULL } }
 #define REDSHIFTDEFAULT                 { .v = (const char*[]){ "redshift", "-x", NULL } }
@@ -179,9 +184,6 @@ static void windowswitcher(const Arg *arg);
 static void winview(const Arg* arg);
 static void zoomswap(const Arg *arg);
 static void zoomvar(const Arg *arg);
-
-#include "inplacerotate.c"
-#include <X11/XF86keysym.h>
 
 static Key keys[] = {
 	/* modifier                     key             function                argument */
