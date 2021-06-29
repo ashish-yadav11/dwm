@@ -144,6 +144,8 @@ static const char *const *scratchcmds[] = {
 #define INHIBITSUSPEND0                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend.sh"), NULL } }
 #define INHIBITSUSPEND1                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend.sh"), "lock", NULL } }
 
+#define TOGGLEVPN                       SHCMD("killall -INT riseup-vpn 2>/dev/null || riseup-vpn --start-vpn on")
+
 #define DISABLEDEMODE                   SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE                    SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
 
@@ -293,6 +295,7 @@ static Key keys[] = {
 	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPTCMD("hotspot_launch.sh") },
 	{ MODLKEY|ControlMask,          XK_m,           spawn,                  SCRIPTCMD("toggletouchpad.sh") },
 	{ MODLKEY|ControlMask,          XK_r,           spawn,                  SCRIPTCMD("reflector_launch.sh") },
+	{ MODLKEY|ControlMask,          XK_v,           spawn,                  TOGGLEVPN },
 	{ MODLKEY,                      XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh") },
 	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "status") },
 	{ MODLKEY|ControlMask,          XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "stop") },
