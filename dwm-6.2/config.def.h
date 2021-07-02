@@ -146,7 +146,7 @@ static const char *const *scratchcmds[] = {
 #define VOLUMEL                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
 #define VOLUMER                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
 #define PLAYERT                         { .v = (const char*[]){ "playerctl", "play-pause", NULL } }
-#define PLAYERP                         { .v = (const char*[]){ "playerctl", "prev", NULL } }
+#define PLAYERP                         { .v = (const char*[]){ "playerctl", "previous", NULL } }
 #define PLAYERN                         { .v = (const char*[]){ "playerctl", "next", NULL } }
 
 #define INHIBITSUSPEND0                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend.sh"), NULL } }
