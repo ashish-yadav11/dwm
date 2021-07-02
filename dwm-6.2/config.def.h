@@ -142,9 +142,12 @@ static const char *const *scratchcmds[] = {
 #define ROFIDRUN                        { .v = (const char*[]){ "rofi", "-show", "drun", "-show-icons", NULL } }
 #define ROFIRUN                         { .v = (const char*[]){ "rofi", "-show", "run", NULL } }
 
-#define VOLUMEL                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
 #define VOLUMEM                         { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
+#define VOLUMEL                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
 #define VOLUMER                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
+#define PLAYERT                         { .v = (const char*[]){ "playerctl", "play-pause", NULL } }
+#define PLAYERP                         { .v = (const char*[]){ "playerctl", "prev", NULL } }
+#define PLAYERN                         { .v = (const char*[]){ "playerctl", "next", NULL } }
 
 #define INHIBITSUSPEND0                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend.sh"), NULL } }
 #define INHIBITSUSPEND1                 { .v = (const char*[]){ "systemd-inhibit", "--what=handle-lid-switch", SCRIPT("inhibitsuspend.sh"), "lock", NULL } }
@@ -324,6 +327,9 @@ static Key keys[] = {
 	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
 	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  VOLUMEL },
 	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  VOLUMER },
+	{ 0,                 XF86XK_AudioPlay,          spawn,                  PLAYERT },
+	{ 0,                 XF86XK_AudioPrev,          spawn,                  PLAYERP },
+	{ 0,                 XF86XK_AudioNext,          spawn,                  PLAYERN },
 	{ 0,                 XF86XK_MonBrightnessDown,  spawn,                  SCRIPTCMD("btnsd.sh") },
 	{ 0,                 XF86XK_MonBrightnessUp,    spawn,                  SCRIPTCMD("btnsi.sh") },
 	{ ShiftMask,         XK_F2,                     spawn,                  SCRIPTCMD("btnsds.sh") },
