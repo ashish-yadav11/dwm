@@ -317,7 +317,7 @@ static Key keys[] = {
 	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPTCMD("ytresume.sh") },
 	{ MODLKEY,                      XK_Delete,      spawn,                  SCRIPTCMD("usbmount.sh") },
 	{ MODLKEY|ShiftMask,            XK_Delete,      spawn,                  SCRIPTCMD("mtpmount.sh") },
-	{ MODLKEY|ControlMask,          XK_Delete,      spawn,                  SCRIPTCMD("usbmode.sh") },
+	{ MODLKEY|ControlMask,          XK_Delete,      spawn,                  SCRIPTCMD("adb_shortcuts.sh") },
 
 	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
 	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
