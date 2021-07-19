@@ -370,7 +370,7 @@ static Key keys[] = {
 	{ SUPKEY|MODRKEY|ShiftMask,     XK_9,           focustiled,             {.i = 18} },
 	{ SUPKEY|MODRKEY|ShiftMask,     XK_0,           focustiled,             {.i = 19} },
 	{ MODLKEY|MODRKEY,              XK_grave,       vieworprev,             {.ui = ~0 } },
-	{ MODLKEY|ControlMask,          XK_grave,       tag,                    {.ui = ~0 } },
+	{ MODLKEY|ShiftMask,            XK_grave,       tag,                    {.ui = ~0 } },
 	TAGKEYS(                        XK_1,                                   0)
 	TAGKEYS(                        XK_2,                                   1)
 	TAGKEYS(                        XK_3,                                   2)
