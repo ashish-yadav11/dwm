@@ -1025,7 +1025,7 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, nhid = 0, occ = 0, urg = 0;
-        char halsymbol[43]; /* 10 + 1 + 15 + 1 + 15 + 1 */
+        char halsymbol[36]; /* 3 + 1 + 15 + 1 + 15 + 1 */
 	Client *c;
 
 	for (c = m->clients; c; c = c->next) {
@@ -1875,7 +1875,7 @@ moveprevtag(const Arg *arg)
                 t = selmon->pertag->prevtag;
         } else {
                 selmon->sel->tags = selmon->tagset[selmon->seltags] = TAGMASK;
-                t = 10;
+                t = 1 + LENGTH(tags);
         }
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
@@ -2191,7 +2191,7 @@ scratchhidehelper(void)
 
         selmon->sel->tags = 0;
         t = selmon->sel->scratchkey > LENGTH(scratchcmds) ?
-                30 + selmon->sel->scratchkey - LENGTH(scratchcmds) : 0;
+                3 * (1 + LENGTH(tags)) + selmon->sel->scratchkey - LENGTH(scratchcmds) : 0;
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
         focus(NULL);
@@ -2303,9 +2303,9 @@ void
 setdesktopnames(void)
 {
 	XTextProperty text;
-        char *tagnames[] = { "S -", "N 1", "N 2", "N 3", "N 4", "N 5", "N 6", "N 7", "N 8", "N 9", "N A",
-                                    "H 1", "H 2", "H 3", "H 4", "H 5", "H 6", "H 7", "H 8", "H 9", "H A",
-                                    "D 1", "D 2", "D 3", "D 4", "D 5", "D 6", "D 7", "D 8", "D 9", "D A",
+        char *tagnames[] = { "S -", "N 1", "N 2", "N 3", "N 4", "N 5", "N 6", "N 7", "N 8", "N 9", "N 0", "N A",
+                                    "H 1", "H 2", "H 3", "H 4", "H 5", "H 6", "H 7", "H 8", "H 9", "H 0", "H A",
+                                    "D 1", "D 2", "D 3", "D 4", "D 5", "D 6", "D 7", "D 8", "D 9", "D 0", "D A",
                                     "S 1", "S 2", "S 3" };
 
 	Xutf8TextListToTextProperty(dpy, tagnames, LENGTH(tagnames), XUTF8StringStyle, &text);
@@ -3073,21 +3073,21 @@ updateclientdesktop(Client *c)
         unsigned long t;
 
         if (c->tags == TAGMASK)
-                t = 10;
+                t = 1 + LENGTH(tags);
         else if (selmon->pertag->curtag && c->tags & 1 << (selmon->pertag->curtag - 1))
                 t = selmon->pertag->curtag;
         else {
                 for (t = 0; t < LENGTH(tags) && !(1 << t & c->tags); t++);
                 if (++t > LENGTH(tags)) {
                         t = c->scratchkey > DYNSCRATCHKEY(0) ?
-                                30 + c->scratchkey - DYNSCRATCHKEY(0) : 0;
+                                3 * (1 + LENGTH(tags)) + c->scratchkey - DYNSCRATCHKEY(0) : 0;
                         goto update;
                 }
         }
         if (c->mon != selmon)
-                t += 20;
+                t += 2 * (1 + LENGTH(tags));
         else if (c->ishidden)
-                t += 10;
+                t += 1 + LENGTH(tags);
 update:
 	XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
 			PropModeReplace, (unsigned char *) &t, 1);

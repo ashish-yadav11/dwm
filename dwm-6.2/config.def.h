@@ -86,11 +86,11 @@ static const char *colors[][3] = {
 	[SchemeLtSm]    = { col_white2,   col_black,      col_gray2 },
 };
 
-static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
 
 /* first element is for all-tag view */
-static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
-static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
+static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0};
+static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0};
 
 static const Attach attachs[] = {
 	/* symbol       attach function */
@@ -369,8 +369,8 @@ static Key keys[] = {
 	{ SUPKEY|MODRKEY|ShiftMask,     XK_8,           focustiled,             {.i = 17} },
 	{ SUPKEY|MODRKEY|ShiftMask,     XK_9,           focustiled,             {.i = 18} },
 	{ SUPKEY|MODRKEY|ShiftMask,     XK_0,           focustiled,             {.i = 19} },
-	{ MODLKEY,                      XK_0,           vieworprev,             {.ui = ~0 } },
-	{ MODLKEY|ShiftMask,            XK_0,           tag,                    {.ui = ~0 } },
+	{ MODLKEY|MODRKEY,              XK_grave,       vieworprev,             {.ui = ~0 } },
+	{ MODLKEY|ControlMask,          XK_grave,       tag,                    {.ui = ~0 } },
 	TAGKEYS(                        XK_1,                                   0)
 	TAGKEYS(                        XK_2,                                   1)
 	TAGKEYS(                        XK_3,                                   2)
@@ -380,6 +380,7 @@ static Key keys[] = {
 	TAGKEYS(                        XK_7,                                   6)
 	TAGKEYS(                        XK_8,                                   7)
 	TAGKEYS(                        XK_9,                                   8)
+	TAGKEYS(                        XK_0,                                   9)
 };
 
 /* click can be ClkTabBar, ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
