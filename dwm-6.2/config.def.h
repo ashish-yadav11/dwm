@@ -89,8 +89,8 @@ static const char *colors[][3] = {
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
 
 /* first element is for all-tag view */
-static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 0};
-static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0};
+static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
+static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 
 static const Attach attachs[] = {
 	/* symbol       attach function */
@@ -157,7 +157,7 @@ static const char *const *scratchcmds[] = {
 #define DISABLEDEMODE                   SHCMD("xmodmap /home/ashish/.Xmodmap_de0 && notify-send -h string:x-canonical-private-synchronous:demode -t 1000 'data entry mode deactivated'")
 #define ENABLEDEMODE                    SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
 
-static const Win browser = { .cmd = CMD("brave"), .tag = 8, .scratchkey = -1 };
+static const Win browser = { .cmd = CMD("brave"), .tag = 10, .scratchkey = -1 };
 static const Win mail = { .cmd = SCRIPTCMD("neomutt.sh"), .tag = 9, .scratchkey = -2 };
 
 enum { MoveX, MoveY, ResizeX, ResizeY, ResizeA }; /* floatmoveresize */
