@@ -21,14 +21,14 @@ sha256sums=(SKIP
             SKIP)
 
 build() {
-  cd "${srcdir}/${_pkgname}-${pkgver}"
-  make X11INC=/usr/include/X11 X11LIB=/usr/lib/X11 FREETYPEINC=/usr/include/freetype2
+    cd "${srcdir}/${_pkgname}-${pkgver}"
+    make X11INC=/usr/include/X11 X11LIB=/usr/lib/X11 FREETYPEINC=/usr/include/freetype2
 }
 
 package() {
-  cd "${srcdir}/${_pkgname}-${pkgver}"
-  make PREFIX=/usr DESTDIR="${pkgdir}" install
-  install -m644 -D LICENSE "${pkgdir}/usr/share/licenses/${_pkgname}/LICENSE"
-  install -m644 -D README "${pkgdir}/usr/share/doc/${_pkgname}/README"
-  install -m644 -D "${srcdir}/${_pkgname}.desktop" "${pkgdir}/usr/share/xsessions/${_pkgname}.desktop"
+    cd "${srcdir}/${_pkgname}-${pkgver}"
+    make PREFIX=/usr DESTDIR="${pkgdir}" install
+    install -m644 -D LICENSE "${pkgdir}/usr/share/licenses/${_pkgname}/LICENSE"
+    install -m644 -D README "${pkgdir}/usr/share/doc/${_pkgname}/README"
+    install -m644 -D "${srcdir}/${_pkgname}.desktop" "${pkgdir}/usr/share/xsessions/${_pkgname}.desktop"
 }
