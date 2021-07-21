@@ -22,7 +22,7 @@ sha256sums=(SKIP
 
 build() {
     cd "${srcdir}/${_pkgname}-${pkgver}"
-    make X11INC=/usr/include/X11 X11LIB=/usr/lib/X11 FREETYPEINC=/usr/include/freetype2
+    make
 }
 
 package() {
