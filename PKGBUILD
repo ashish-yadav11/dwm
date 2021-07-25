@@ -1,4 +1,5 @@
 # Maintainer: Ashish Kumar Yadav <ashishkumar.yadav@students.iiserpune.ac.in>
+
 pkgname=dwm-cust
 _pkgname=dwm
 pkgver=6.2
