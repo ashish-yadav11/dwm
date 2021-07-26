@@ -14,7 +14,8 @@
 #define CMD(...)                        { .v = (const char*[]){ __VA_ARGS__, NULL } }
 #define SCRIPTCMD(...)                  { .v = (const char*[]){ SCRIPT("")__VA_ARGS__, NULL } }
 #define SHCMD(cmd)                      { .v = (const char*[]){ "dash", "-c", cmd, NULL } }
-#define TERMCMD(cmd)                    { .v = (const char*[]){ "termite", "-e", cmd, NULL } }
+#define TERMCMD(...)                    { .v = (const char*[]){ "st", "-e", __VA_ARGS__, NULL } }
+#define TERMSHCMD(cmd)                  { .v = (const char*[]){ "st", "-e", "dash", "-c", cmd, NULL } }
 
 /* command used to notify that a client has been removed from dynamic scratchpad */
 #define NOTIFYDYNSCRATCH0               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "unscratched focused window", NULL } }
@@ -112,10 +113,10 @@ static const Layout layouts[] = {
 #define ASKLAUNCH(name, ...)            (const char *[]){ SCRIPT("asklaunch.sh"), name, __VA_ARGS__, NULL }
 
 static const char *const *scratchcmds[] = {
-	(const char *[]){ "termite", "--name=scratch_Termite", NULL },
+	(const char *[]){ "st", "-n", "scratch-st", NULL },
 	ASKLAUNCH("YouTube Music", "brave", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod"),
-	(const char *[]){ "termite", "--name=pyfzf_Termite", "-e", "pyfzf", NULL },
-	(const char *[]){ "termite", "--name=calcurse_Termite", "-t", "Calcurse", "-e", "calcurse", NULL },
+	(const char *[]){ "st", "-n", "pyfzf-st", "-e", "pyfzf", NULL },
+	(const char *[]){ "st", "-n", "calcurse-st", "-T", "Calcurse", "-e", "calcurse", NULL },
 	ASKLAUNCH("Signal", "signal-desktop"),
 	ASKLAUNCH("Telegram", "telegram-desktop"),
 };
@@ -192,7 +193,7 @@ static Key keys[] = {
 	/* modifier                     key             function                argument */
 	{ MODLKEY,                      XK_d,           spawn,                  ROFIDRUN },
 	{ MODLKEY|ShiftMask,            XK_d,           spawn,                  ROFIRUN },
-	{ MODLKEY,                      XK_Return,      spawn,                  CMD("termite") },
+	{ MODLKEY,                      XK_Return,      spawn,                  CMD("st") },
 	{ MODLKEY,                      XK_b,           togglebar,              {0} },
 	{ MODLKEY|ShiftMask,            XK_b,           tabmode,                {0} },
 	{ MODLKEY,                      XK_j,           focusstackalt,          {.i = +1 } },
@@ -305,10 +306,10 @@ static Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "status") },
 	{ MODLKEY|ControlMask,          XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "stop") },
 	{ SUPKEY,                       XK_b,           spawn,                  SCRIPTCMD("gbtns.sh") },
-	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger --cmd='set show_hidden=false'") },
+	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger", "--cmd='set show_hidden=false'") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
-	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop -s PERCENT_CPU") },
+	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop", "-s", "PERCENT_CPU") },
 	{ SUPKEY|ShiftMask,             XK_m,           spawn,                  SCRIPTCMD("neomutt.sh") },
 	{ MODRKEY,                      XK_s,           spawn,                  INHIBITSUSPEND1 },
 	{ MODRKEY|ShiftMask,            XK_s,           spawn,                  INHIBITSUSPEND0 },
@@ -935,26 +936,26 @@ applyrules(Client *c)
 	class = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name ? ch.res_name : broken;
 
-        if (strcmp(instance, "calcurse_Termite") == 0) {
+        if (strcmp(instance, "calcurse-st") == 0) {
                 markscratch(c, 4);
                 c->isfloating = 1;
                 c->w = 950;
                 c->h = 650;
                 center(c);
-        } else if (strcmp(instance, "floating_Termite") == 0) {
+        } else if (strcmp(instance, "floating-st") == 0) {
                 c->isfloating = 1;
                 c->w = 750;
                 c->h = 450;
                 center(c);
-        } else if (strcmp(instance, "neomutt_Termite") == 0) {
+        } else if (strcmp(instance, "neomutt-st") == 0) {
                 markscratch(c, -2);
-        } else if (strcmp(instance, "pyfzf_Termite") == 0) {
+        } else if (strcmp(instance, "pyfzf-st") == 0) {
                 markscratch(c, 3);
                 c->isfloating = 1;
                 c->w = 820;
                 c->h = 480;
                 center(c);
-        } else if (strcmp(instance, "scratch_Termite") == 0) {
+        } else if (strcmp(instance, "scratch-st") == 0) {
                 markscratch(c, 1);
                 c->isfloating = 1;
                 c->w = 750;
