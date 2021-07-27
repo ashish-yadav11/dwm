@@ -306,7 +306,7 @@ static Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "status") },
 	{ MODLKEY|ControlMask,          XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "stop") },
 	{ SUPKEY,                       XK_b,           spawn,                  SCRIPTCMD("gbtns.sh") },
-	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger", "--cmd='set show_hidden=false'") },
+	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger", "--cmd=set show_hidden=false") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
 	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop", "-s", "PERCENT_CPU") },
