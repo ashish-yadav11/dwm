@@ -3601,6 +3601,8 @@ zoom(const Arg *arg)
 
         if (!selmon->sel)
                 return;
+        if (selmon->sel->isfullscreen)
+                return;
         if (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange) {
                 resize(selmon->sel,
                        selmon->mx + (selmon->mw - WIDTH(selmon->sel)) / 2,
