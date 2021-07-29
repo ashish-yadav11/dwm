@@ -13,18 +13,18 @@ optdepends=('rofi: default app launcher and window switcher')
 provides=(dwm)
 conflicts=(dwm)
 options=(zipman '!strip')
-source=("$_pkgname-$pkgver.tar.gz"
+source=("$_pkgname.tar.gz"
         "$_pkgname.desktop")
 sha256sums=(SKIP
             SKIP)
 
 build() {
-    cd "$srcdir/$_pkgname-$pkgver"
+    cd "$srcdir/$_pkgname"
     make
 }
 
 package() {
-    cd "$srcdir/$_pkgname-$pkgver"
+    cd "$srcdir/$_pkgname"
     make PREFIX=/usr DESTDIR="$pkgdir" install
     install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$_pkgname/LICENSE"
     install -Dm644 README "$pkgdir/usr/share/doc/$_pkgname/README"
