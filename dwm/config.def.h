@@ -984,7 +984,7 @@ applyrules(Client *c)
                 center(c);
         } else if (strcmp(class, "Sxiv") == 0 ||
                    strstr(class, "Yad") ||
-                   strcmp(class, "Matplotlib") == 0 ||
+                   strcmp(class, "matplotlib") == 0 ||
                    strcmp(class, "Woeusbgui") == 0 ||
                    strcmp(c->name, "Event Tester") == 0) {
                 c->isfloating = 1;
