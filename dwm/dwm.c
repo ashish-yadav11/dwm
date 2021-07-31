@@ -533,7 +533,7 @@ arrangemon(Monitor *m)
         updatentiles(m);
 	updatebarpos(m);
 	XMoveResizeWindow(dpy, m->tabwin, m->wx, m->ty, m->ww, th);
-	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol);
+	strncpy(m->ltsymbol, m->lt[m->sellt]->symbol, sizeof m->ltsymbol - 1);
 	if (m->ntiles > 0 && m->lt[m->sellt]->arrange)
 		m->lt[m->sellt]->arrange(m);
 }
@@ -941,7 +941,7 @@ createmon(void)
 	m->topbar = topbar;
 	m->toptab = toptab;
 	m->lt[0] = m->lt[1] = &layouts[def_layouts[1]];
-	strncpy(m->ltsymbol, layouts[def_layouts[1]].symbol, sizeof m->ltsymbol);
+	strncpy(m->ltsymbol, layouts[def_layouts[1]].symbol, sizeof m->ltsymbol - 1);
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
 
@@ -2366,7 +2366,7 @@ setlayout(const Arg *arg)
                                 (Layout *)arg->v;
         if (f)
                 ATTACH(selmon) = selmon->lt[selmon->sellt]->attach;
-	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol);
+	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol - 1);
 	if (selmon->sel)
 		arrange(selmon);
 	else
