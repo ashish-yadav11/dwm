@@ -994,10 +994,8 @@ applyrules(Client *c)
                 c->isfloating = 1;
         }
 
-	if (ch.res_class)
-		XFree(ch.res_class);
-	if (ch.res_name)
-		XFree(ch.res_name);
+        XFree(ch.res_class);
+        XFree(ch.res_name);
 
 	c->tags = c->tags & TAGMASK ? c->tags & TAGMASK : c->mon->tagset[c->mon->seltags];
 }
