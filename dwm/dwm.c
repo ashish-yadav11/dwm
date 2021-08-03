@@ -2881,21 +2881,6 @@ toggleview(const Arg *arg)
         if (!newtagset)
                 return;
         if (!(selmon->tagset[selmon->seltags] & arg->ui)) {
-                /* clients in the master area should be the same after we add a new tag */
-                Client **const masters = ecalloc(selmon->nmaster, sizeof(Client *));
-
-                /* collect (from last to first) references to all clients in the master area */
-                i = selmon->nmaster - 1;
-                for (Client *c = nexttiled(selmon->clients); c && i >= 0; c = nexttiled(c->next), i--)
-                        masters[i] = c;
-                /* put the master clients at the front of the list */
-                for (i = 0; i < selmon->nmaster; i++)
-                        if (masters[i]) {
-                                detach(masters[i]);
-                                attach(masters[i]);
-                        }
-                free(masters);
-
                 if (newtagset == TAGMASK) {
                         resettagifempty(selmon->pertag->curtag);
                         selmon->pertag->prevtag = selmon->pertag->curtag;
