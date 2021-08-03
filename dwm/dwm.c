@@ -1253,8 +1253,8 @@ focusalt(Client *c)
         XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
         setfocus(c);
         selmon->sel = c;
-        drawbars();
-        drawtabs();
+        drawbar(selmon);
+        drawtab(selmon);
 }
 
 void
@@ -2724,7 +2724,8 @@ tagandview(const Arg *arg)
                 selmon->pertag->prevtag = selmon->pertag->curtag;
                 selmon->pertag->curtag = t;
                 applycurtagsettings();
-                focus(selmon->sel);
+                drawbar(selmon);
+                drawtab(selmon);
                 arrange(selmon);
         }
 }
