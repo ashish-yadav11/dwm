@@ -30,7 +30,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <X11/cursorfont.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
@@ -295,7 +294,6 @@ static void seturgent(Client *c, int urg);
 static void shifttag(const Arg *arg);
 static void shiftview(const Arg *arg);
 static void showhide(Client *c);
-static void sigchld(int unused);
 static void sigdsblocks(const Arg *arg);
 static void spawn(const Arg *arg);
 static void swaptags(const Arg *arg);
@@ -2424,11 +2422,15 @@ void
 setup(void)
 {
 	int i;
+        struct sigaction sa;
 	XSetWindowAttributes wa;
 	Atom utf8string;
 
 	/* clean up any zombies immediately */
-	sigchld(0);
+        sa.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
+        sigemptyset(&sa.sa_mask);
+        sa.sa_handler = SIG_IGN;
+        sigaction(SIGCHLD, &sa, NULL);
 
         /* be the child subreaper */
         if (prctl(PR_SET_CHILD_SUBREAPER, 1) == -1)
@@ -2577,14 +2579,6 @@ showhide(Client *c)
 		showhide(c->snext);
 		XMoveWindow(dpy, c->win, -2 * WIDTH(c), c->y);
 	}
-}
-
-void
-sigchld(int unused)
-{
-	if (signal(SIGCHLD, sigchld) == SIG_ERR)
-		die("can't install SIGCHLD handler:");
-	while (0 < waitpid(-1, NULL, WNOHANG));
 }
 
 void
