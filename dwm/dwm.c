@@ -375,7 +375,6 @@ static void (*handler[LASTEvent]) (XEvent *) = {
         [ReparentNotify] = reparentnotify,
 	[UnmapNotify] = unmapnotify
 };
-static int dblfd = -1; /* file descriptor of DSBLOCKSLOCKFILE */
 static Atom wmatom[WMLast], netatom[NetLast], xatom[XLast];
 static Cur *cursor[CurLast];
 static Clr **scheme;
@@ -2591,6 +2590,7 @@ sigchld(int unused)
 void
 sigdsblocks(const Arg *arg)
 {
+        static int fd = -1;
         struct flock fl;
         union sigval sv;
 
@@ -2600,17 +2600,17 @@ sigdsblocks(const Arg *arg)
         fl.l_whence = SEEK_SET;
         fl.l_start = 0;
         fl.l_len = 0;
-        if (dblfd != -1) {
-                if (fcntl(dblfd, F_GETLK, &fl) != -1 && fl.l_type == F_WRLCK)
+        if (fd != -1) {
+                if (fcntl(fd, F_GETLK, &fl) != -1 && fl.l_type == F_WRLCK)
                         goto signal;
-                close(dblfd);
+                close(fd);
                 fl.l_type = F_WRLCK;
         }
-        if ((dblfd = open(DSBLOCKSLOCKFILE, O_RDONLY)) == -1)
+        if ((fd = open(DSBLOCKSLOCKFILE, O_RDONLY | O_CLOEXEC)) == -1)
                 return;
-        if (fcntl(dblfd, F_GETLK, &fl) == -1 || fl.l_type != F_WRLCK) {
-                close(dblfd);
-                dblfd = -1;
+        if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type != F_WRLCK) {
+                close(fd);
+                fd = -1;
                 return;
         }
 signal:
@@ -2624,7 +2624,6 @@ spawn(const Arg *arg)
 	if (fork() == 0) {
 		if (dpy)
 			close(ConnectionNumber(dpy));
-                close(dblfd);
 		setsid();
 		execvp(((char **)arg->v)[0], (char **)arg->v);
 		fprintf(stderr, "dwm: execvp %s", ((char **)arg->v)[0]);
