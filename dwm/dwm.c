@@ -375,6 +375,7 @@ static void (*handler[LASTEvent]) (XEvent *) = {
         [ReparentNotify] = reparentnotify,
 	[UnmapNotify] = unmapnotify
 };
+static int dblfd = -1; /* file descriptor of DSBLOCKSLOCKFILE */
 static Atom wmatom[WMLast], netatom[NetLast], xatom[XLast];
 static Cur *cursor[CurLast];
 static Clr **scheme;
@@ -2590,7 +2591,6 @@ sigchld(int unused)
 void
 sigdsblocks(const Arg *arg)
 {
-        static int fd = -1;
         struct flock fl;
         union sigval sv;
 
@@ -2600,23 +2600,20 @@ sigdsblocks(const Arg *arg)
         fl.l_whence = SEEK_SET;
         fl.l_start = 0;
         fl.l_len = 0;
-        if (fd == -1) {
-                if ((fd = open(DSBLOCKSLOCKFILE, O_RDONLY)) == -1)
-                        return;
-                if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
-                        return;
-        } else {
-                if (fcntl(fd, F_GETLK, &fl) == -1)
-                        return;
-                if (fl.l_type == F_UNLCK) {
-                        close(fd);
-                        if ((fd = open(DSBLOCKSLOCKFILE, O_RDONLY)) == -1)
-                                return;
-                        fl.l_type = F_WRLCK;
-                        if (fcntl(fd, F_GETLK, &fl) == -1 || fl.l_type == F_UNLCK)
-                                return;
-                }
+        if (dblfd != -1) {
+                if (fcntl(dblfd, F_GETLK, &fl) != -1 && fl.l_type == F_WRLCK)
+                        goto signal;
+                close(dblfd);
+                fl.l_type = F_WRLCK;
         }
+        if ((dblfd = open(DSBLOCKSLOCKFILE, O_RDONLY)) == -1)
+                return;
+        if (fcntl(dblfd, F_GETLK, &fl) == -1 || fl.l_type != F_WRLCK) {
+                close(dblfd);
+                dblfd = -1;
+                return;
+        }
+signal:
         sv.sival_int = (dsblockssig << 8) | arg->i;
         sigqueue(fl.l_pid, SIGRTMIN, sv);
 }
@@ -2627,6 +2624,7 @@ spawn(const Arg *arg)
 	if (fork() == 0) {
 		if (dpy)
 			close(ConnectionNumber(dpy));
+                close(dblfd);
 		setsid();
 		execvp(((char **)arg->v)[0], (char **)arg->v);
 		fprintf(stderr, "dwm: execvp %s", ((char **)arg->v)[0]);
