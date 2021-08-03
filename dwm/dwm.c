@@ -2713,21 +2713,30 @@ tag(const Arg *arg)
 void
 tagandview(const Arg *arg)
 {
-        if (selmon->sel && (1 << arg->ui) != selmon->tagset[selmon->seltags]) {
-                unsigned long t = arg->ui + 1;
+        unsigned long t;
 
+        if (!selmon->sel)
+                return;
+        if ((1 << arg->ui) == selmon->tagset[selmon->seltags]) {
+                selmon->seltags ^= 1;
+                selmon->sel->tags = selmon->tagset[selmon->seltags];
+                t = selmon->pertag->prevtag ? selmon->pertag->prevtag : 1 + LENGTH(tags);
+                resettagifempty(selmon->pertag->curtag);
+                SWAP(selmon->pertag->prevtag, selmon->pertag->curtag);
+        } else {
                 selmon->seltags ^= 1;
                 selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << arg->ui;
-                XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                                PropModeReplace, (unsigned char *) &t, 1);
+                t = arg->ui + 1;
                 resettagifempty(selmon->pertag->curtag);
                 selmon->pertag->prevtag = selmon->pertag->curtag;
                 selmon->pertag->curtag = t;
-                applycurtagsettings();
-                drawbar(selmon);
-                drawtab(selmon);
-                arrange(selmon);
         }
+        XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
+                        PropModeReplace, (unsigned char *) &t, 1);
+        applycurtagsettings();
+        drawbar(selmon);
+        drawtab(selmon);
+        arrange(selmon);
 }
 
 /*
