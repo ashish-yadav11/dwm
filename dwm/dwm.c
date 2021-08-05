@@ -2626,19 +2626,17 @@ tagandview(const Arg *arg)
         if (!selmon->sel)
                 return;
         if (!arg->ui || (1 << arg->ui) == selmon->tagset[selmon->seltags]) {
-                selmon->seltags ^= 1;
-                selmon->sel->tags = selmon->tagset[selmon->seltags];
-                t = selmon->pertag->prevtag ? selmon->pertag->prevtag : 1 + LENGTH(tags);
-                SWAP(selmon->pertag->prevtag, selmon->pertag->curtag);
-        } else {
-                selmon->seltags ^= 1;
-                selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << arg->ui;
+                if (!selmon->pertag->prevtag)
+                        return;
+                t = selmon->pertag->prevtag;
+        } else
                 t = arg->ui + 1;
-                selmon->pertag->prevtag = selmon->pertag->curtag;
-                selmon->pertag->curtag = t;
-        }
+        selmon->seltags ^= 1;
+        selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << (t - 1);
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
+        selmon->pertag->prevtag = selmon->pertag->curtag;
+        selmon->pertag->curtag = t;
         updatepertag();
         arrange(selmon);
 }
