@@ -243,7 +243,7 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_space,       zoomvar,                {.i = 1} },
 	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = 0} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
-	{ SUPKEY|ShiftMask,             XK_space,       moveprevtag,            {0} },
+	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {0} },
 	{ MODLKEY,                      XK_f,           togglefocusfloat,       {0} },
 	{ MODLKEY|ShiftMask,            XK_f,           togglefullscreen,       {0} },
 	{ SUPKEY,                       XK_f,           togglefloating,         {.i = 1} },
@@ -531,10 +531,8 @@ focusmaster(const Arg *arg)
 
 	if (selmon->nmaster < 1)
 		return;
-        if ((c = nexttiled(selmon->clients))) {
-                focusalt(c);
-                restack(selmon, 0);
-        }
+        if ((c = nexttiled(selmon->clients)))
+                focusalt(c, 0);
 }
 
 void
@@ -583,10 +581,8 @@ focusstackalt(const Arg *arg)
                 c = nextsamefloat(arg->i);
         else
                 c = nextvisible(arg->i);
-	if (c) {
-		focusalt(c);
-		restack(selmon, 0);
-        }
+	if (c)
+		focusalt(c, 0);
 }
 
 void
@@ -614,7 +610,7 @@ hideclient(const Arg *arg)
 		XRaiseWindow(dpy, selmon->sel->win);
         }
         selmon->sel->ishidden = 1;
-        updateclientdesktop(selmon->sel);
+        updateclientdesktop(selmon->sel, 0);
         focus(NULL);
         arrange(selmon);
 }
@@ -625,7 +621,7 @@ hidefloating(const Arg *arg)
         for (Client *c = selmon->clients; c; c = c->next)
                 if (c->isfloating && ISVISIBLE(c) && !c->isfullscreen) {
                         c->ishidden = 1;
-                        updateclientdesktop(c);
+                        updateclientdesktop(c, 0);
                 }
         focus(NULL);
         arrange(selmon);
@@ -769,12 +765,10 @@ showfloating(const Arg *arg)
                         if (!f)
                                 f = c;
                         c->ishidden = 0;
-                        updateclientdesktop(c);
+                        updateclientdesktop(c, 0);
                 }
-        if (f) {
-                focusalt(f);
-                arrange(selmon);
-        }
+        if (f)
+                focusalt(f, 1);
 }
 
 void
@@ -801,8 +795,7 @@ togglefocusarea(const Arg *arg)
                 } else
                         return;
         } while ((curidx < selmon->nmaster) == inrel);
-        focusalt(c);
-        restack(selmon, 0);
+        focusalt(c, 0);
 }
 
 void
@@ -816,10 +809,8 @@ togglefocusfloat(const Arg *arg)
                 for (c = selmon->sel; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
         else
                 for (c = selmon->sel; c && (!c->isfloating || !ISVISIBLE(c)); c = c->snext);
-        if (c) {
-                focusalt(c);
-                restack(selmon, 0);
-        }
+        if (c)
+                focusalt(c, 0);
 }
 
 void
@@ -908,8 +899,7 @@ zoomswap(const Arg *arg)
                 omc->next = bnmc->next;
                 bnmc->next = omc;
 	}
-	focusalt(nmc);
-	arrange(selmon);
+	focusalt(nmc, 1);
 }
 
 void

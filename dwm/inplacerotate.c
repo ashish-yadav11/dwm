@@ -76,6 +76,5 @@ inplacerotate(const Arg *arg)
         for (c = selmon->clients;
              c->isfloating || !ISVISIBLE(c) || selidx-- > 0;
              c = c->next);
-        focusalt(c);
-        arrange(selmon);
+        focusalt(c, 1);
 }
