@@ -655,7 +655,7 @@ buttonpress(XEvent *e)
                 click = ClkTabBar;
                 arg.i = i + ofst;
         } else if ((c = wintoclient(ev->window))) {
-                focusalt(c, 0);
+                focusalt(c, 0); /* focus has been already shifted to the monitor of c */
 		XAllowEvents(dpy, ReplayPointer, CurrentTime);
 		click = ClkClientWin;
         } else
@@ -2625,12 +2625,13 @@ tagandview(const Arg *arg)
 
         if (!selmon->sel)
                 return;
-        selmon->seltags ^= 1;
         if (!arg->ui || (1 << arg->ui) == selmon->tagset[selmon->seltags]) {
+                selmon->seltags ^= 1;
                 selmon->sel->tags = selmon->tagset[selmon->seltags];
                 t = selmon->pertag->prevtag ? selmon->pertag->prevtag : 1 + LENGTH(tags);
                 SWAP(selmon->pertag->prevtag, selmon->pertag->curtag);
         } else {
+                selmon->seltags ^= 1;
                 selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << arg->ui;
                 t = arg->ui + 1;
                 selmon->pertag->prevtag = selmon->pertag->curtag;
