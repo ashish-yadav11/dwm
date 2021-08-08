@@ -687,9 +687,10 @@ push(const Arg *arg)
 	Client *ps = NULL, *pc = NULL;
         Client *i, *tmp;
 
-        if (!selmon->sel || !selmon->lt[selmon->sellt]->arrange)
+        if (!selmon->sel)
                 return;
-        c = nextsamefloat(arg->i);
+        c = selmon->lt[selmon->sellt]->arrange ?
+                nextsamefloat(arg->i) : nextvisible(arg->i);
         if (!c || c == selmon->sel)
                 return;
 	for (i = selmon->clients; i && (!ps || !pc); i = i->next) {
