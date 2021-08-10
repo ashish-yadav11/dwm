@@ -300,8 +300,19 @@ drw_text(Drw *drw, int x, int y, unsigned int w, unsigned int h, unsigned int lp
                         len = MIN(utf8strlen, sizeof(buf) - 1);
                         drw_font_getexts(usedfont, utf8str, len, &ew, NULL);
                         /* shorten text if necessary */
-                        while (len && ew > w)
-                                drw_font_getexts(usedfont, utf8str, --len, &ew, NULL);
+                        if (ew > w) {
+                                /* keep 'step' of the order of sqrt of typical
+                                 * drawing area width in characters */
+                                size_t maxlen = len, step = 8;
+
+                                len = 0;
+                                do {
+                                        len = MIN(len + step, maxlen);
+                                        drw_font_getexts(usedfont, utf8str, len, &ew, NULL);
+                                } while (ew < w && len < maxlen);
+                                while (len > 0 && ew > w)
+                                        drw_font_getexts(usedfont, utf8str, --len, &ew, NULL);
+                        }
 
 			if (len) {
 				memcpy(buf, utf8str, len);
