@@ -159,7 +159,7 @@ static const char *const *scratchcmds[] = {
 #define ENABLEDEMODE                    SHCMD("xmodmap /home/ashish/.Xmodmap_de1 && notify-send -h string:x-canonical-private-synchronous:demode -t 0 'data entry mode activated'")
 
 static const Win browser = { .cmd = CMD("brave"), .tag = 10, .scratchkey = -1 };
-static const Win mail = { .cmd = SCRIPTCMD("neomutt.sh"), .tag = 9, .scratchkey = -2 };
+static const Win mail = { .cmd = SCRIPTCMD("neomutt.sh", "scratch"), .tag = 9, .scratchkey = -2 };
 
 enum { MoveX, MoveY, ResizeX, ResizeY, ResizeA }; /* floatmoveresize */
 
@@ -306,6 +306,7 @@ static Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "status") },
 	{ MODLKEY|ControlMask,          XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh", "stop") },
 	{ SUPKEY,                       XK_b,           spawn,                  SCRIPTCMD("gbtns.sh") },
+	{ SUPKEY|ShiftMask,             XK_p,           spawn,                  TERMCMD("pyfzf") },
 	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger", "--cmd=set show_hidden=false") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
