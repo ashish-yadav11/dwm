@@ -7,13 +7,13 @@
 */
 #define MAX(A, B)                       ({ \
                                                 __auto_type __A = (A); \
-                                                __auto_type  __B = (B); \
+                                                __auto_type __B = (B); \
 \
                                                 __A > __B ? __A : __B; \
                                         })
 #define MIN(A, B)                       ({ \
                                                 __auto_type __A = (A); \
-                                                __auto_type  __B = (B); \
+                                                __auto_type __B = (B); \
 \
                                                 __A < __B ? __A : __B; \
                                         })
