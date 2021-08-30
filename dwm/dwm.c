@@ -55,7 +55,7 @@
 #define INTERSECT(x,y,w,h,m)            (MAX(0, MIN((x)+(w),(m)->wx+(m)->ww) - MAX((x),(m)->wx)) \
                                        * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
 #define ISVISIBLE(C)                    ((C->tags & C->mon->tagset[C->mon->seltags]) && !C->ishidden)
-#define ISSTATUSDRAWN                   (selmon->ww - stw - wstext - ble >= lrpad)
+#define ISSTATUSDRAWN()                 (selmon->ww - stw - wstext - ble >= lrpad)
 #define LENGTH(X)                       (sizeof X / sizeof X[0])
 #define MOUSEMASK                       (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                        ((X)->w + 2 * (X)->bw)
@@ -627,7 +627,7 @@ buttonpress(XEvent *e)
                         arg.ui = 1 << i;
                 } else if (ev->x < ble)
                         click = ClkLtSymbol;
-                else if (ev->x < selmon->ww - stw - wstext || !ISSTATUSDRAWN)
+                else if (ev->x < selmon->ww - stw - wstext || !ISSTATUSDRAWN())
                         click = ClkWinTitle;
                 else if ((x = selmon->ww - stw - lrpad / 2 - ev->x) > 0 &&
                          (x -= wstext - lrpad) <= 0) {
@@ -1060,9 +1060,9 @@ drawbar(Monitor *m)
                 w = drw_text(drw, x, 0, w - lrpad / 2, bh, lrpad / 2, m->sel->name, 0);
                 if (m->sel->isfloating)
                         drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
-                drw_rect(drw, w, 0, lrpad / 2, bh, 1, 1); /* to keep right padding clean */
+                drw_rect(drw, w, 0, lrpad / 2, bh, 1, 1); /* clear right padding */
         } else if (w > 0)
-                drw_rect(drw, x, 0, w, bh, 1, 1); /* to keep title area clean */
+                drw_rect(drw, x, 0, w, bh, 1, 1); /* clear title area */
 
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
@@ -1084,7 +1084,7 @@ drawstatus(void)
 
         drw_setscheme(drw, scheme[SchemeStts]);
         x = selmon->ww - stw - wstext;
-        drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* to keep left padding clean */
+        drw_rect(drw, x, 0, lrpad / 2, bh, 1, 1); x += lrpad / 2; /* clear left padding */
         for (;;) {
                 if ((unsigned char)*stc >= ' ') {
                         stc++;
@@ -1103,7 +1103,7 @@ drawstatus(void)
                 stp = ++stc;
         }
         drw_setscheme(drw, scheme[SchemeStts]);
-        drw_rect(drw, x, 0, selmon->ww - stw - x, bh, 1, 1); /* to keep right padding clean */
+        drw_rect(drw, x, 0, selmon->ww - stw - x, bh, 1, 1); /* clear right padding */
 }
 
 void
@@ -1151,7 +1151,7 @@ drawtabhelper(Monitor *m, int onlystack)
                                           i % 2 == 0 ? SchemeNorm : SchemeStts]);
                 /* lrpad / 2 below for padding */
                 x = drw_text(drw, x, 0, (i < lft ? tbw + 1 : tbw) - lrpad / 2, th, lrpad / 2, c->name, 0);
-                drw_rect(drw, x, 0, lrpad / 2, th, 1, 1); x += lrpad / 2; /* to keep right padding clean */
+                drw_rect(drw, x, 0, lrpad / 2, th, 1, 1); x += lrpad / 2; /* clear right padding */
         }
         drw_map(drw, m->tabwin, 0, 0, m->ww, th);
 }
@@ -1768,8 +1768,9 @@ motionnotify(XEvent *e)
         for (m = mons; m && m->barwin != ev->window; m = m->next);
         if (!m)
                 return;
-        if (m == selmon && ISSTATUSDRAWN && (x = selmon->ww - stw - lrpad / 2 - ev->x) > 0
-                                         && (x -= wstext - lrpad) <= 0)
+        if (m == selmon && ISSTATUSDRAWN()
+                        && (x = selmon->ww - stw - lrpad / 2 - ev->x) > 0
+                        && (x -= wstext - lrpad) <= 0)
                 updatedsblockssig(x);
         else if (m->statushandcursor) {
                 m->statushandcursor = 0;
