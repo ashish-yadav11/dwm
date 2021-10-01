@@ -133,7 +133,7 @@ static const char *const *scratchcmds[] = {
 	{ MODLKEY,                      KEY,      vieworprev,     {.ui = 1 << TAG} }, \
 	{ MODLKEY|ShiftMask,            KEY,      tag,            {.ui = 1 << TAG} }, \
 	{ MODLKEY|ControlMask,          KEY,      toggletag,      {.ui = 1 << TAG} }, \
-	{ SUPKEY,                       KEY,      tagandview,     {.i = TAG + 1} }, \
+	{ SUPKEY,                       KEY,      tagandview,     {.ui = TAG + 1} }, \
 	{ SUPKEY|ShiftMask,             KEY,      toggleview,     {.ui = 1 << TAG} }, \
 	{ SUPKEY|ControlMask,           KEY,      swaptags,       {.ui = TAG} },
 
@@ -243,7 +243,7 @@ static Key keys[] = {
 	{ MODLKEY,                      XK_space,       zoomvar,                {.i = 1} },
 	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = 0} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
-	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {.i = -1 } },
+	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {0} },
 	{ MODLKEY,                      XK_f,           togglefocusfloat,       {0} },
 	{ MODLKEY|ShiftMask,            XK_f,           togglefullscreen,       {0} },
 	{ SUPKEY,                       XK_f,           togglefloating,         {.i = 1} },

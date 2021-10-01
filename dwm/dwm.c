@@ -2632,12 +2632,12 @@ tagandview(const Arg *arg)
 
         if (!selmon->sel)
                 return;
-        if (arg->i < 0 || (1 << arg->i) == selmon->tagset[selmon->seltags]) {
+        if (!arg->ui || 1 << (arg->ui - 1) == selmon->tagset[selmon->seltags]) {
                 if (!selmon->pertag->prevtag)
                         return;
                 t = selmon->pertag->prevtag;
         } else
-                t = arg->i + 1;
+                t = arg->ui;
         selmon->seltags ^= 1;
         selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << (t - 1);
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
