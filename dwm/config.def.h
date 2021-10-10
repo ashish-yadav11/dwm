@@ -301,6 +301,7 @@ static Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_q,           spawn,                  SCRIPTCMD("quit.sh") },
 	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPTCMD("hotspot_launch.sh") },
 	{ MODLKEY|ControlMask,          XK_m,           spawn,                  SCRIPTCMD("toggletouchpad.sh") },
+	{ SUPKEY|ControlMask,           XK_m,           spawn,                  SCRIPTCMD("togglekeynav.sh") },
 	{ MODLKEY|ControlMask,          XK_r,           spawn,                  SCRIPTCMD("reflector_launch.sh") },
 	{ MODLKEY|ControlMask,          XK_v,           spawn,                  TOGGLEVPN },
 	{ MODLKEY,                      XK_F10,         spawn,                  SCRIPTCMD("pomodoro.sh") },
