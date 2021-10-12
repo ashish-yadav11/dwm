@@ -117,7 +117,7 @@ static const char *const *scratchcmds[] = {
 	ASKLAUNCH("YouTube Music", "brave", "--app-id=cinhimbnkkaeohfgghhklpknlkffjgod"),
 	(const char *[]){ "st", "-n", "pyfzf-st", "-e", "pyfzf", NULL },
 	(const char *[]){ "st", "-n", "calcurse-st", "-t", "Calcurse", "-e", "calcurse", NULL },
-	ASKLAUNCH("Signal", "signal-desktop"),
+	ASKLAUNCH("Signal", "signal-desktop", "--use-tray-icon"),
 	ASKLAUNCH("Telegram", "telegram-desktop"),
 };
 
