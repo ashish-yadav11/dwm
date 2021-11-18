@@ -304,7 +304,7 @@ static Key keys[] = {
 	{ SUPKEY|ControlMask,           XK_semicolon,   spawn,                  SCRIPTCMD("espeak_last.sh") },
 	{ MODLKEY|ShiftMask,            XK_q,           spawn,                  SCRIPTCMD("quit.sh") },
 	{ MODLKEY|ControlMask,          XK_h,           spawn,                  SCRIPTCMD("hotspot_launch.sh") },
-	{ MODLKEY|ControlMask,          XK_l,           spawn,                  SCRIPTCMD("iiserlogin.sh") },
+	{ MODLKEY|ControlMask,          XK_l,           spawn,                  SHCMD("systemctl restart iiserlogin.service") },
 	{ MODLKEY|ControlMask,          XK_m,           spawn,                  SCRIPTCMD("toggletouchpad.sh") },
 	{ SUPKEY|ControlMask,           XK_m,           spawn,                  SCRIPTCMD("togglekeynav.sh") },
 	{ MODLKEY|ControlMask,          XK_r,           spawn,                  SCRIPTCMD("reflector_launch.sh") },
