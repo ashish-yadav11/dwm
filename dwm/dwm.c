@@ -1015,6 +1015,9 @@ drawbar(Monitor *m)
         char halsymbol[36]; /* 3 + 1 + 15 + 1 + 15 + 1 */
 	Client *c;
 
+	if (!m->showbar)
+		return;
+
 	for (c = m->clients; c; c = c->next) {
                 if (c->ishidden && c->tags & m->tagset[m->seltags])
                         nhid++;
