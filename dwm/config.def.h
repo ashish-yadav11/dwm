@@ -981,7 +981,8 @@ applyrules(Client *c)
                 c->w = 770;
                 c->h = 555;
                 center(c);
-        } else if (strcmp(class, "Sxiv") == 0 ||
+        } else if (strcmp(class, "RiseupVPN") == 0 ||
+                   strcmp(class, "Sxiv") == 0 ||
                    strstr(class, "Yad") ||
                    strcmp(class, "matplotlib") == 0 ||
                    strcmp(class, "guvcview") == 0 ||
