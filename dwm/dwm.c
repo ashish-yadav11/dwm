@@ -120,7 +120,8 @@ struct Client {
 	int oldx, oldy, oldw, oldh;
 	int bw, oldbw;
 	unsigned int tags;
-        int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen, ishidden;
+        int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen,
+            hintsvalid, ishidden;
 	int scratchkey;
         SizeHints sh;
 	Client *next;
@@ -460,8 +461,11 @@ applygeomhints(Client *c, int *x, int *y, int *w, int *h, int interact)
 		*h = bh;
 	if (*w < bh)
 		*w = bh;
-	if (resizehints || c->isfloating || !m->lt[m->sellt]->arrange)
+	if (resizehints || c->isfloating || !m->lt[m->sellt]->arrange) {
+                if (!c->hintsvalid)
+                        updategeomhints(c);
                 applysizehints(&c->sh, w, h);
+        }
 	return *x != c->x || *y != c->y || *w != c->w || *h != c->h;
 }
 
@@ -1661,7 +1665,6 @@ manage(Window w, XWindowAttributes *wa)
 	XSetWindowBorder(dpy, w, scheme[SchemeNorm][ColBorder].pixel);
 	configure(c); /* propagates border_width, if size doesn't change */
 	updatewindowtype(c, 1);
-	updategeomhints(c);
 	updatewmhints(c);
 	c->sfx = c->x;
 	c->sfy = c->y;
@@ -1881,7 +1884,7 @@ propertynotify(XEvent *e)
                         }
                         return;
 		case XA_WM_NORMAL_HINTS:
-			updategeomhints(c);
+                        c->hintsvalid = 0;
                         return;
 		case XA_WM_HINTS:
 			updatewmhints(c);
@@ -3138,6 +3141,7 @@ updategeomhints(Client *c)
         updatesizehints(c->win, &c->sh);
 	c->isfixed = (c->sh.maxw && c->sh.maxh && c->sh.maxw == c->sh.minw
                                                && c->sh.maxh == c->sh.minh);
+        c->hintsvalid = 1;
 }
 
 void
