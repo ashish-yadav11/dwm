@@ -1665,6 +1665,7 @@ manage(Window w, XWindowAttributes *wa)
 	XSetWindowBorder(dpy, w, scheme[SchemeNorm][ColBorder].pixel);
 	configure(c); /* propagates border_width, if size doesn't change */
 	updatewindowtype(c, 1);
+        updategeomhints(c);
 	updatewmhints(c);
 	c->sfx = c->x;
 	c->sfy = c->y;
