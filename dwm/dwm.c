@@ -1474,13 +1474,11 @@ gettextprop(Window w, Atom atom, char *text, unsigned int size)
                 XFree(name.value);
                 return 0;
         }
-	if (name.encoding == XA_STRING)
+	if (name.encoding == XA_STRING) {
 		strncpy(text, (char *)name.value, size - 1);
-	else {
-		if (XmbTextPropertyToTextList(dpy, &name, &list, &n) >= Success && n > 0 && *list) {
-			strncpy(text, *list, size - 1);
-			XFreeStringList(list);
-		}
+	} else if (XmbTextPropertyToTextList(dpy, &name, &list, &n) >= Success && n > 0 && *list) {
+		strncpy(text, *list, size - 1);
+		XFreeStringList(list);
 	}
 	text[size - 1] = '\0';
 	XFree(name.value);
@@ -3537,20 +3535,16 @@ xerrorstart(Display *dpy, XErrorEvent *ee)
 void
 zoom(const Arg *arg)
 {
-	Client *c;
+	Client *c = selmon->sel;
 
-        if (!selmon->sel)
+        if (!c || c->isfullscreen)
                 return;
-        if (selmon->sel->isfullscreen)
-                return;
-        if (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange) {
-                resize(selmon->sel,
-                       selmon->mx + (selmon->mw - WIDTH(selmon->sel)) / 2,
-                       selmon->my + (selmon->mh - HEIGHT(selmon->sel)) / 2,
-                       selmon->sel->w, selmon->sel->h, 0);
+        if (c->isfloating || !selmon->lt[selmon->sellt]->arrange) {
+                resize(c, selmon->mx + (selmon->mw - WIDTH(c)) / 2,
+                          selmon->my + (selmon->mh - HEIGHT(c)) / 2,
+                          c->w, c->h, 0);
                 return;
         }
-        c = selmon->sel;
 	if (c == nexttiled(selmon->clients))
 		if (!c || !(c = nexttiled(c->next)))
 			return;
