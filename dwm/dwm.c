@@ -2872,6 +2872,7 @@ unmanage(Client *c, int destroyed)
 	if (!destroyed) {
 		XGrabServer(dpy); /* avoid race conditions */
 		XSetErrorHandler(xerrordummy);
+		XSelectInput(dpy, c->win, NoEventMask);
                 if (c->isfullscreen)
                         setfullscreen(c, 0);
                 if (c->isfloating <= 0) {
