@@ -189,7 +189,7 @@ static void winview(const Arg* arg);
 static void zoomswap(const Arg *arg);
 static void zoomvar(const Arg *arg);
 
-static Key keys[] = {
+static const Key keys[] = {
 	/* modifier                     key             function                argument */
 	{ MODLKEY,                      XK_d,           spawn,                  ROFIDRUN },
 	{ MODLKEY|ShiftMask,            XK_d,           spawn,                  ROFIRUN },
@@ -393,7 +393,7 @@ static Key keys[] = {
 };
 
 /* click can be ClkTabBar, ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
-static Button buttons[] = {
+static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkTabBar,            0,              Button1,        focuswin,       {0} },
 	{ ClkLtSymbol,          0,              Button1,        setltorprev,    {.v = &layouts[1]} },
