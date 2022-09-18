@@ -414,16 +414,20 @@ static const Button buttons[] = {
 #define FSIGIDLEN                       (sizeof FSIGID - 1)
 /* set the following lengths without considering the terminating null byte */
 #define MAXFSIGNAMELEN                  4
-#define MAXFSIGARGLEN                   2
+#define MAXFTYPELEN                     2
 
 /* trigger signals using `xsetroot -name "FSIGID<signame> [<type> <value>]"` */
 /* signal definitions */
 static Signal signals[] = {
 	/* signame              function */
+	{ "fclg",               focuslast },
+	{ "fclv",               focuslastvisible },
 	{ "quit",               quit },
 	{ "scrh",               scratchhide },
 	{ "scrs",               scratchshow },
 	{ "scrt",               scratchtoggle },
+	{ "sfvw",               shiftview },
+	{ "view",               view },
 };
 
 /* custom function implementations */

@@ -3271,10 +3271,10 @@ updatestatus(void)
         /* fake signal handler */
         if (strncmp(rawstext, FSIGID, FSIGIDLEN) == 0) {
                 int len, lensig, numarg;
-                char sig[MAXFSIGNAMELEN + 1], arg[MAXFSIGARGLEN + 1];
+                char sig[MAXFSIGNAMELEN + 1], arg[MAXFTYPELEN + 1];
                 Arg a;
 
-                numarg = sscanf(rawstext + FSIGIDLEN, "%" STR(MAXFSIGNAMELEN) "s%n%" STR(MAXFSIGARGLEN) "s%n",
+                numarg = sscanf(rawstext + FSIGIDLEN, "%" STR(MAXFSIGNAMELEN) "s%n%" STR(MAXFTYPELEN) "s%n",
                                 sig, &lensig, arg, &len);
                 if (numarg == 1)
                         a = (Arg){0};
