@@ -540,15 +540,21 @@ attach(Client *c)
 void
 attachabove(Client *c)
 {
-        Client *i;
+        _Bool f = c->isfloating;
+        Client *i = c->mon->sel, *j;
 
-        if (!c->mon->sel || c->mon->sel->isfloating || c->mon->sel == c->mon->clients) {
+        if (i && (_Bool)i->isfloating != f) {
+                for (i = selmon->stack;
+                     i && (i == c || (_Bool)i->isfloating != f || !ISVISIBLE(i));
+                     i = i->snext);
+        }
+        if (!i || i == c->mon->clients) {
                 attach(c);
                 return;
         }
-        for (i = c->mon->clients; i->next != c->mon->sel; i = i->next);
-        c->next = i->next;
-        i->next = c;
+        for (j = c->mon->clients; j->next != i; j = j->next);
+        c->next = j->next;
+        j->next = c;
 }
 
 void
@@ -557,7 +563,7 @@ attachaside(Client *c)
         int n;
         Client *i;
 
-        if (!c->mon->nmaster) {
+        if (!c->mon->nmaster || c->isfloating) {
                 attach(c);
                 return;
         }
@@ -575,12 +581,20 @@ attachaside(Client *c)
 void
 attachbelow(Client *c)
 {
-        if (!c->mon->sel || c->mon->sel->isfloating) {
+        _Bool f = c->isfloating;
+        Client *i = c->mon->sel;
+
+        if (i && (_Bool)i->isfloating != f) {
+                for (i = selmon->stack;
+                     i && (i == c || (_Bool)i->isfloating != f || !ISVISIBLE(i));
+                     i = i->snext);
+        }
+        if (!i) {
                 attachbottom(c);
                 return;
         }
-        c->next = c->mon->sel->next;
-        c->mon->sel->next = c;
+        c->next = i->next;
+        i->next = c;
 }
 
 void
