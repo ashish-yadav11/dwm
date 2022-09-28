@@ -428,6 +428,7 @@ static Signal signals[] = {
 	{ "scrs",               scratchshow },
 	{ "scrt",               scratchtoggle },
 	{ "sfvw",               shiftview },
+	{ "sftg",               shifttag },
 	{ "view",               view },
 };
 
