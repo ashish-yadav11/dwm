@@ -422,6 +422,7 @@ static Signal signals[] = {
 	/* signame              function */
 	{ "fclg",               focuslast },
 	{ "fclv",               focuslastvisible },
+	{ "fcsk",               focusstackalt },
 	{ "quit",               quit },
 	{ "scrh",               scratchhide },
 	{ "scrs",               scratchshow },
