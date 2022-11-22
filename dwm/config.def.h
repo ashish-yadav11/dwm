@@ -119,6 +119,7 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "st", "-n", "calcurse-st", "-t", "Calcurse", "-e", "calcurse", NULL },
 	ASKLAUNCH("Signal", "signal-desktop", "--use-tray-icon"),
 	ASKLAUNCH("Telegram", "telegram-desktop"),
+	(const char *[]){ SCRIPT("scrcpy.sh"), NULL },
 };
 
 #define DYNSCRATCHKEY(i)                (LENGTH(scratchcmds) + i)
@@ -941,11 +942,20 @@ applyrules(Client *c)
 	class = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name ? ch.res_name : broken;
 
-        if (strcmp(instance, "calcurse-st") == 0) {
+        if (strcmp(instance, "brave-browser") == 0) {
+                markscratch(c, -1);
+        } else if (strcmp(instance, "calcurse-st") == 0) {
                 markscratch(c, 4);
                 c->isfloating = 1;
                 c->w = 950;
                 c->h = 650;
+                center(c);
+        } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
+                markscratch(c, 2);
+                c->isfloating = 1;
+                c->bw = 0;
+                c->w = 950;
+                c->h = 626;
                 center(c);
         } else if (strcmp(instance, "floating-st") == 0) {
                 c->isfloating = 1;
@@ -966,15 +976,9 @@ applyrules(Client *c)
                 c->w = 750;
                 c->h = 450;
                 center(c);
-        } else if (strcmp(instance, "brave-browser") == 0) {
-                markscratch(c, -1);
-        } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
-                markscratch(c, 2);
+        } else if (strcmp(class, "scrcpy") == 0) {
+                markscratch(c, 7);
                 c->isfloating = 1;
-                c->bw = 0;
-                c->w = 950;
-                c->h = 626;
-                center(c);
         } else if (strcmp(class, "Signal") == 0) {
                 markscratch(c, 5);
                 c->isfloating = 1;
@@ -987,18 +991,18 @@ applyrules(Client *c)
                 c->w = 770;
                 c->h = 555;
                 center(c);
-        } else if (strcmp(class, "RiseupVPN") == 0 ||
-                   strcmp(class, "Sxiv") == 0 ||
-                   strstr(class, "Yad") ||
-                   strcmp(class, "matplotlib") == 0 ||
+        } else if (strcmp(c->name, "Event Tester") == 0 ||
                    strcmp(class, "guvcview") == 0 ||
+                   strcmp(class, "matplotlib") == 0 ||
+                   strcmp(class, "RiseupVPN") == 0 ||
                    strcmp(class, "SimpleScreenRecorder") == 0 ||
+                   strcmp(class, "Sxiv") == 0 ||
                    strcmp(class, "Woeusbgui") == 0 ||
-                   strcmp(c->name, "Event Tester") == 0) {
+                   strstr(class, "Yad")) {
                 c->isfloating = 1;
                 center(c);
-        } else if (strcmp(c->name, "Picture in picture") == 0 ||
-                   strcmp(c->name, "Picture-in-Picture") == 0) {
+        } else if (strcmp(c->name, "Picture-in-Picture") == 0 ||
+                   strcmp(c->name, "Picture in picture") == 0) {
                 c->isfloating = 1;
         }
 
