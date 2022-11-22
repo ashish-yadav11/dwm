@@ -279,6 +279,7 @@ static const Key keys[] = {
 	{ SUPKEY,                       XK_c,           scratchtoggle,          {.i = 4} },
 	{ SUPKEY,                       XK_s,           scratchtoggle,          {.i = 5} },
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
+	{ SUPKEY,                       XK_o,           scratchtoggle,          {.i = 7} },
 	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(1) } },
 	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = DYNSCRATCHKEY(1) } },
 	{ MODLKEY,                      XK_y,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(2) } },
@@ -979,6 +980,7 @@ applyrules(Client *c)
         } else if (strcmp(class, "scrcpy") == 0) {
                 markscratch(c, 7);
                 c->isfloating = 1;
+                center(c);
         } else if (strcmp(class, "Signal") == 0) {
                 markscratch(c, 5);
                 c->isfloating = 1;
