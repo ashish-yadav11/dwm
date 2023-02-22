@@ -1390,9 +1390,11 @@ focustiled(const Arg *arg)
 
         if (!(i = nexttiled(selmon->clients)))
                 return;
+        if (n < 0)
+                n = selmon->ntiles + n + 1;
         do
                 c = i;
-        while (n-- > 0 && (i = nexttiled(i->next)));
+        while (--n > 0 && (i = nexttiled(i->next)));
         if (c == selmon->sel) {
                 do
                         c = c->snext;
