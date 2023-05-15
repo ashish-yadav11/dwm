@@ -96,8 +96,8 @@ static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 static const Attach attachs[] = {
 	/* symbol       attach function */
 	{ "T",          attach },
-	{ "D",          attachbelow },
 	{ "U",          attachabove },
+	{ "D",          attachbelow },
 	{ "S",          attachaside },
 	{ "B",          attachbottom },
 };
