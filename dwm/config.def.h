@@ -969,8 +969,8 @@ applyrules(Client *c)
         } else if (strcmp(instance, "pyfzf-st") == 0) {
                 markscratch(c, 3);
                 c->isfloating = 1;
-                c->w = 820;
-                c->h = 480;
+                c->w = 1200;
+                c->h = 600;
                 center(c);
         } else if (strcmp(instance, "scratch-st") == 0) {
                 markscratch(c, 1);
