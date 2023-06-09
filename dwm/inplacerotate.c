@@ -72,9 +72,10 @@ inplacerotate(const Arg *arg)
                 else
                         movebefore(tail, head);
         }
-        /* restore focus position */
+        /* restore focus position
         for (c = selmon->clients;
              c->isfloating || !ISVISIBLE(c) || selidx-- > 0;
              c = c->next);
-        focusalt(c, 1);
+        focusalt(c, 1); */
+        arrange(selmon);
 }
