@@ -120,6 +120,7 @@ static const char *const *scratchcmds[] = {
 	ASKLAUNCH("Signal", "signal-desktop", "--use-tray-icon"),
 	ASKLAUNCH("Telegram", "telegram-desktop"),
 	(const char *[]){ SCRIPT("scrcpy.sh"), NULL },
+	(const char *[]){ "st", "-n", "music-st", "-e", "ranger", "/media/storage/Music", NULL },
 };
 
 #define DYNSCRATCHKEY(i)                (LENGTH(scratchcmds) + i)
@@ -280,6 +281,8 @@ static const Key keys[] = {
 	{ SUPKEY,                       XK_s,           scratchtoggle,          {.i = 5} },
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
 	{ SUPKEY,                       XK_o,           scratchtoggle,          {.i = 7} },
+	{ SUPKEY,                       XK_y,           scratchtoggle,          {.i = 8} },
+	{ SUPKEY|ShiftMask,             XK_y,           spawn,                  SHCMD("echo 'run /home/ashish/.scripts/ytmsclu-local.sh ${path}' | socat - /tmp/music-mpv.socket") },
 	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(1) } },
 	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = DYNSCRATCHKEY(1) } },
 	{ MODLKEY,                      XK_y,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(2) } },
@@ -962,6 +965,10 @@ applyrules(Client *c)
                 c->isfloating = 1;
                 c->w = 750;
                 c->h = 450;
+                center(c);
+        } else if (strcmp(instance, "music-st") == 0) {
+                markscratch(c, 8);
+                c->isfloating = 1;
                 center(c);
         } else if (strcmp(instance, "neomutt-st") == 0) {
                 markscratch(c, -2);
