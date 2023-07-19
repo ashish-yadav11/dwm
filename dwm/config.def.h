@@ -121,6 +121,7 @@ static const char *const *scratchcmds[] = {
 	ASKLAUNCH("Telegram", "telegram-desktop"),
 	(const char *[]){ SCRIPT("scrcpy.sh"), NULL },
 	(const char *[]){ "st", "-n", "music-st", "-e", "ranger", "/media/storage/Music", NULL },
+	(const char *[]){ "st", "-n", "neovim-st", "-e", "nvim", NULL },
 };
 
 #define DYNSCRATCHKEY(i)                (LENGTH(scratchcmds) + i)
@@ -282,6 +283,7 @@ static const Key keys[] = {
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
 	{ SUPKEY,                       XK_o,           scratchtoggle,          {.i = 7} },
 	{ SUPKEY,                       XK_y,           scratchtoggle,          {.i = 8} },
+	{ SUPKEY,                       XK_u,           scratchtoggle,          {.i = 9} },
 	{ SUPKEY|ShiftMask,             XK_y,           spawn,                  SHCMD("echo 'run /home/ashish/.scripts/ytmsclu-local.sh ${path}' | socat - /tmp/music-mpv.socket") },
 	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(1) } },
 	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = DYNSCRATCHKEY(1) } },
@@ -972,6 +974,12 @@ applyrules(Client *c)
                 center(c);
         } else if (strcmp(instance, "neomutt-st") == 0) {
                 markscratch(c, -2);
+        } else if (strcmp(instance, "neovim-st") == 0) {
+                markscratch(c, 9);
+                c->isfloating = 1;
+                c->w = 1060;
+                c->h = 590;
+                center(c);
         } else if (strcmp(instance, "pyfzf-st") == 0) {
                 markscratch(c, 3);
                 c->isfloating = 1;
@@ -981,8 +989,8 @@ applyrules(Client *c)
         } else if (strcmp(instance, "scratch-st") == 0) {
                 markscratch(c, 1);
                 c->isfloating = 1;
-                c->w = 750;
-                c->h = 450;
+                c->w = 980;
+                c->h = 570;
                 center(c);
         } else if (strcmp(class, "scrcpy") == 0) {
                 markscratch(c, 7);
