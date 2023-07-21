@@ -284,7 +284,6 @@ static const Key keys[] = {
 	{ SUPKEY,                       XK_o,           scratchtoggle,          {.i = 7} },
 	{ SUPKEY,                       XK_y,           scratchtoggle,          {.i = 8} },
 	{ SUPKEY,                       XK_u,           scratchtoggle,          {.i = 9} },
-	{ SUPKEY|ShiftMask,             XK_y,           spawn,                  SHCMD("echo 'run /home/ashish/.scripts/ytmsclu-local.sh ${path}' | socat - /tmp/music-mpv.socket") },
 	{ MODLKEY,                      XK_t,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(1) } },
 	{ MODLKEY|ShiftMask,            XK_t,           dynscratchunmark,       {.i = DYNSCRATCHKEY(1) } },
 	{ MODLKEY,                      XK_y,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(2) } },
@@ -334,6 +333,8 @@ static const Key keys[] = {
 	{ MODLKEY,                      XK_Delete,      spawn,                  SCRIPTCMD("usbmount.sh") },
 	{ MODLKEY|ShiftMask,            XK_Delete,      spawn,                  SCRIPTCMD("mtpmount.sh") },
 	{ MODLKEY|ControlMask,          XK_Delete,      spawn,                  SCRIPTCMD("realme-u1-usbmode.sh") },
+	{ SUPKEY|ShiftMask,             XK_y,           spawn,                  SHCMD("echo 'run /home/ashish/.scripts/ytmsclu-local.sh ${path}' | socat - /tmp/music-mpv.socket") },
+	{ MODLKEY,                      XK_F9,          spawn,                  SHCMD("echo 'seek 0 absolute-percent' | socat - /tmp/music-mpv.socket") },
 
 	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
 	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
