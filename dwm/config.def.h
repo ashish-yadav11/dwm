@@ -323,6 +323,7 @@ static const Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_p,           spawn,                  TERMCMD("pyfzf") },
 	{ SUPKEY,                       XK_r,           spawn,                  TERMCMD("ranger", "--cmd=set show_hidden=false") },
 	{ SUPKEY|ShiftMask,             XK_r,           spawn,                  TERMCMD("ranger") },
+	{ SUPKEY|ControlMask,           XK_r,           spawn,                  TERMCMD("ranger", "--cmd=set show_hidden=false", "--cmd=set sort=ctime") },
 	{ SUPKEY,                       XK_t,           spawn,                  TERMCMD("htop") },
 	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop", "-s", "PERCENT_CPU") },
 	{ SUPKEY|ControlMask,           XK_t,           spawn,                  TERMCMD("htop", "-s", "PERCENT_MEM") },
