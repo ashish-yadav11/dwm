@@ -333,7 +333,7 @@ static const Key keys[] = {
 	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPTCMD("ytmsclu.sh") },
 	{ MODLKEY,                      XK_Delete,      spawn,                  SCRIPTCMD("usbmount.sh") },
 	{ MODLKEY|ShiftMask,            XK_Delete,      spawn,                  SCRIPTCMD("mtpmount.sh") },
-	{ MODLKEY|ControlMask,          XK_Delete,      spawn,                  SCRIPTCMD("realme-u1-usbmode.sh") },
+	{ MODLKEY|ControlMask,          XK_Delete,      spawn,                  SCRIPTCMD("android-usbmode.sh") },
 	{ MODLKEY|ShiftMask,            XK_y,           spawn,                  SHCMD("echo 'run /home/ashish/.scripts/ytmsclu-local.sh ${path}' | socat - /tmp/music-mpv.socket") },
 	{ MODLKEY,                      XK_F9,          spawn,                  SHCMD("echo 'seek 0 absolute-percent' | socat - /tmp/music-mpv.socket") },
 
