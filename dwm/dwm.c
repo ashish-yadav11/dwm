@@ -2372,12 +2372,12 @@ setsplus(const Arg *arg)
         if (!f && (selmon->lt[selmon->sellt]->arrange == tilehor ||
                    selmon->lt[selmon->sellt]->arrange == tilever)) {
                 if (selmon->ntiles > selmon->nmaster + 1) {
-                        SPLUS(selmon)[1] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
+                        SPLUS(selmon)[1] = arg->i == 0 ? 0 : SPLUS(selmon)[1] + arg->i;
                         selmon->lt[selmon->sellt]->arrange(selmon);
                 }
         } else {
                 if (selmon->ntiles > 1 && selmon->nmaster > 1) {
-                        SPLUS(selmon)[0] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[0] + arg->i, 0);
+                        SPLUS(selmon)[0] = arg->i == 0 ? 0 : SPLUS(selmon)[0] + arg->i;
                         selmon->lt[selmon->sellt]->arrange(selmon);
                 }
         }
@@ -2735,8 +2735,12 @@ tiledeckhor(Monitor *m, int deck)
                 }
                 c = nexttiled(m->clients);
                 if (r > 1 && SPLUS(m)[0]) {
-                        if ((h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[0]) > wh) {
-                                SPLUS(m)[0] -= wh - h;
+                        h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[0];
+                        if (h < 0) {
+                                SPLUS(m)[0] -= h;
+                                h = 0;
+                        } else if (h > wh) {
+                                SPLUS(m)[0] -= h - wh;
                                 h = wh;
                         }
                         goto mloop;
@@ -2760,8 +2764,12 @@ mloop:
                 }
                 y = 0;
                 if (r > 1 && SPLUS(m)[1]) {
-                        if ((h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[1]) > wh) {
-                                SPLUS(m)[1] -= wh - h;
+                        h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[1];
+                        if (h < 0) {
+                                SPLUS(m)[1] -= h;
+                                h = 0;
+                        } else if (h > wh) {
+                                SPLUS(m)[1] -= h - wh;
                                 h = wh;
                         }
                         goto sloop;
@@ -2814,8 +2822,12 @@ tiledeckver(Monitor *m, int deck)
                 }
                 c = nexttiled(m->clients);
                 if (r > 1 && SPLUS(m)[0]) {
-                        if ((w = (ww - gappih * (r - 1)) / r + SPLUS(m)[0]) > ww) {
-                                SPLUS(m)[0] -= ww - w;
+                        w = (ww - gappih * (r - 1)) / r + SPLUS(m)[0];
+                        if (w < 0) {
+                                SPLUS(m)[0] -= w;
+                                w = 0;
+                        } else if (w > ww) {
+                                SPLUS(m)[0] -= w - ww;
                                 w = ww;
                         }
                         goto mloop;
@@ -2839,8 +2851,12 @@ mloop:
                 }
                 x = 0;
                 if (r > 1 && SPLUS(m)[1]) {
-                        if ((w = (ww - gappih * (r - 1)) / r + SPLUS(m)[1]) > ww) {
-                                SPLUS(m)[1] -= ww - w;
+                        w = (ww - gappih * (r - 1)) / r + SPLUS(m)[1];
+                        if (w < 0) {
+                                SPLUS(m)[1] -= w;
+                                w = 0;
+                        } else if (w > ww) {
+                                SPLUS(m)[1] -= w - ww;
                                 w = ww;
                         }
                         goto sloop;
