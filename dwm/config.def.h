@@ -105,10 +105,10 @@ static const Attach attachs[] = {
 static const Layout layouts[] = {
        /* symbol       arrange function        default attach */
        { "[ ]=",       tilehor,                &attachs[0] },
-       { "=[ ]",       tilever,                &attachs[0] },
        { "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
        { "[M]",        monocle,                &attachs[1] },
        { "[H]",        deckhor,                &attachs[3] },
+       { "=[ ]",       tilever,                &attachs[0] },
        { "[V]",        deckver,                &attachs[3] },
 };
 
@@ -255,10 +255,10 @@ static const Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_f,           togglefloating,         {.i = 0} },
 	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
 	{ MODLKEY,                      XK_e,           setltorprev,            {.v = &layouts[0]} },
-	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,            {.v = &layouts[2]} },
-	{ MODLKEY|ControlMask,          XK_e,           setltorprev,            {.v = &layouts[1]} },
-	{ MODLKEY,                      XK_w,           setltorprev,            {.v = &layouts[3]} },
-	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.v = &layouts[4]} },
+	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,            {.v = &layouts[1]} },
+	{ MODLKEY|ControlMask,          XK_e,           setltorprev,            {.v = &layouts[4]} },
+	{ MODLKEY,                      XK_w,           setltorprev,            {.v = &layouts[2]} },
+	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.v = &layouts[3]} },
 	{ MODLKEY|ControlMask,          XK_w,           setltorprev,            {.v = &layouts[5]} },
 	{ MODLKEY,                      XK_F1,          setattorprev,           {.v = &attachs[0]} },
 	{ MODLKEY,                      XK_F2,          setattorprev,           {.v = &attachs[1]} },
@@ -409,7 +409,7 @@ static const Key keys[] = {
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkTabBar,            0,              Button1,        focuswin,       {0} },
-	{ ClkLtSymbol,          0,              Button1,        setltorprev,    {.v = &layouts[2]} },
+	{ ClkLtSymbol,          0,              Button1,        setltorprev,    {.v = &layouts[1]} },
 	{ ClkWinTitle,          0,              Button1,        togglefloating, {.i = 1} },
 	{ ClkStatusText,        0,              Button1,        sigdsblocks,    {.i = 1} },
 	{ ClkStatusText,        0,              Button2,        sigdsblocks,    {.i = 2} },
