@@ -218,7 +218,6 @@ static void configure(Client *c);
 static void configurenotify(XEvent *e);
 static void configurerequest(XEvent *e);
 static Monitor *createmon(void);
-static void deck(Monitor *m);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
@@ -300,8 +299,12 @@ static void tabmode(const Arg *arg);
 static void tag(const Arg *arg);
 static void tagandview(const Arg *arg);
 //static void tagmon(const Arg *arg);
-static void tile(Monitor *m);
-static void tiledeck(Monitor *m, int deck);
+static void tilehor(Monitor *m);
+static void tilever(Monitor *m);
+static void deckhor(Monitor *m);
+static void deckver(Monitor *m);
+static void tiledeckhor(Monitor *m, int deck);
+static void tiledeckver(Monitor *m, int deck);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
 static void toggletag(const Arg *arg);
@@ -657,7 +660,8 @@ buttonpress(XEvent *e)
 	} else if (ev->window == selmon->tabwin && selmon->ntiles > 0) {
                 int ntabs, ofst, tbw, lft;
 
-                if (selmon->lt[selmon->sellt]->arrange == deck &&
+                if ((selmon->lt[selmon->sellt]->arrange == deckhor ||
+                     selmon->lt[selmon->sellt]->arrange == deckver) &&
                     selmon->pertag->showtabs[selmon->pertag->curtag] == ShowtabAuto) {
                         ntabs = MIN(selmon->ntiles - selmon->nmaster, MAXTABS);
                         ofst = selmon->nmaster;
@@ -965,12 +969,6 @@ createmon(void)
 }
 
 void
-deck(Monitor *m)
-{
-        tiledeck(m, 1);
-}
-
-void
 destroynotify(XEvent *e)
 {
 	Client *c;
@@ -1141,7 +1139,9 @@ drawtab(Monitor *m)
                 updatentiles(m);
                 if (m->lt[m->sellt]->arrange == monocle && m->ntiles > 1)
                         drawtabhelper(m, 0);
-                else if (m->lt[m->sellt]->arrange == deck && m->ntiles > m->nmaster + 1)
+                else if ((m->lt[m->sellt]->arrange == deckhor ||
+                          m->lt[m->sellt]->arrange == deckver) &&
+                         m->ntiles > m->nmaster + 1)
                         drawtabhelper(m, 1);
         }
 }
@@ -1758,10 +1758,10 @@ monocle(Monitor *m)
         } else {
                 int wx, wy, ww, wh;
 
-                wx = m->wx + gappov;
-                wy = m->wy + gappoh;
-                ww = m->ww - 2 * gappov;
-                wh = m->wh - 2 * gappoh;
+                wx = m->wx + gappoh;
+                wy = m->wy + gappov;
+                ww = m->ww - 2 * gappoh;
+                wh = m->wh - 2 * gappov;
 
                 for (c = nexttiled(m->clients); c; c = nexttiled(c->next))
                         resize(c, wx, wy, ww - 2 * c->bw, wh - 2 * c->bw, 0);
@@ -2369,7 +2369,8 @@ setsplus(const Arg *arg)
         for (f = selmon->nmaster, c = selmon->clients; c != selmon->sel; c = c->next)
                 if (!c->isfloating && ISVISIBLE(c) && !(--f))
                         break;
-        if (!f && selmon->lt[selmon->sellt]->arrange == tile) {
+        if (!f && (selmon->lt[selmon->sellt]->arrange == tilehor ||
+                   selmon->lt[selmon->sellt]->arrange == tilever)) {
                 if (selmon->ntiles > selmon->nmaster + 1) {
                         SPLUS(selmon)[1] = arg->i == 0 ? 0 : MAX(SPLUS(selmon)[1] + arg->i, 0);
                         selmon->lt[selmon->sellt]->arrange(selmon);
@@ -2696,13 +2697,19 @@ tagmon(const Arg *arg)
 */
 
 void
-tile(Monitor *m)
+tilehor(Monitor *m)
 {
-        tiledeck(m, 0);
+        tiledeckhor(m, 0);
 }
 
 void
-tiledeck(Monitor *m, int deck)
+deckhor(Monitor *m)
+{
+        tiledeckhor(m, 1);
+}
+
+void
+tiledeckhor(Monitor *m, int deck)
 {
 	Client *c;
 
@@ -2712,10 +2719,10 @@ tiledeck(Monitor *m, int deck)
         } else {
                 int r;
                 int x, y, w, h;
-                int wx = m->wx + gappov;
-                int wy = m->wy + gappoh;
-                int ww = m->ww - 2 * gappov;
-                int wh = m->wh - 2 * gappoh;
+                int wx = m->wx + gappoh;
+                int wy = m->wy + gappov;
+                int ww = m->ww - 2 * gappoh;
+                int wh = m->wh - 2 * gappov;
 
                 /* masters */
                 y = 0;
@@ -2728,42 +2735,121 @@ tiledeck(Monitor *m, int deck)
                 }
                 c = nexttiled(m->clients);
                 if (r > 1 && SPLUS(m)[0]) {
-                        if ((h = (wh - gappih * (r - 1)) / r + SPLUS(m)[0]) > wh) {
+                        if ((h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[0]) > wh) {
                                 SPLUS(m)[0] -= wh - h;
                                 h = wh;
                         }
                         goto mloop;
                 }
                 for (; r > 0; c = nexttiled(c->next), r--) {
-                        h = (wh - y - gappih * (r - 1)) / r;
+                        h = (wh - y - gappiv * (r - 1)) / r;
 mloop:
                         resize(c, wx, wy + y, w - 2 * c->bw, h - 2 * c->bw, 0);
-                        y += HEIGHT(c) + gappih;
+                        y += HEIGHT(c) + gappiv;
                 }
                 /* stack */
                 if ((r = m->ntiles - m->nmaster) < 0)
                         return;
-                x = m->nmaster ? wx + w + gappiv : wx;
+                x = m->nmaster ? wx + w + gappih : wx;
                 w = ww - x + wx;
                 if (deck) {
-                        snprintf(m->ltsymbol, sizeof m->ltsymbol, "[D%d]", r);
+                        snprintf(m->ltsymbol, sizeof m->ltsymbol, "[H%d]", r);
                         for (; c; c = nexttiled(c->next))
                                 resize(c, x, wy, w - 2 * c->bw, wh - 2 * c->bw, 0);
                         return;
                 }
                 y = 0;
                 if (r > 1 && SPLUS(m)[1]) {
-                        if ((h = (wh - gappih * (r - 1)) / r + SPLUS(m)[1]) > wh) {
+                        if ((h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[1]) > wh) {
                                 SPLUS(m)[1] -= wh - h;
                                 h = wh;
                         }
                         goto sloop;
                 }
                 for (; r > 0; c = nexttiled(c->next), r--) {
-                        h = (wh - y - gappih * (r - 1)) / r;
+                        h = (wh - y - gappiv * (r - 1)) / r;
 sloop:
                         resize(c, x, wy + y, w - 2 * c->bw, h - 2 * c->bw, 0);
-                        y += HEIGHT(c) + gappih;
+                        y += HEIGHT(c) + gappiv;
+                }
+        }
+}
+
+void
+tilever(Monitor *m)
+{
+        tiledeckver(m, 0);
+}
+
+void
+deckver(Monitor *m)
+{
+        tiledeckver(m, 1);
+}
+
+void
+tiledeckver(Monitor *m, int deck)
+{
+	Client *c;
+
+        if (m->ntiles == 1) {
+                c = nexttiled(m->clients);
+		resize(c, m->wx, m->wy, m->ww - 2 * c->bw, m->wh - 2 * c->bw, 0);
+        } else {
+                int r;
+                int x, y, w, h;
+                int wx = m->wx + gappoh;
+                int wy = m->wy + gappov;
+                int ww = m->ww - 2 * gappoh;
+                int wh = m->wh - 2 * gappov;
+
+                /* masters */
+                x = 0;
+                if (m->ntiles > m->nmaster) {
+                        h = wh * m->mfact;
+                        r = m->nmaster;
+                } else {
+                        h = wh;
+                        r = m->ntiles;
+                }
+                c = nexttiled(m->clients);
+                if (r > 1 && SPLUS(m)[0]) {
+                        if ((w = (ww - gappih * (r - 1)) / r + SPLUS(m)[0]) > ww) {
+                                SPLUS(m)[0] -= ww - w;
+                                w = ww;
+                        }
+                        goto mloop;
+                }
+                for (; r > 0; c = nexttiled(c->next), r--) {
+                        w = (ww - x - gappih * (r - 1)) / r;
+mloop:
+                        resize(c, wx + x, wy, w - 2 * c->bw, h - 2 * c->bw, 0);
+                        x += WIDTH(c) + gappih;
+                }
+                /* stack */
+                if ((r = m->ntiles - m->nmaster) < 0)
+                        return;
+                y = m->nmaster ? wy + h + gappiv : wy;
+                h = wh - y + wy;
+                if (deck) {
+                        snprintf(m->ltsymbol, sizeof m->ltsymbol, "[V%d]", r);
+                        for (; c; c = nexttiled(c->next))
+                                resize(c, wx, y, ww - 2 * c->bw, h - 2 * c->bw, 0);
+                        return;
+                }
+                x = 0;
+                if (r > 1 && SPLUS(m)[1]) {
+                        if ((w = (ww - gappih * (r - 1)) / r + SPLUS(m)[1]) > ww) {
+                                SPLUS(m)[1] -= ww - w;
+                                w = ww;
+                        }
+                        goto sloop;
+                }
+                for (; r > 0; c = nexttiled(c->next), r--) {
+                        w = (ww - x - gappih * (r - 1)) / r;
+sloop:
+                        resize(c, wx + x, y, w - 2 * c->bw, h - 2 * c->bw, 0);
+                        x += WIDTH(c) + gappih;
                 }
         }
 }
@@ -2954,7 +3040,9 @@ updatebarpos(Monitor *m)
         if (m->pertag->showtabs[m->pertag->curtag] == ShowtabAlways ||
             (m->pertag->showtabs[m->pertag->curtag] == ShowtabAuto &&
              ((m->lt[m->sellt]->arrange == monocle && m->ntiles > 1) ||
-              (m->lt[m->sellt]->arrange == deck && m->ntiles > m->nmaster + 1)))) {
+              ((m->lt[m->sellt]->arrange == deckhor ||
+                m->lt[m->sellt]->arrange == deckver) &&
+               m->ntiles > m->nmaster + 1)))) {
 		m->wh -= th;
                 if (m->toptab) {
                         m->wy += th;

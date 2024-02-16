@@ -31,7 +31,8 @@ inplacerotate(const Arg *arg)
 
         if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
                 return;
-        argi = selmon->lt[selmon->sellt]->arrange == deck ? -arg->i : arg->i;
+        argi = (selmon->lt[selmon->sellt]->arrange == deckhor ||
+                selmon->lt[selmon->sellt]->arrange == deckver) ? -arg->i : arg->i;
         for (selidx = 0, c = selmon->clients; c != selmon->sel; c = c->next)
                 if (!c->isfloating && ISVISIBLE(c))
                         selidx++;

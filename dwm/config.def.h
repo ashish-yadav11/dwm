@@ -104,10 +104,12 @@ static const Attach attachs[] = {
 
 static const Layout layouts[] = {
        /* symbol       arrange function        default attach */
-       { "[ ]=",       tile,                   &attachs[0] },
+       { "[ ]=",       tilehor,                &attachs[0] },
+       { "=[ ]",       tilever,                &attachs[0] },
        { "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
        { "[M]",        monocle,                &attachs[1] },
-       { "[D]",        deck,                   &attachs[3] },
+       { "[H]",        deckhor,                &attachs[3] },
+       { "[V]",        deckver,                &attachs[3] },
 };
 
 #define ASKLAUNCH(name, ...)            (const char *[]){ SCRIPT("asklaunch.sh"), name, __VA_ARGS__, NULL }
@@ -253,9 +255,11 @@ static const Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_f,           togglefloating,         {.i = 0} },
 	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
 	{ MODLKEY,                      XK_e,           setltorprev,            {.v = &layouts[0]} },
-	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,            {.v = &layouts[1]} },
-	{ MODLKEY,                      XK_w,           setltorprev,            {.v = &layouts[2]} },
-	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.v = &layouts[3]} },
+	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,            {.v = &layouts[2]} },
+	{ MODLKEY|ControlMask,          XK_e,           setltorprev,            {.v = &layouts[1]} },
+	{ MODLKEY,                      XK_w,           setltorprev,            {.v = &layouts[3]} },
+	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.v = &layouts[4]} },
+	{ MODLKEY|ControlMask,          XK_w,           setltorprev,            {.v = &layouts[5]} },
 	{ MODLKEY,                      XK_F1,          setattorprev,           {.v = &attachs[0]} },
 	{ MODLKEY,                      XK_F2,          setattorprev,           {.v = &attachs[1]} },
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.v = &attachs[2]} },
@@ -405,7 +409,7 @@ static const Key keys[] = {
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkTabBar,            0,              Button1,        focuswin,       {0} },
-	{ ClkLtSymbol,          0,              Button1,        setltorprev,    {.v = &layouts[1]} },
+	{ ClkLtSymbol,          0,              Button1,        setltorprev,    {.v = &layouts[2]} },
 	{ ClkWinTitle,          0,              Button1,        togglefloating, {.i = 1} },
 	{ ClkStatusText,        0,              Button1,        sigdsblocks,    {.i = 1} },
 	{ ClkStatusText,        0,              Button2,        sigdsblocks,    {.i = 2} },
@@ -565,8 +569,10 @@ focusstackalt(const Arg *arg)
 
 	if (!selmon->sel)
 		return;
-        if (!selmon->sel->isfloating && selmon->lt[selmon->sellt]->arrange == deck
-                                     && selmon->ntiles > selmon->nmaster + 1) {
+        if (!selmon->sel->isfloating &&
+            (selmon->lt[selmon->sellt]->arrange == deckhor ||
+             selmon->lt[selmon->sellt]->arrange == deckver) &&
+            selmon->ntiles > selmon->nmaster + 1) {
                 int n;
 
                 for (n = 1, c = selmon->clients; c != selmon->sel; c = c->next)
@@ -929,7 +935,8 @@ zoomswap(const Arg *arg)
 void
 zoomvar(const Arg *arg)
 {
-        if ((selmon->lt[selmon->sellt]->arrange == deck &&
+        if (((selmon->lt[selmon->sellt]->arrange == deckhor ||
+              selmon->lt[selmon->sellt]->arrange == deckver) &&
              selmon->ntiles > selmon->nmaster + 1) == (_Bool)arg->i)
                         zoomswap(&((Arg){0}));
         else
