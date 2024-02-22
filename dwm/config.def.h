@@ -332,6 +332,7 @@ static const Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_t,           spawn,                  TERMCMD("htop", "-s", "PERCENT_CPU") },
 	{ SUPKEY|ControlMask,           XK_t,           spawn,                  TERMCMD("htop", "-s", "PERCENT_MEM") },
 	{ SUPKEY|ShiftMask,             XK_m,           spawn,                  SCRIPTCMD("neomutt.sh") },
+	{ MODLKEY|ControlMask,          XK_s,           spawn,                  CMD("sigdsblocks", "3") },
 	{ MODRKEY,                      XK_s,           spawn,                  INHIBITSUSPEND1 },
 	{ MODRKEY|ShiftMask,            XK_s,           spawn,                  INHIBITSUSPEND0 },
 	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPTCMD("ytmsclu.sh") },
