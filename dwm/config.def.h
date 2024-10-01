@@ -177,6 +177,7 @@ static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
 static void hidefloating(const Arg *arg);
+static void hideshowfloating(const Arg *arg);
 static Client *nextsamefloat(int next);
 static Client *nextvisible(int next);
 static void push(const Arg *arg);
@@ -345,11 +346,11 @@ static const Key keys[] = {
 	{ MODLKEY,                      XK_y,           spawn,                  SHCMD("echo 'run /home/ashish/.scripts/ytmsclu-local.sh ${path}' | socat - /tmp/music-mpv.socket") },
 	{ MODLKEY,                      XK_F9,          spawn,                  SHCMD("echo 'seek 0 absolute-percent' | socat - /tmp/music-mpv.socket") },
 
-	{ MODLKEY,           XK_bracketleft,            hidefloating,           {0} },
-	{ MODLKEY,           XK_bracketright,           showfloating,           {0} },
+	{ MODLKEY,           XK_bracketleft,            hideshowfloating,       {.i = 1} },
+	{ MODLKEY,           XK_bracketright,           hideshowfloating,       {.i = 0} },
 	{ MODLKEY,           XK_backslash,              scratchhidevisible,     {0} },
-	{ MODRKEY,           XK_bracketleft,            hidefloating,           {0} },
-	{ MODRKEY,           XK_bracketright,           showfloating,           {0} },
+	{ MODRKEY,           XK_bracketleft,            hideshowfloating,       {.i = 1} },
+	{ MODRKEY,           XK_bracketright,           hideshowfloating,       {.i = 0} },
 	{ MODRKEY,           XK_backslash,              scratchhidevisible,     {0} },
 	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
 	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  VOLUMEL },
@@ -658,6 +659,26 @@ hidefloating(const Arg *arg)
                 }
         focus(NULL);
         arrange(selmon);
+}
+
+void
+hideshowfloating(const Arg *arg)
+{
+        if (arg->i) {
+                for (Client *c = selmon->stack; c; c = c->snext)
+                        if (c->isfloating && ISVISIBLE(c) && !c->isfullscreen) {
+                                hidefloating(&((Arg){0}));
+                                return;
+                        }
+                showfloating(&((Arg){0}));
+        } else {
+                for (Client *c = selmon->stack; c; c = c->snext)
+                        if (c->ishidden && c->tags & selmon->tagset[selmon->seltags]) {
+                                showfloating(&((Arg){0}));
+                                return;
+                        }
+                hidefloating(&((Arg){0}));
+        }
 }
 
 /* the following two functions assume non-NULL selmon->sel */
