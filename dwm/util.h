@@ -28,6 +28,7 @@
                                                 (A) = (B); \
                                                 (B) = __A; \
                                         })
+#define LENGTH(X)                       (sizeof (X) / sizeof (X)[0])
 
 #define STR_HELPER(X)                   #X
 #define STR(X)                          STR_HELPER(X)

@@ -56,7 +56,6 @@
                                        * MAX(0, MIN((y)+(h),(m)->wy+(m)->wh) - MAX((y),(m)->wy)))
 #define ISVISIBLE(C)                    ((C->tags & C->mon->tagset[C->mon->seltags]) && !C->ishidden)
 #define ISSTATUSDRAWN()                 (selmon->ww - stw - wstext - ble >= lrpad)
-#define LENGTH(X)                       (sizeof X / sizeof X[0])
 #define MOUSEMASK                       (BUTTONMASK|PointerMotionMask)
 #define WIDTH(X)                        ((X)->w + 2 * (X)->bw)
 #define HEIGHT(X)                       ((X)->h + 2 * (X)->bw)
