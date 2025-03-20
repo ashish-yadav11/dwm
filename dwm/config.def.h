@@ -975,6 +975,7 @@ static void markscratch(Client *c, int scratchkey);
 static void
 applyrules(Client *c)
 {
+        char role[16];
 	const char *class, *instance;
 	XClassHint ch = { NULL, NULL };
 
@@ -1055,6 +1056,10 @@ applyrules(Client *c)
         } else if (strcmp(c->name, "Picture-in-Picture") == 0 ||
                    strcmp(c->name, "Picture in picture") == 0) {
                 c->isfloating = 1;
+        } else if (gettextprop(root, wmatom[WMWindowRole], role, sizeof role) &&
+                   strcmp(role, "bubble") == 0) {
+                c->isfloating = 1;
+                c->bw = 0;
         }
 
         XFree(ch.res_class);
