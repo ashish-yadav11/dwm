@@ -1057,7 +1057,8 @@ applyrules(Client *c)
                    strcmp(c->name, "Picture in picture") == 0) {
                 c->isfloating = 1;
         } else if (gettextprop(c->win, wmatom[WMWindowRole], role, sizeof role) &&
-                   strcmp(role, "bubble") == 0) {
+                   (strcmp(role, "bubble") == 0 ||
+                    strcmp(role, "pop-up") == 0)) {
                 c->isfloating = 1;
                 c->bw = 0;
         }
