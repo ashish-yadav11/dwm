@@ -1053,10 +1053,12 @@ applyrules(Client *c)
                    strstr(class, "Yad")) {
                 c->isfloating = 1;
                 center(c);
-        } else if (strcmp(c->name, "Picture-in-Picture") == 0 ||
-                   strcmp(c->name, "Picture in picture") == 0) {
+        }
+        if (strcmp(c->name, "Picture-in-Picture") == 0 ||
+            strcmp(c->name, "Picture in picture") == 0) {
                 c->isfloating = 1;
-        } else if (gettextprop(c->win, wmatom[WMWindowRole], role, sizeof role) &&
+        }
+        if (gettextprop(c->win, wmatom[WMWindowRole], role, sizeof role) &&
                    (strcmp(role, "bubble") == 0 ||
                     strcmp(role, "pop-up") == 0)) {
                 c->isfloating = 1;
