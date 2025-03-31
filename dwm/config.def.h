@@ -975,13 +975,14 @@ static void markscratch(Client *c, int scratchkey);
 static void
 applyrules(Client *c)
 {
-        char role[16];
+        char role[16] = "";
 	const char *class, *instance;
 	XClassHint ch = { NULL, NULL };
 
 	XGetClassHint(dpy, c->win, &ch);
 	class = ch.res_class ? ch.res_class : broken;
 	instance = ch.res_name ? ch.res_name : broken;
+        gettextprop(c->win, wmatom[WMWindowRole], role, sizeof role);
 
         if (strcmp(instance, "brave-browser") == 0) {
                 markscratch(c, -1);
@@ -1055,12 +1056,11 @@ applyrules(Client *c)
                 center(c);
         }
         if (strcmp(c->name, "Picture-in-Picture") == 0 ||
-            strcmp(c->name, "Picture in picture") == 0) {
+            strcmp(c->name, "Picture in picture") == 0 ||
+            strcmp(role, "pop-up") == 0) {
                 c->isfloating = 1;
-        }
-        if (gettextprop(c->win, wmatom[WMWindowRole], role, sizeof role) &&
-                   (strcmp(role, "bubble") == 0 ||
-                    strcmp(role, "pop-up") == 0)) {
+                center(c);
+        } else if (strcmp(role, "bubble") == 0) {
                 c->isfloating = 1;
                 c->bw = 0;
         }
