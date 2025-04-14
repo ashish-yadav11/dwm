@@ -151,6 +151,8 @@ static const char *const *scratchcmds[] = {
 #define VOLUMEM                         { .v = (const char*[]){ "pactl", "set-sink-mute", "@DEFAULT_SINK@", "toggle", NULL } }
 #define VOLUMEL                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-5%", NULL } }
 #define VOLUMER                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
+#define VOLUMEl                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-1%", NULL } }
+#define VOLUMEr                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+1%", NULL } }
 #define PLAYERT                         { .v = (const char*[]){ "playerctl", "play-pause", NULL } }
 #define PLAYERP                         { .v = (const char*[]){ "playerctl", "previous", NULL } }
 #define PLAYERN                         { .v = (const char*[]){ "playerctl", "next", NULL } }
@@ -355,6 +357,8 @@ static const Key keys[] = {
 	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
 	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  VOLUMEL },
 	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  VOLUMER },
+	{ ShiftMask,         XK_F7,                     spawn,                  VOLUMEl },
+	{ ShiftMask,         XK_F8,                     spawn,                  VOLUMEr },
 	{ 0,                 XF86XK_AudioPlay,          spawn,                  PLAYERT },
 	{ 0,                 XF86XK_AudioPrev,          spawn,                  PLAYERP },
 	{ 0,                 XF86XK_AudioNext,          spawn,                  PLAYERN },
