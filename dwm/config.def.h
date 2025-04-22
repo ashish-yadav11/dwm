@@ -153,6 +153,7 @@ static const char *const *scratchcmds[] = {
 #define VOLUMER                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+5%", NULL } }
 #define VOLUMEl                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "-1%", NULL } }
 #define VOLUMEr                         { .v = (const char*[]){ "pactl", "set-sink-volume", "@DEFAULT_SINK@", "+1%", NULL } }
+#define PLAYERT                         { .v = (const char*[]){ "playerctl", "play-pause", NULL } }
 #define PLAYERP                         { .v = (const char*[]){ "playerctl", "previous", NULL } }
 #define PLAYERN                         { .v = (const char*[]){ "playerctl", "next", NULL } }
 
@@ -354,8 +355,8 @@ static const Key keys[] = {
 	{ MODRKEY,           XK_bracketright,           hideshowfloating,       {.i = 0} },
 	{ MODRKEY,           XK_backslash,              scratchhidevisible,     {0} },
 	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
-	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  VOLUMEL },
-	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  VOLUMER },
+	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  SCRIPTCMD("doubleprev.sh") },
+	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  SCRIPTCMD("doublenext.sh") },
 	{ ShiftMask,         XK_F7,                     spawn,                  VOLUMEl },
 	{ ShiftMask,         XK_F8,                     spawn,                  VOLUMEr },
 	{ 0,                 XF86XK_AudioPlay,          spawn,                  SCRIPTCMD("doubleclick.sh") },
