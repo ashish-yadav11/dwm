@@ -357,6 +357,8 @@ static const Key keys[] = {
 	{ 0,                 XF86XK_AudioMute,          spawn,                  VOLUMEM },
 	{ 0,                 XF86XK_AudioLowerVolume,   spawn,                  SCRIPTCMD("doubleprev.sh") },
 	{ 0,                 XF86XK_AudioRaiseVolume,   spawn,                  SCRIPTCMD("doublenext.sh") },
+	{ 0,                 XK_F7,                     spawn,                  VOLUMEL },
+	{ 0,                 XK_F8,                     spawn,                  VOLUMER },
 	{ ShiftMask,         XK_F7,                     spawn,                  VOLUMEl },
 	{ ShiftMask,         XK_F8,                     spawn,                  VOLUMEr },
 	{ 0,                 XF86XK_AudioPlay,          spawn,                  SCRIPTCMD("doubleclick.sh") },
