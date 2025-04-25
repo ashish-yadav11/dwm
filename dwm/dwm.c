@@ -684,7 +684,8 @@ buttonpress(XEvent *e)
         } else
                 click = ClkRootWin;
 	for (i = 0; i < LENGTH(buttons); i++)
-		if (click == buttons[i].click && buttons[i].func && buttons[i].button == ev->button
+		if ((click == buttons[i].click || buttons[i].click == ClkLast)
+                && buttons[i].func && buttons[i].button == ev->button
 		&& CLEANMASK(buttons[i].mask) == CLEANMASK(ev->state)) {
 			buttons[i].func(((click == ClkTagBar || click == ClkTabBar) &&
                                          buttons[i].arg.i == 0) ? &arg : &buttons[i].arg);
@@ -1531,7 +1532,7 @@ grabbuttons(Client *c, int focused)
 			XGrabButton(dpy, AnyButton, AnyModifier, c->win, False,
 				BUTTONMASK, GrabModeSync, GrabModeSync, None, None);
 		for (i = 0; i < LENGTH(buttons); i++)
-			if (buttons[i].click == ClkClientWin)
+			if (buttons[i].click == ClkClientWin || buttons[i].click == ClkLast)
 				for (j = 0; j < LENGTH(modifiers); j++)
 					XGrabButton(dpy, buttons[i].button,
 						buttons[i].mask | modifiers[j],

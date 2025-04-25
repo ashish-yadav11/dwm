@@ -417,6 +417,7 @@ static const Key keys[] = {
 };
 
 /* click can be ClkTabBar, ClkTagBar, ClkLtSymbol, ClkStatusText, ClkWinTitle, ClkClientWin, or ClkRootWin */
+/* custom addition: ClkLast to match anything! */
 static const Button buttons[] = {
 	/* click                event mask      button          function        argument */
 	{ ClkTabBar,            0,              Button1,        focuswin,       {0} },
@@ -432,6 +433,9 @@ static const Button buttons[] = {
 	{ ClkTagBar,            0,              Button3,        toggleview,     {0} },
 	{ ClkTagBar,            MODLKEY,        Button1,        tag,            {0} },
 	{ ClkTagBar,            MODLKEY,        Button3,        toggletag,      {0} },
+	{ ClkLast,              0,                   91,        spawn,          SCRIPTCMD("doublebtn1.sh") },
+	{ ClkLast,              0,                   92,        spawn,          SCRIPTCMD("doublebtn2.sh") },
+	{ ClkLast,              0,                   93,        spawn,          SCRIPTCMD("doublebtn3.sh") },
 };
 
 #define FSIGID                          "z:"
