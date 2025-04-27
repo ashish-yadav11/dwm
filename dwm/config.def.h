@@ -367,7 +367,7 @@ static const Key keys[] = {
 	{ 0,                 XF86XK_MonBrightnessDown,  spawn,                  SCRIPTCMD("btnsfn.sh", "-15") },
 	{ 0,                 XF86XK_MonBrightnessUp,    spawn,                  SCRIPTCMD("btnsfn.sh", "+15") },
 	{ ShiftMask,         XK_F2,                     spawn,                  SCRIPTCMD("btnsfn.sh",  "-5") },
-	{ ShiftMask,         XK_F3,                     spawn,                  SCRIPTCMD("btnsis.sh",  "+5") },
+	{ ShiftMask,         XK_F3,                     spawn,                  SCRIPTCMD("btnsfn.sh",  "+5") },
 	{ MODRKEY,           XK_Escape,                 spawn,                  REDSHIFTDEFAULT },
 	{ MODRKEY,           XK_F1,                     spawn,                  REDSHIFT("5500") },
 	{ MODRKEY,           XK_F2,                     spawn,                  REDSHIFT("5000") },
