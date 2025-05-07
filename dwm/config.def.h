@@ -980,7 +980,7 @@ zoomvar(const Arg *arg)
 
 /* Window rules */
 static void center(Client *c);
-static void markscratch(Client *c, int scratchkey);
+static void markscratch(Client *c, int key);
 
 static void
 applyrules(Client *c)
@@ -994,20 +994,20 @@ applyrules(Client *c)
 	instance = ch.res_name ? ch.res_name : broken;
         gettextprop(c->win, wmatom[WMWindowRole], role, sizeof role);
 
-        if (strcmp(instance, "brave-browser") == 0) {
-                markscratch(c, -1);
-        } else if (strcmp(instance, "calcurse-st") == 0) {
-                markscratch(c, 4);
-                c->isfloating = 1;
-                c->w = 950;
-                c->h = 650;
-                center(c);
-        } else if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
+        if (strcmp(instance, "crx_cinhimbnkkaeohfgghhklpknlkffjgod") == 0) {
                 markscratch(c, 2);
                 c->isfloating = 1;
                 c->bw = 0;
                 c->w = 950;
                 c->h = 626;
+                center(c);
+        } else if (strcmp(instance, "brave-browser") == 0) {
+                c->scratchkey = key;
+        } else if (strcmp(instance, "calcurse-st") == 0) {
+                markscratch(c, 4);
+                c->isfloating = 1;
+                c->w = 950;
+                c->h = 650;
                 center(c);
         } else if (strcmp(instance, "floating-st") == 0) {
                 c->isfloating = 1;

@@ -2966,10 +2966,16 @@ togglewin(const Arg *arg)
                 else
                         view(&((Arg){0}));
         } else {
-                for (Monitor *m = mons; m; m = m->next)
-                        for (c = m->clients; c; c = c->next)
+                for (c = selmon->stack; c; c = c->snext)
+                        if (c->scratchkey == ((Win*)(arg->v))->scratchkey)
+                                goto show;
+                for (Monitor *m = mons; m; m = m->next) {
+                        if (m == selmon)
+                                continue;
+                        for (c = m->stack; c; c = c->snext)
                                 if (c->scratchkey == ((Win*)(arg->v))->scratchkey)
                                         goto show;
+                }
                 view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
                 spawn(&((Win*)(arg->v))->cmd);
                 return;

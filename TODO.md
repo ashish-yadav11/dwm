@@ -19,6 +19,8 @@
 
 * update manpage
 
+* improve multi-monitor handling
+
 
 # upstreaming
 
