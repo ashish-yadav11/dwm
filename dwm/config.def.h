@@ -1002,7 +1002,7 @@ applyrules(Client *c)
                 c->h = 626;
                 center(c);
         } else if (strcmp(instance, "brave-browser") == 0) {
-                c->scratchkey = key;
+                c->scratchkey = browser.scratchkey;
         } else if (strcmp(instance, "calcurse-st") == 0) {
                 markscratch(c, 4);
                 c->isfloating = 1;
@@ -1019,7 +1019,7 @@ applyrules(Client *c)
                 c->isfloating = 1;
                 center(c);
         } else if (strcmp(instance, "neomutt-st") == 0) {
-                markscratch(c, -2);
+                markscratch(c, mail.scratchkey);
         } else if (strcmp(instance, "neovim-st") == 0) {
                 markscratch(c, 9);
                 c->isfloating = 1;
