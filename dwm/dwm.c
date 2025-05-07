@@ -3547,8 +3547,10 @@ updatewindowtype(Client *c, int new)
 
 	if (state == netatom[NetWMFullscreen])
 		setfullscreen(c, 1);
-	if (wtype == netatom[NetWMWindowTypeDialog])
+	if (wtype == netatom[NetWMWindowTypeDialog]) {
                 c->isfloating = new ? 1 : -1;
+                c->bw = 0;
+        }
 }
 
 void
