@@ -464,11 +464,12 @@ static Signal signals[] = {
 void
 dynscratchtoggle(const Arg *arg)
 {
-        if (!selmon->sel)
-                scratchshowhelper(arg->i);
-        else if (selmon->sel->scratchkey == arg->i)
-                scratchhidehelper();
-        else if (!scratchshowhelper(arg->i)) {
+        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
+                if (selmon->sel->isfloating)
+                        scratchhidehelper();
+                else
+                        focuslast(&((Arg){0}));
+        } else if (!scratchshowhelper(arg->i)) {
                 if (selmon->sel->scratchkey == 0) {
                         selmon->sel->scratchkey = arg->i;
                         spawn(&((Arg)NOTIFYDYNSCRATCH1));
