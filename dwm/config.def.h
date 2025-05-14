@@ -192,6 +192,7 @@ static void togglefocusarea(const Arg *arg);
 static void togglefocusfloat(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
 static void vieworprev(const Arg *arg);
+static int hasleasttag(Client *c, int tag);
 static void windowlineupc(const Arg *arg);
 static void windowlineups(const Arg *arg);
 static void windowswitcher(const Arg *arg);
@@ -903,10 +904,19 @@ vieworprev(const Arg *arg)
 	view((arg->ui & TAGMASK) == selmon->tagset[selmon->seltags] ? &((Arg){0}) : arg);
 }
 
+int
+hasleasttag(Client *c, int tag)
+{
+        for (int i = 0; i < tag; i++)
+                if (1 << i & c->tags)
+                        return 0;
+        return 1 << tag & c->tags;
+}
+
 void
 windowlineupc(const Arg *arg)
 {
-        int i, j, t;
+        int t;
         Client *s = selmon->sel;
 
         if (!s) {
@@ -914,34 +924,22 @@ windowlineupc(const Arg *arg)
                 if (!s)
                         return;
         }
-        for (t = 0; !(1 << t & s->tags); t++);
 	XDeleteProperty(dpy, root, netatom[NetClientList]);
-        for (Client *c = s; c; c = c->next) {
-                for (j = 0; !(1 << j & c->tags) && j < t; j++);
-                if (j == t)
+        for (t = 0; !(1 << t & s->tags); t++);
+        for (Client *c = s; c; c = c->next)
+                if (hasleasttag(c, t))
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
-        }
         t = (t + 1) % LENGTH(tags);
-        for (i = 1; i < LENGTH(tags); i++, t = (t + 1) % LENGTH(tags)) {
-                for (Client *c = selmon->clients; c; c = c->next) {
-                        for (j = 0; !(1 << j & c->tags) && j < t; j++);
-                        if (j == t)
+        for (int i = 1; i < LENGTH(tags); i++, t = (t + 1) % LENGTH(tags))
+                for (Client *c = selmon->clients; c; c = c->next)
+                        if (hasleasttag(c, t))
                                 XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                                 PropModePrepend, (unsigned char *) &(c->win), 1);
-                }
-        }
-        for (Client *c = selmon->clients; c; c = c->next) {
+        for (Client *c = selmon->clients; c; c = c->next)
                 if (!c->tags)
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
-        }
-        for (Client *c = selmon->clients; c && c != s; c = c->next) {
-                for (j = 0; !(1 << j & c->tags) && j < t; j++);
-                if (j == t)
-                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
-                                        PropModePrepend, (unsigned char *) &(c->win), 1);
-        }
 	for (Monitor *m = mons; m; m = m->next) {
                 if (m == selmon)
                         continue;
@@ -949,6 +947,10 @@ windowlineupc(const Arg *arg)
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
         }
+        for (Client *c = selmon->clients; c && c != s; c = c->next)
+                if (hasleasttag(c, t))
+                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                        PropModePrepend, (unsigned char *) &(c->win), 1);
 }
 
 void
