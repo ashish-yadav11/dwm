@@ -2167,24 +2167,32 @@ scratchshowhelper(int key)
 {
         Client *c;
 
-        for (Monitor *m = mons; m; m = m->next)
-                for (c = m->clients; c; c = c->next)
-                        if (c->scratchkey == key)
-                                goto show;
-        return 0;
-show:
-        if (c->ishidden)
-                c->ishidden = 0;
-        if (c->mon != selmon) {
-                sendmon(c, selmon);
-                return 1;
+        for (c = selmon->stack; c; c = c->snext) {
+                if (c->scratchkey == key) {
+                        if (!c->ishidden && c->tags & selmon->tagset[selmon->seltags])
+                                focusalt(c, 0);
+                        else {
+                                c->ishidden = 0;
+                                c->tags = selmon->tagset[selmon->seltags];
+                                updateclientdesktop(c, 0);
+                                detach(c);
+                                ATTACH(c->mon)->attach(c);
+                                focusalt(c, 1);
+                        }
+                        return 1;
+                }
         }
-        c->tags = selmon->tagset[selmon->seltags];
-        updateclientdesktop(c, 0);
-        detach(c);
-        ATTACH(c->mon)->attach(c);
-        focusalt(c, 1);
-        return 1;
+        for (Monitor *m = mons; m; m = m->next) {
+                if (m == selmon)
+                        continue;
+                for (c = m->stack; c; c = c->snext)
+                        if (c->scratchkey == key) {
+                                c->ishidden = 0;
+                                sendmon(c, selmon);
+                                return 1;
+                        }
+        }
+        return 0;
 }
 
 int
@@ -2967,26 +2975,23 @@ togglewin(const Arg *arg)
                         view(&((Arg){0}));
         } else {
                 for (c = selmon->stack; c; c = c->snext)
-                        if (c->scratchkey == ((Win*)(arg->v))->scratchkey)
-                                goto show;
+                        if (c->scratchkey == ((Win*)(arg->v))->scratchkey) {
+                                focusclient(c, ((Win*)(arg->v))->tag);
+                                return;
+                        }
                 for (Monitor *m = mons; m; m = m->next) {
                         if (m == selmon)
                                 continue;
                         for (c = m->stack; c; c = c->snext)
-                                if (c->scratchkey == ((Win*)(arg->v))->scratchkey)
-                                        goto show;
-                }
-                view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
-                spawn(&((Win*)(arg->v))->cmd);
-                return;
-show:
-                if (c->mon == selmon)
-                        focusclient(c, ((Win*)(arg->v))->tag);
-                else {
-                        view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
-                        sendmon(c, selmon);
+                                if (c->scratchkey == ((Win*)(arg->v))->scratchkey) {
+                                        view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
+                                        sendmon(c, selmon);
+                                        return;
+                                }
                 }
         }
+        view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
+        spawn(&((Win*)(arg->v))->cmd);
 }
 
 void
