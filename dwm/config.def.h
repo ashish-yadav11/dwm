@@ -192,7 +192,8 @@ static void togglefocusarea(const Arg *arg);
 static void togglefocusfloat(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
 static void vieworprev(const Arg *arg);
-static void windowlineup(const Arg *arg);
+static void windowlineupc(const Arg *arg);
+static void windowlineups(const Arg *arg);
 static void windowswitcher(const Arg *arg);
 static void winview(const Arg* arg);
 static void zoomswap(const Arg *arg);
@@ -459,7 +460,8 @@ static Signal signals[] = {
 	{ "sfvw",               shiftview },
 	{ "sftg",               shifttag },
 	{ "view",               view },
-	{ "wnln",               windowlineup },
+	{ "wlnc",               windowlineupc },
+	{ "wlns",               windowlineups },
 };
 
 /* custom function implementations */
@@ -902,7 +904,50 @@ vieworprev(const Arg *arg)
 }
 
 void
-windowlineup(const Arg *arg)
+windowlineupc(const Arg *arg)
+{
+        int i, j, t;
+        Client *s = selmon->sel;
+
+        if (!s) {
+                for (s = selmon->clients; s && !ISVISIBLE(s); s = s->next);
+                if (!s)
+                        return;
+        }
+        for (t = 0; !(1 << t & s->tags); t++);
+	XDeleteProperty(dpy, root, netatom[NetClientList]);
+        for (Client *c = s; c; c = c->next) {
+                for (j = 0; !(1 << j & c->tags) && j < t; j++);
+                if (j == t)
+                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                        PropModePrepend, (unsigned char *) &(c->win), 1);
+        }
+        t = (t + 1) % LENGTH(tags);
+        for (i = 1; i < LENGTH(tags); i++, t = (t + 1) % LENGTH(tags)) {
+                for (Client *c = selmon->clients; c; c = c->next) {
+                        for (j = 0; !(1 << j & c->tags) && j < t; j++);
+                        if (j == t)
+                                XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                                PropModePrepend, (unsigned char *) &(c->win), 1);
+                }
+        }
+        for (Client *c = selmon->clients; c && c != s; c = c->next) {
+                for (j = 0; !(1 << j & c->tags) && j < t; j++);
+                if (j == t)
+                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                        PropModePrepend, (unsigned char *) &(c->win), 1);
+        }
+	for (Monitor *m = mons; m; m = m->next) {
+                if (m == selmon)
+                        continue;
+                for (Client *c = m->stack; c; c = c->snext)
+                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                        PropModePrepend, (unsigned char *) &(c->win), 1);
+        }
+}
+
+void
+windowlineups(const Arg *arg)
 {
 	XDeleteProperty(dpy, root, netatom[NetClientList]);
         for (Client *c = selmon->stack; c; c = c->snext)
@@ -920,7 +965,7 @@ windowlineup(const Arg *arg)
 void
 windowswitcher(const Arg *arg)
 {
-        windowlineup(&((Arg){0}));
+        windowlineups(&((Arg){0}));
         if (arg->i)
                 spawn(&((Arg)ROFIWINREGEX));
         else
