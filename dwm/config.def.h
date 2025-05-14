@@ -192,6 +192,7 @@ static void togglefocusarea(const Arg *arg);
 static void togglefocusfloat(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
 static void vieworprev(const Arg *arg);
+static void windowlineup(const Arg *arg);
 static void windowswitcher(const Arg *arg);
 static void winview(const Arg* arg);
 static void zoomswap(const Arg *arg);
@@ -458,6 +459,7 @@ static Signal signals[] = {
 	{ "sfvw",               shiftview },
 	{ "sftg",               shifttag },
 	{ "view",               view },
+	{ "wnln",               windowlineup },
 };
 
 /* custom function implementations */
@@ -900,7 +902,7 @@ vieworprev(const Arg *arg)
 }
 
 void
-windowswitcher(const Arg *arg)
+windowlineup(const Arg *arg)
 {
 	XDeleteProperty(dpy, root, netatom[NetClientList]);
         for (Client *c = selmon->stack; c; c = c->snext)
@@ -913,6 +915,12 @@ windowswitcher(const Arg *arg)
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
         }
+}
+
+void
+windowswitcher(const Arg *arg)
+{
+        windowlineup(&((Arg){0}));
         if (arg->i)
                 spawn(&((Arg)ROFIWINREGEX));
         else
