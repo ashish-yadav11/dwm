@@ -279,8 +279,11 @@ static const Key keys[] = {
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
 	{ MODLKEY,                      XK_o,           winview,                {0} },
-	{ MODLKEY,                      XK_q,           windowswitcher,         {.i = 0} },
-	{ MODLKEY|ControlMask,          XK_q,           windowswitcher,         {.i = 1} },
+	{ MODLKEY,                      XK_q,           windowswitcher,         {.i = +1} },
+	{ MODLKEY|ControlMask,          XK_q,           windowswitcher,         {.i = -1} },
+	{ SUPKEY,                       XK_q,           windowswitcher,         {.i = +2} },
+	{ SUPKEY|ShiftMask,             XK_q,           windowswitcher,         {.i = -3} },
+	{ SUPKEY|ControlMask,           XK_q,           windowswitcher,         {.i = -2} },
 	{ MODLKEY,                      XK_comma,       shiftview,              {.i = -1 } },
 	{ MODLKEY,                      XK_period,      shiftview,              {.i = +1 } },
 	{ MODLKEY|ShiftMask,            XK_comma,       shifttag,               {.i = -1 } },
@@ -991,11 +994,18 @@ windowlineups(const Arg *arg)
 void
 windowswitcher(const Arg *arg)
 {
-        windowlineups(&((Arg){0}));
-        if (arg->i)
-                spawn(&((Arg)ROFIWINREGEX));
-        else
+        switch (abs(arg->i)) {
+                case 1:
+                        windowlineups(&((Arg){0}));
+                case 2:
+                        windowlineupc(&((Arg){0}));
+                case 3:
+                        windowlineupr(&((Arg){0}));
+        }
+        if (arg->i > 0)
                 spawn(&((Arg)ROFIWIN));
+        else
+                spawn(&((Arg)ROFIWINREGEX));
 }
 
 void
