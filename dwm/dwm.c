@@ -2169,9 +2169,9 @@ scratchshowhelper(int key)
 
         for (c = selmon->stack; c; c = c->snext) {
                 if (c->scratchkey == key) {
-                        if (!c->ishidden && c->tags & selmon->tagset[selmon->seltags])
-                                focusalt(c, 0);
-                        else {
+                        if (!c->ishidden && !c->isfloating) {
+                                focusclient(c, 0);
+                        } else {
                                 c->ishidden = 0;
                                 c->tags = selmon->tagset[selmon->seltags];
                                 updateclientdesktop(c, 0);
