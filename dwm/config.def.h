@@ -194,6 +194,7 @@ static void togglefullscreen(const Arg *arg);
 static void vieworprev(const Arg *arg);
 static int hasleasttag(Client *c, int tag);
 static void windowlineupc(const Arg *arg);
+static void windowlineupr(const Arg *arg);
 static void windowlineups(const Arg *arg);
 static void windowswitcher(const Arg *arg);
 static void winview(const Arg* arg);
@@ -462,6 +463,7 @@ static Signal signals[] = {
 	{ "sftg",               shifttag },
 	{ "view",               view },
 	{ "wlnc",               windowlineupc },
+	{ "wlnr",               windowlineupr },
 	{ "wlns",               windowlineups },
 };
 
@@ -951,6 +953,23 @@ windowlineupc(const Arg *arg)
                 if (hasleasttag(c, t))
                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                         PropModePrepend, (unsigned char *) &(c->win), 1);
+}
+
+void
+windowlineupr(const Arg *arg)
+{
+	XDeleteProperty(dpy, root, netatom[NetClientList]);
+	for (Monitor *m = mons; m; m = m->next) {
+                for (int t = 0; t < LENGTH(tags); t++)
+                        for (Client *c = m->clients; c; c = c->next)
+                                if (hasleasttag(c, t))
+                                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                                        PropModePrepend, (unsigned char *) &(c->win), 1);
+                for (Client *c = m->clients; c; c = c->next)
+                        if (!c->tags)
+                                XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                                PropModePrepend, (unsigned char *) &(c->win), 1);
+        }
 }
 
 void
