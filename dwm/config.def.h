@@ -23,10 +23,6 @@
 #define NOTIFYDYNSCRATCH1               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "scratched focused window", NULL } }
 /* command used to notify that a client already has a scratch mark */
 #define NOTIFYDYNSCRATCH2               { .v = (const char*[]){ "notify-send", "-h", "string:x-canonical-private-synchronous:scratch", "-t", "1500", "dwm", "focused window already scratched", NULL } }
-/* window switcher command */
-#define ROFIWIN                         { .v = (const char*[]){ "rofi", "-show", "window", NULL } }
-/* alternate window switcher command */
-#define ROFIWINREGEX                    { .v = (const char*[]){ "rofi", "-show", "window", "-matching", "regex", NULL } }
 
 typedef struct {
         const Arg cmd;
@@ -193,8 +189,8 @@ static void togglefocusfloat(const Arg *arg);
 static void togglefullscreen(const Arg *arg);
 static void vieworprev(const Arg *arg);
 static int hasleasttag(Client *c, int tag);
-static void windowlineupc(const Arg *arg);
-static void windowlineupr(const Arg *arg);
+static unsigned int windowlineupcn(void);
+static void windowlineupcv(const Arg *arg);
 static void windowlineups(const Arg *arg);
 static void windowswitcher(const Arg *arg);
 static void winview(const Arg* arg);
@@ -282,7 +278,6 @@ static const Key keys[] = {
 	{ MODLKEY,                      XK_q,           windowswitcher,         {.i = +1} },
 	{ MODLKEY|ControlMask,          XK_q,           windowswitcher,         {.i = -1} },
 	{ SUPKEY,                       XK_q,           windowswitcher,         {.i = +2} },
-	{ SUPKEY|ShiftMask,             XK_q,           windowswitcher,         {.i = -3} },
 	{ SUPKEY|ControlMask,           XK_q,           windowswitcher,         {.i = -2} },
 	{ MODLKEY,                      XK_comma,       shiftview,              {.i = -1 } },
 	{ MODLKEY,                      XK_period,      shiftview,              {.i = +1 } },
@@ -465,8 +460,7 @@ static Signal signals[] = {
 	{ "sfvw",               shiftview },
 	{ "sftg",               shifttag },
 	{ "view",               view },
-	{ "wlnc",               windowlineupc },
-	{ "wlnr",               windowlineupr },
+	{ "wlnc",               windowlineupcv },
 	{ "wlns",               windowlineups },
 };
 
@@ -918,61 +912,33 @@ hasleasttag(Client *c, int tag)
         return 1 << tag & c->tags;
 }
 
-void
-windowlineupc(const Arg *arg)
+unsigned int
+windowlineupcn(void)
 {
-        int t;
-        Client *s = selmon->sel;
+        unsigned int i = 0, n = 0;
 
-        if (!s) {
-                for (s = selmon->clients; s && !ISVISIBLE(s); s = s->next);
-                if (!s)
-                        return;
-        }
-	XDeleteProperty(dpy, root, netatom[NetClientList]);
-        for (t = 0; !(1 << t & s->tags); t++);
-        for (Client *c = s; c; c = c->next)
-                if (hasleasttag(c, t))
-                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
-                                        PropModePrepend, (unsigned char *) &(c->win), 1);
-        t = (t + 1) % LENGTH(tags);
-        for (int i = 1; i < LENGTH(tags); i++, t = (t + 1) % LENGTH(tags))
-                for (Client *c = selmon->clients; c; c = c->next)
-                        if (hasleasttag(c, t))
-                                XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
-                                                PropModePrepend, (unsigned char *) &(c->win), 1);
-        for (Client *c = selmon->clients; c; c = c->next)
-                if (!c->tags)
-                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
-                                        PropModePrepend, (unsigned char *) &(c->win), 1);
-	for (Monitor *m = mons; m; m = m->next) {
-                if (m == selmon)
-                        continue;
-                for (Client *c = m->stack; c; c = c->snext)
-                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
-                                        PropModePrepend, (unsigned char *) &(c->win), 1);
-        }
-        for (Client *c = selmon->clients; c && c != s; c = c->next)
-                if (hasleasttag(c, t))
-                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
-                                        PropModePrepend, (unsigned char *) &(c->win), 1);
-}
-
-void
-windowlineupr(const Arg *arg)
-{
 	XDeleteProperty(dpy, root, netatom[NetClientList]);
 	for (Monitor *m = mons; m; m = m->next) {
                 for (int t = 0; t < LENGTH(tags); t++)
                         for (Client *c = m->clients; c; c = c->next)
-                                if (hasleasttag(c, t))
+                                if (hasleasttag(c, t)) {
                                         XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                                         PropModePrepend, (unsigned char *) &(c->win), 1);
+                                        if (c == selmon->sel)
+                                                n = i;
+                                        i++;
+                                }
                 for (Client *c = m->clients; c; c = c->next)
                         if (!c->tags)
                                 XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                                                 PropModePrepend, (unsigned char *) &(c->win), 1);
         }
+        return n;
+}
+
+void
+windowlineupcv(const Arg *arg) {
+        windowlineupcn();
 }
 
 void
@@ -994,21 +960,25 @@ windowlineups(const Arg *arg)
 void
 windowswitcher(const Arg *arg)
 {
+        char index[8] = "0";
+
         switch (abs(arg->i)) {
                 case 1:
                         windowlineups(&((Arg){0}));
                         break;
                 case 2:
-                        windowlineupc(&((Arg){0}));
-                        break;
-                case 3:
-                        windowlineupr(&((Arg){0}));
+                        snprintf(index, sizeof index, "%u", windowlineupcn());
                         break;
         }
-        if (arg->i > 0)
-                spawn(&((Arg)ROFIWIN));
-        else
-                spawn(&((Arg)ROFIWINREGEX));
+        if (arg->i > 0) {
+                char *rofiwinnorm[] = { "rofi", "-show", "window", "-selected-row", index, NULL };
+
+                spawn(&((Arg){.v = rofiwinnorm}));
+        } else {
+                char *rofiwinregx[] = { "rofi", "-show", "window", "-selected-row", index, "-matching", "regex", NULL };
+
+                spawn(&((Arg){.v = rofiwinregx}));
+        }
 }
 
 void
