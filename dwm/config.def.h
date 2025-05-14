@@ -931,6 +931,11 @@ windowlineupc(const Arg *arg)
                                                 PropModePrepend, (unsigned char *) &(c->win), 1);
                 }
         }
+        for (Client *c = selmon->clients; c; c = c->next) {
+                if (!c->tags)
+                        XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
+                                        PropModePrepend, (unsigned char *) &(c->win), 1);
+        }
         for (Client *c = selmon->clients; c && c != s; c = c->next) {
                 for (j = 0; !(1 << j & c->tags) && j < t; j++);
                 if (j == t)
