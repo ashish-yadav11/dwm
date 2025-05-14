@@ -997,10 +997,13 @@ windowswitcher(const Arg *arg)
         switch (abs(arg->i)) {
                 case 1:
                         windowlineups(&((Arg){0}));
+                        break;
                 case 2:
                         windowlineupc(&((Arg){0}));
+                        break;
                 case 3:
                         windowlineupr(&((Arg){0}));
+                        break;
         }
         if (arg->i > 0)
                 spawn(&((Arg)ROFIWIN));
