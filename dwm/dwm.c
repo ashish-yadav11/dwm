@@ -264,6 +264,7 @@ static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void removesystrayicon(Icon *i);
+static void reorder(void);
 static void reparentnotify(XEvent *e);
 static void resetsplus(const Arg *arg);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
@@ -3706,6 +3707,40 @@ zoom(const Arg *arg)
 	pop(c);
 }
 
+/* to ease restarts with a lot of windows */
+void
+reorder(void)
+{
+        Client *c, *p = selmon->sel;
+
+        if (selmon->sel)
+                unfocus(selmon->sel);
+        for (Monitor *m = mons; m; m = m->next) {
+                if ((c = m->clients)) {
+                        c->snext = NULL;
+                        do {
+                                if (c->next) {
+                                        c->next->snext = c;
+                                        c = c->next;
+                                } else {
+                                        m->stack = c;
+                                        m->sel = c;
+                                        break;
+                                }
+                        } while (1);
+                }
+        }
+        if ((c = selmon->sel) && c != p) {
+                unfocus(p);
+                if (c->isurgent)
+                        seturgent(c, 0);
+                grabbuttons(c, 1);
+                XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
+                setfocus(c);
+                restack(selmon);
+        }
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -3720,6 +3755,7 @@ main(int argc, char *argv[])
 	checkotherwm();
 	setup();
 	scan();
+        reorder();
 	run();
 	cleanup();
         restorestatus();
