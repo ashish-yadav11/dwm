@@ -723,7 +723,7 @@ cleanup(void)
         n = 0;
         for (m = mons; m; m = m->next) {
                 for (c = m->clients; c; c = c->next)
-                        if (c->scratchkey > 0) {
+                        if (!c->tags) {
                                 wins[n++] = c->win;
                                 c->scratchkey = INT_MAX;
                         }
@@ -2169,16 +2169,22 @@ scratchshowhelper(int key)
 
         for (c = selmon->stack; c; c = c->snext) {
                 if (c->scratchkey == key) {
-                        if (!c->ishidden && !c->isfloating) {
-                                focusclient(c, 0);
-                        } else {
+                        if (!c->ishidden) {
+                                if (c->tags & selmon->tagset[selmon->seltags]) {
+                                        focusalt(c, 0);
+                                        return 1;
+                                }
+                                if (!c->isfloating) {
+                                        focusclient(c, 0);
+                                        return 1;
+                                }
+                        } else
                                 c->ishidden = 0;
-                                c->tags = selmon->tagset[selmon->seltags];
-                                updateclientdesktop(c, 0);
-                                detach(c);
-                                ATTACH(c->mon)->attach(c);
-                                focusalt(c, 1);
-                        }
+                        c->tags = selmon->tagset[selmon->seltags];
+                        updateclientdesktop(c, 0);
+                        detach(c);
+                        ATTACH(c->mon)->attach(c);
+                        focusalt(c, 1);
                         return 1;
                 }
         }
