@@ -709,15 +709,17 @@ cleanup(void)
 {
         int n;
 	unsigned int i;
-        Arg v = {.ui = ~0}, lt = {.v = &layouts[1]};
         Client *c;
 	Monitor *m;
         Window *wins;
 
         for (n = 0, m = mons; m; m = m->next) {
+                m->tagset[0] = m->tagset[1] = (~0) & TAGMASK;
+                m->lt[0] = m->lt[1] = &layouts[1];
+                strncpy(m->ltsymbol, layouts[1].symbol, sizeof m->ltsymbol - 1);
                 selmon = m;
-                view(&v);
-                setlayout(&lt);
+                focus(NULL);
+                arrange(selmon);
                 for (c = m->clients; c; c = c->next, n++);
         }
         wins = ecalloc(n, sizeof(Window));
@@ -951,8 +953,9 @@ createmon(void)
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->toptab = toptab;
-	m->lt[0] = m->lt[1] = &layouts[def_layouts[1]];
-	strncpy(m->ltsymbol, layouts[def_layouts[1]].symbol, sizeof m->ltsymbol - 1);
+        /* first run start with float layout to ease restarts */
+	m->lt[0] = m->lt[1] = &layouts[1];
+	strncpy(m->ltsymbol, layouts[1].symbol, sizeof m->ltsymbol - 1);
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
 
@@ -966,6 +969,8 @@ createmon(void)
                 m->pertag->showtabs[i] = showtab;
                 m->pertag->splus[i][0] = m->pertag->splus[i][1] = 0;
 	}
+        /* first run start with float layout to ease restarts */
+        m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = &layouts[1];
 
 	return m;
 }

@@ -86,7 +86,7 @@ static const char *colors[][3] = {
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
 
 /* first element is for all-tag view */
-static int def_layouts[1 + LENGTH(tags)] = { 0, 1, 0, 0, 0, 0, 0, 0, 0, 2, 2};
+static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
 static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 
 static const Attach attachs[] = {
