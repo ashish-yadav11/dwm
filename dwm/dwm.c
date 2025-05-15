@@ -62,8 +62,9 @@
 #define TAGMASK                         ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                        (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define TTEXTW(X)                       (drw_fontset_getwidth(drw, (X)))
-#define ATTACH(M)                       (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
-#define SPLUS(M)                        (M->pertag->splus[M->pertag->curtag])
+#define PTATTACH(M)                     (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
+#define PTLAYOUT(M)                     (M->pertag->ltidxs[M->pertag->curtag][M->pertag->sellts[M->pertag->curtag]])
+#define PTSPLUS(M)                      (M->pertag->splus[M->pertag->curtag])
 
 #define STATUSLENGTH                    256
 #define ROOTNAMELENGTH                  320 /* fake signal + status */
@@ -1034,7 +1035,7 @@ drawbar(Monitor *m)
 	int boxs = drw->fonts->h / 9;
 	int boxw = drw->fonts->h / 6 + 2;
 	unsigned int i, nhid = 0, occ = 0, urg = 0;
-        char halsymbol[36]; /* 3 + 1 + 15 + 1 + 15 + 1 */
+        char hal[36]; /* 3 + 1 + 15 + 1 + 15 + 1 */
 	Client *c;
 
 	if (!m->showbar)
@@ -1051,7 +1052,7 @@ drawbar(Monitor *m)
 	for (i = 0; i < LENGTH(tags); i++) {
 		w = TEXTW(tags[i]);
                 drw_setscheme(drw, scheme[urg & 1 << i ? SchemeUrg :
-                                          m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
+                                m->tagset[m->seltags] & 1 << i ? SchemeSel : SchemeNorm]);
 		w = drw_text(drw, x, 0, w, bh, lrpad / 2, tags[i], 0);
 		if (occ & 1 << i)
 			drw_rect(drw, x + boxs, boxs, boxw, boxw,
@@ -1059,12 +1060,12 @@ drawbar(Monitor *m)
 		x = w;
 	}
         if (nhid)
-                snprintf(halsymbol, sizeof halsymbol, "%u %s %s", nhid, ATTACH(m)->symbol, m->ltsymbol);
+                snprintf(hal, sizeof hal, "%u %s %s", nhid, PTATTACH(m)->symbol, m->ltsymbol);
         else
-                snprintf(halsymbol, sizeof halsymbol, "%s %s", ATTACH(m)->symbol, m->ltsymbol);
-        w = TEXTW(halsymbol);
+                snprintf(hal, sizeof hal, "%s %s", PTATTACH(m)->symbol, m->ltsymbol);
+        w = TEXTW(hal);
         drw_setscheme(drw, scheme[SchemeLtSm]);
-        x = drw_text(drw, x, 0, w, bh, lrpad / 2, halsymbol, 0);
+        x = drw_text(drw, x, 0, w, bh, lrpad / 2, hal, 0);
 
         if (m == selmon) {
                 if (systray)
@@ -1577,7 +1578,8 @@ grabkeys(void)
 void
 incnmaster(const Arg *arg)
 {
-	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag] = MAX(selmon->nmaster + arg->i, 0);
+	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag] =
+                MAX(selmon->nmaster + arg->i, 0);
 	arrange(selmon);
 }
 
@@ -1704,7 +1706,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
 		XRaiseWindow(dpy, c->win);
-        ATTACH(c->mon)->attach(c);
+        PTATTACH(c->mon)->attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
 		(unsigned char *) &(c->win), 1);
@@ -1982,7 +1984,7 @@ reparentnotify(XEvent *e)
 void
 resetsplus(const Arg *arg)
 {
-        SPLUS(selmon)[0] = SPLUS(selmon)[1] = 0;
+        PTSPLUS(selmon)[0] = PTSPLUS(selmon)[1] = 0;
 	if (selmon->ntiles > 0 && selmon->lt[selmon->sellt]->arrange)
                 selmon->lt[selmon->sellt]->arrange(selmon);
 }
@@ -2186,7 +2188,7 @@ scratchshowhelper(int key)
                         c->tags = selmon->tagset[selmon->seltags];
                         updateclientdesktop(c, 0);
                         detach(c);
-                        ATTACH(c->mon)->attach(c);
+                        PTATTACH(c->mon)->attach(c);
                         focusalt(c, 1);
                         return 1;
                 }
@@ -2248,7 +2250,7 @@ sendmon(Client *c, Monitor *m)
 	c->mon = m;
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 	updateclientdesktop(c, 0);
-        ATTACH(c->mon)->attach(c);
+        PTATTACH(c->mon)->attach(c);
 	attachstack(c);
 	focus(c);
 	arrange(NULL);
@@ -2257,17 +2259,17 @@ sendmon(Client *c, Monitor *m)
 void
 setattach(const Arg *arg)
 {
-        if (!arg || !arg->v || arg->v != ATTACH(selmon))
+        if (!arg || !arg->v || arg->v != PTATTACH(selmon))
                 selmon->pertag->selatts[selmon->pertag->curtag] ^= 1; /* toggle or save the previous */
         if (arg && arg->v)
-                ATTACH(selmon) = (Attach *)arg->v;
+                PTATTACH(selmon) = (Attach *)arg->v;
         drawbar(selmon);
 }
 
 void
 setattorprev(const Arg *arg)
 {
-	setattach(ATTACH(selmon) == arg->v ? NULL : arg);
+	setattach(PTATTACH(selmon) == arg->v ? NULL : arg);
 }
 
 void
@@ -2336,16 +2338,14 @@ setfullscreen(Client *c, int fullscreen)
 void
 setlayout(const Arg *arg)
 {
-        int f = ATTACH(selmon) == selmon->lt[selmon->sellt]->attach;
+        int wasptattdef = PTATTACH(selmon) == selmon->lt[selmon->sellt]->attach;
 
 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
 		selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag] ^= 1;
 	if (arg && arg->v)
-		selmon->lt[selmon->sellt] =
-                        selmon->pertag->ltidxs[selmon->pertag->curtag][selmon->sellt] =
-                                (Layout *)arg->v;
-        if (f)
-                ATTACH(selmon) = selmon->lt[selmon->sellt]->attach;
+		selmon->lt[selmon->sellt] = PTLAYOUT(selmon) = (Layout *)arg->v;
+        if (wasptattdef)
+                PTATTACH(selmon) = selmon->lt[selmon->sellt]->attach;
 	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol - 1);
 	if (selmon->sel)
 		arrange(selmon);
@@ -2390,12 +2390,12 @@ setsplus(const Arg *arg)
         if (!f && (selmon->lt[selmon->sellt]->arrange == tilehor ||
                    selmon->lt[selmon->sellt]->arrange == tilever)) {
                 if (selmon->ntiles > selmon->nmaster + 1) {
-                        SPLUS(selmon)[1] = arg->i == 0 ? 0 : SPLUS(selmon)[1] + arg->i;
+                        PTSPLUS(selmon)[1] = arg->i == 0 ? 0 : PTSPLUS(selmon)[1] + arg->i;
                         selmon->lt[selmon->sellt]->arrange(selmon);
                 }
         } else {
                 if (selmon->ntiles > 1 && selmon->nmaster > 1) {
-                        SPLUS(selmon)[0] = arg->i == 0 ? 0 : SPLUS(selmon)[0] + arg->i;
+                        PTSPLUS(selmon)[0] = arg->i == 0 ? 0 : PTSPLUS(selmon)[0] + arg->i;
                         selmon->lt[selmon->sellt]->arrange(selmon);
                 }
         }
@@ -2753,13 +2753,13 @@ tiledeckhor(Monitor *m, int deck)
                         r = m->ntiles;
                 }
                 c = nexttiled(m->clients);
-                if (r > 1 && SPLUS(m)[0]) {
-                        h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[0];
+                if (r > 1 && PTSPLUS(m)[0]) {
+                        h = (wh - gappiv * (r - 1)) / r + PTSPLUS(m)[0];
                         if (h < 0) {
-                                SPLUS(m)[0] -= h;
+                                PTSPLUS(m)[0] -= h;
                                 h = 0;
                         } else if (h > wh) {
-                                SPLUS(m)[0] -= h - wh;
+                                PTSPLUS(m)[0] -= h - wh;
                                 h = wh;
                         }
                         goto mloop;
@@ -2782,13 +2782,13 @@ mloop:
                         return;
                 }
                 y = 0;
-                if (r > 1 && SPLUS(m)[1]) {
-                        h = (wh - gappiv * (r - 1)) / r + SPLUS(m)[1];
+                if (r > 1 && PTSPLUS(m)[1]) {
+                        h = (wh - gappiv * (r - 1)) / r + PTSPLUS(m)[1];
                         if (h < 0) {
-                                SPLUS(m)[1] -= h;
+                                PTSPLUS(m)[1] -= h;
                                 h = 0;
                         } else if (h > wh) {
-                                SPLUS(m)[1] -= h - wh;
+                                PTSPLUS(m)[1] -= h - wh;
                                 h = wh;
                         }
                         goto sloop;
@@ -2840,13 +2840,13 @@ tiledeckver(Monitor *m, int deck)
                         r = m->ntiles;
                 }
                 c = nexttiled(m->clients);
-                if (r > 1 && SPLUS(m)[0]) {
-                        w = (ww - gappih * (r - 1)) / r + SPLUS(m)[0];
+                if (r > 1 && PTSPLUS(m)[0]) {
+                        w = (ww - gappih * (r - 1)) / r + PTSPLUS(m)[0];
                         if (w < 0) {
-                                SPLUS(m)[0] -= w;
+                                PTSPLUS(m)[0] -= w;
                                 w = 0;
                         } else if (w > ww) {
-                                SPLUS(m)[0] -= w - ww;
+                                PTSPLUS(m)[0] -= w - ww;
                                 w = ww;
                         }
                         goto mloop;
@@ -2869,13 +2869,13 @@ mloop:
                         return;
                 }
                 x = 0;
-                if (r > 1 && SPLUS(m)[1]) {
-                        w = (ww - gappih * (r - 1)) / r + SPLUS(m)[1];
+                if (r > 1 && PTSPLUS(m)[1]) {
+                        w = (ww - gappih * (r - 1)) / r + PTSPLUS(m)[1];
                         if (w < 0) {
-                                SPLUS(m)[1] -= w;
+                                PTSPLUS(m)[1] -= w;
                                 w = 0;
                         } else if (w > ww) {
-                                SPLUS(m)[1] -= w - ww;
+                                PTSPLUS(m)[1] -= w - ww;
                                 w = ww;
                         }
                         goto sloop;
@@ -3260,7 +3260,7 @@ updategeom(void)
 				m->clients = c->next;
 				detachstack(c);
 				c->mon = mons;
-				ATTACH(c->mon)->attach(c);
+				PTATTACH(c->mon)->attach(c);
 				attachstack(c);
 			}
 			if (m == selmon)
