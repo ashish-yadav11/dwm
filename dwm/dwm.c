@@ -356,6 +356,7 @@ static int wstext;           /* width of status text */
 static int th;               /* tab bar geometry */
 static int lrpad;            /* sum of left and right paddings for text */
 static int restart = 0;
+static int restarted = 0;
 static int running = 1;
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int dsblockssig;
@@ -714,7 +715,7 @@ cleanup(void)
         Window *wins;
 
         for (n = 0, m = mons; m; m = m->next) {
-                m->tagset[0] = m->tagset[1] = (~0) & TAGMASK;
+                m->tagset[0] = m->tagset[1] = ~0 & TAGMASK;
                 m->lt[0] = m->lt[1] = &layouts[1];
                 strncpy(m->ltsymbol, layouts[1].symbol, sizeof m->ltsymbol - 1);
                 selmon = m;
@@ -953,12 +954,16 @@ createmon(void)
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->toptab = toptab;
-        /* first run start with float layout to ease restarts */
-	m->lt[0] = m->lt[1] = &layouts[1];
-	strncpy(m->ltsymbol, layouts[1].symbol, sizeof m->ltsymbol - 1);
+        if (restarted) {
+                m->lt[0] = m->lt[1] = &layouts[1];
+                strncpy(m->ltsymbol, layouts[1].symbol, sizeof m->ltsymbol - 1);
+        } else {
+                m->lt[0] = m->lt[1] = &layouts[def_layouts[1]];
+                strncpy(m->ltsymbol, layouts[def_layouts[1]].symbol, sizeof m->ltsymbol - 1);
+        }
+
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
-
 	for (i = 0; i <= LENGTH(tags); i++) {
 		m->pertag->nmasters[i] = m->nmaster;
 		m->pertag->mfacts[i] = m->mfact;
@@ -969,8 +974,8 @@ createmon(void)
                 m->pertag->showtabs[i] = showtab;
                 m->pertag->splus[i][0] = m->pertag->splus[i][1] = 0;
 	}
-        /* first run start with float layout to ease restarts */
-        m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = &layouts[1];
+        if (restarted)
+                m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = &layouts[1];
 
 	return m;
 }
@@ -3712,7 +3717,6 @@ zoom(const Arg *arg)
 	pop(c);
 }
 
-/* to ease restarts with a lot of windows */
 void
 reorder(void)
 {
@@ -3751,6 +3755,8 @@ main(int argc, char *argv[])
 {
 	if (argc == 2 && !strcmp("-v", argv[1]))
 		die("dwm-"VERSION);
+        else if (argc == 2 && !strcmp("-r", argv[1]))
+		restarted = 1;
 	else if (argc != 1)
 		die("usage: dwm [-v]");
 	if (!setlocale(LC_CTYPE, "") || !XSupportsLocale())
@@ -3760,12 +3766,16 @@ main(int argc, char *argv[])
 	checkotherwm();
 	setup();
 	scan();
-        reorder();
+        if (restarted)
+                reorder();
 	run();
 	cleanup();
         restorestatus();
 	XCloseDisplay(dpy);
-	if (restart)
-                execvp(argv[0], argv);
+	if (restart) {
+                char *rargv[] =  { argv[0], "-r", NULL };
+
+                execvp(rargv[0], rargv);
+        }
 	return EXIT_SUCCESS;
 }

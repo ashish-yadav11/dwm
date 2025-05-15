@@ -98,10 +98,11 @@ static const Attach attachs[] = {
 	{ "B",          attachbottom },
 };
 
+/* keep the second entry as NULL (it is the floating layout) */
 static const Layout layouts[] = {
        /* symbol       arrange function        default attach */
        { "[ ]=",       tilehor,                &attachs[0] },
-       { "[ . ]",      NULL,                   &attachs[0] }, /* no layout function means floating behavior */
+       { "[ . ]",      NULL,                   &attachs[0] },
        { "[M]",        monocle,                &attachs[1] },
        { "[H]",        deckhor,                &attachs[3] },
        { "=[ ]",       tilever,                &attachs[0] },
