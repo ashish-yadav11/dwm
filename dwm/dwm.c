@@ -3711,10 +3711,10 @@ zoom(const Arg *arg)
 void
 reorder(void)
 {
-        Client *c, *p = selmon->sel;
+        Client *c, *s = selmon->sel;
 
-        if (selmon->sel)
-                unfocus(selmon->sel);
+        if (s)
+                unfocus(s);
         for (Monitor *m = mons; m; m = m->next) {
                 if ((c = m->clients)) {
                         c->snext = NULL;
@@ -3730,8 +3730,8 @@ reorder(void)
                         } while (1);
                 }
         }
-        if ((c = selmon->sel) && c != p) {
-                unfocus(p);
+        if ((c = selmon->sel) && c != s) {
+                unfocus(s);
                 if (c->isurgent)
                         seturgent(c, 0);
                 grabbuttons(c, 1);
