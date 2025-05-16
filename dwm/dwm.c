@@ -969,7 +969,7 @@ createmon(void)
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->toptab = toptab;
-        m->lt[0] = m->lt[1] = &layouts[def_layouts[1]];
+        m->lt[0] = m->lt[1] = &layouts[runningstate == Restarted ? 1 : def_layouts[1]];;
         strncpy(m->ltsymbol, m->lt[0]->symbol, sizeof m->ltsymbol - 1);
 
 	m->pertag = ecalloc(1, sizeof(Pertag));
@@ -984,6 +984,7 @@ createmon(void)
                 m->pertag->showtabs[i] = showtab;
                 m->pertag->splus[i][0] = m->pertag->splus[i][1] = 0;
 	}
+        m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = m->lt[0];
 
 	return m;
 }
@@ -3755,8 +3756,6 @@ restoreclients(void)
                         XDeleteProperty(dpy, c->win, netatom[NetClientInfo]);
                 }
         }
-        selmon->lt[selmon->sellt] = PTLAYOUT(selmon);
-        strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol - 1);
         for (Monitor *m = mons; m; m = m->next)
                 arrange(m);
 }
