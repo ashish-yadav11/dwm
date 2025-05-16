@@ -26,6 +26,7 @@
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -85,7 +86,7 @@ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetSystemTray, NetSystemTrayOP, NetSystemTrayOrientation,
        NetSystemTrayOrientationHorz, NetWMFullscreen, NetActiveWindow,
        NetWMWindowType, NetWMWindowTypeDialog, NetDesktopNames,
-       NetWMDesktop, NetClientList, NetLast }; /* EWMH atoms */
+       NetWMDesktop, NetClientList, NetClientInfo, NetLast }; /* EWMH atoms */
 enum { Manager, Xembed, XembedInfo, XLast }; /* Xembed atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMWindowRole,
        WMLast }; /* default atoms */
@@ -266,7 +267,7 @@ static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void removesystrayicon(Icon *i);
-static void reorder(void);
+static void restoreclients(void);
 static void reparentnotify(XEvent *e);
 static void resetsplus(const Arg *arg);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
@@ -275,6 +276,7 @@ static void resizemouse(const Arg *arg);
 static void restack(Monitor *m);
 static void restorestatus(void);
 static void run(void);
+static void saveclienttagmon(Client *c);
 static void scan(void);
 static void scratchhidehelper(void);
 static int scratchshowhelper(int key);
@@ -706,22 +708,35 @@ checkotherwm(void)
 }
 
 void
+saveclienttagmon(Client *c)
+{
+	uint32_t data[] = { (uint32_t)c->tags, (uint32_t)c->mon->num };
+
+	XChangeProperty(dpy, c->win, netatom[NetClientInfo], XA_CARDINAL, 32,
+			PropModeReplace, (unsigned char *) data, 2);
+}
+
+void
 cleanup(void)
 {
-        int n;
-	unsigned int i;
+        int j, n = 0;
         Client *c;
 	Monitor *m;
         Window *wins;
+	size_t i;
 
-        for (n = 0, m = mons; m; m = m->next) {
+        for (m = mons; m; m = m->next) {
+                if (runningstate == Restart) {
+                        for (c = m->clients; c; c = c->next, n++)
+                                saveclienttagmon(c);
+                } else
+                        for (c = m->clients; c; c = c->next, n++);
                 m->tagset[0] = m->tagset[1] = ~0 & TAGMASK;
                 m->lt[0] = m->lt[1] = &layouts[1];
                 strncpy(m->ltsymbol, layouts[1].symbol, sizeof m->ltsymbol - 1);
                 selmon = m;
                 focus(NULL);
                 arrange(selmon);
-                for (c = m->clients; c; c = c->next, n++);
         }
         wins = ecalloc(n, sizeof(Window));
         n = 0;
@@ -731,9 +746,9 @@ cleanup(void)
                                 wins[n++] = c->win;
                                 c->scratchkey = INT_MAX;
                         }
-                for (i = 0; i < LENGTH(tags); i++)
+                for (j = 0; j < LENGTH(tags); j++)
                         for (c = m->clients; c; c = c->next)
-                                if (c->scratchkey != INT_MAX && c->tags & 1 << i) {
+                                if (c->scratchkey != INT_MAX && c->tags & 1 << j) {
                                         wins[n++] = c->win;
                                         c->scratchkey = INT_MAX;
                                 }
@@ -954,7 +969,7 @@ createmon(void)
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->toptab = toptab;
-        m->lt[0] = m->lt[1] = &layouts[runningstate == Restarted ? 1 : def_layouts[1]];
+        m->lt[0] = m->lt[1] = &layouts[def_layouts[1]];
         strncpy(m->ltsymbol, m->lt[0]->symbol, sizeof m->ltsymbol - 1);
 
 	m->pertag = ecalloc(1, sizeof(Pertag));
@@ -969,7 +984,6 @@ createmon(void)
                 m->pertag->showtabs[i] = showtab;
                 m->pertag->splus[i][0] = m->pertag->splus[i][1] = 0;
 	}
-        m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = m->lt[0];
 
 	return m;
 }
@@ -2455,6 +2469,7 @@ setup(void)
 	netatom[NetDesktopNames] = XInternAtom(dpy, "_NET_DESKTOP_NAMES", False);
 	netatom[NetWMDesktop] = XInternAtom(dpy, "_NET_WM_DESKTOP", False);
 	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
+        netatom[NetClientInfo] = XInternAtom(dpy, "_NET_CLIENT_INFO", False);
 	xatom[Manager] = XInternAtom(dpy, "MANAGER", False);
 	xatom[Xembed] = XInternAtom(dpy, "_XEMBED", False);
 	xatom[XembedInfo] = XInternAtom(dpy, "_XEMBED_INFO", False);
@@ -3709,36 +3724,41 @@ zoom(const Arg *arg)
 }
 
 void
-reorder(void)
+restoreclients(void)
 {
-        Client *c, *s = selmon->sel;
+        int i, di;
+        unsigned long n, dl;
+        uint32_t *data;
+        Atom da;
 
-        if (s)
-                unfocus(s);
-        for (Monitor *m = mons; m; m = m->next) {
-                if ((c = m->clients)) {
-                        c->snext = NULL;
-                        do {
-                                if (c->next) {
-                                        c->next->snext = c;
-                                        c = c->next;
-                                } else {
-                                        m->stack = c;
-                                        m->sel = c;
-                                        break;
+        for (Client *c = selmon->clients; c; c = c->next) {
+                if (XGetWindowProperty(dpy, c->win, netatom[NetClientInfo], 0L, 2L, False, XA_CARDINAL,
+                               &da, &di, &n, &dl, (unsigned char **)&data) == Success) {
+                        if (n == 2) {
+                                if (data[0] & TAGMASK)
+                                        c->tags = data[0] & TAGMASK;
+                                for (Monitor *m = mons; m; m = m->next)
+                                        if (m->num == data[1]) {
+                                                c->mon = m;
+                                                break;
+                                        }
+                                if (c->tags == (~0 & TAGMASK))
+                                        i = 0;
+                                else {
+                                        for (i = 0; i < LENGTH(tags) && !(c->tags & 1 << i); i++);
+                                        i++;
                                 }
-                        } while (1);
+                                if (i <= LENGTH(tags))
+                                        c->mon->pertag->ltidxs[i][c->mon->pertag->sellts[i]] = &layouts[1];
+                        }
+                        XFree(data);
+                        XDeleteProperty(dpy, c->win, netatom[NetClientInfo]);
                 }
         }
-        if ((c = selmon->sel) && c != s) {
-                unfocus(s);
-                if (c->isurgent)
-                        seturgent(c, 0);
-                grabbuttons(c, 1);
-                XSetWindowBorder(dpy, c->win, scheme[SchemeSel][ColBorder].pixel);
-                setfocus(c);
-                restack(selmon);
-        }
+        selmon->lt[selmon->sellt] = PTLAYOUT(selmon);
+        strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol - 1);
+        for (Monitor *m = mons; m; m = m->next)
+                arrange(m);
 }
 
 int
@@ -3758,7 +3778,7 @@ main(int argc, char *argv[])
 	setup();
 	scan();
         if (runningstate == Restarted)
-                reorder();
+                restoreclients();
         runningstate = Running;
 	run();
 	cleanup();
