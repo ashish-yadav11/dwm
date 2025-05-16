@@ -969,8 +969,7 @@ createmon(void)
                 m->pertag->showtabs[i] = showtab;
                 m->pertag->splus[i][0] = m->pertag->splus[i][1] = 0;
 	}
-        if (runningstate == Restarted)
-                m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = &layouts[1];
+        m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = m->lt[0];
 
 	return m;
 }
