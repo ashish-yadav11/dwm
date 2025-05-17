@@ -96,6 +96,7 @@ enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMWindowRole,
 enum { ClkTagBar, ClkTabBar, ClkLtSymbol, ClkStatusText, ClkWinTitle,
        ClkClientWin, ClkRootWin, ClkLast }; /* clicks */
 enum { Running, Restarted, Restart, Stop }; /* runningstate */
+enum { FhintsOff, FhintsFocus, FhintsPop }; /* fhintsstate */
 
 typedef union {
 	int i;
@@ -374,7 +375,7 @@ static int wstext;           /* width of status text */
 static int th;               /* tab bar geometry */
 static int lrpad;            /* sum of left and right paddings for text */
 static int runningstate;
-static int fhintson = 0;     /* focus hints */
+static int fhintsstate = FhintsOff;
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int dsblockssig;
 static unsigned int numlockmask = 0;
@@ -1305,15 +1306,15 @@ fhintsclient(int idx)
 void
 fhintsmode(const Arg *arg)
 {
-        int i = 1;
+        int i = 0;
 
         for (Client *c = selmon->clients; c; c = c->next)
                 if (ISVISIBLE(c)) {
-                        c->hidx = i;
-                        if (i++ > LENGTH(fhints))
+                        if (++i > LENGTH(fhints))
                                 break;
+                        c->hidx = i;
                 }
-        fhintson = arg->i ? 2 : 1;
+        fhintsstate = arg->i ? FhintsPop : FhintsFocus;
         grabkeys();
         drawfhints();
         drawtab(selmon);
@@ -1641,7 +1642,7 @@ grabbuttons(Client *c, int focused)
 void
 grabkeys(void)
 {
-        if (fhintson) {
+        if (fhintsstate != FhintsOff) {
 		XUngrabKey(dpy, AnyKey, AnyModifier, root);
 		XGrabKeyboard(dpy, root, True, GrabModeAsync, GrabModeAsync, CurrentTime);
 		return;
@@ -1725,7 +1726,7 @@ isuniquegeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info)
 void
 keypress(XEvent *e)
 {
-        int fh;
+        int fhs;
 	unsigned int i;
         Client *c = NULL;
 	KeySym keysym;
@@ -1733,22 +1734,22 @@ keypress(XEvent *e)
 
 	ev = &e->xkey;
 	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
-        if (fhintson) {
+        if (fhintsstate != FhintsOff) {
                 for (i = 0; i < LENGTH(fhints); i++)
                         if (keysym == fhints[i].keysym)
                                 if ((c = fhintsclient(i + 1)))
                                         break;
-                fh = fhintson;
-                fhintson = 0;
+                fhs = fhintsstate;
+                fhintsstate = FhintsOff;
                 destroyfhints();
                 grabkeys();
                 drawtabs();
-                if (c) {
-                        if (fh == 1)
-                                focusalt(c, 0);
-                        else
-                                pop(c);
-                }
+                if (!c)
+                        return;
+                if (fhs == FhintsFocus)
+                        focusalt(c, 0);
+                else if (fhs == FhintsPop)
+                        pop(c);
         } else {
                 for (i = 0; i < LENGTH(keys); i++)
                         if (keysym == keys[i].keysym
