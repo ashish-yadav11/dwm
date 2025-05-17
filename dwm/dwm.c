@@ -134,6 +134,8 @@ struct Client {
 	Client *snext;
 	Monitor *mon;
 	Window win;
+        unsigned int hidx;
+        Window hwin;
 };
 
 typedef struct {
@@ -144,7 +146,12 @@ typedef struct {
 } Key;
 
 typedef struct {
-	const char * sig;
+        KeySym keysym;
+        const char *h;
+} Fhint;
+
+typedef struct {
+	const char *sig;
 	void (*func)(const Arg *);
 } Signal;
 
@@ -227,15 +234,19 @@ static Monitor *createmon(void);
 static void destroynotify(XEvent *e);
 static void detach(Client *c);
 static void detachstack(Client *c);
+static void destroyfhints(void);
 //static Monitor *dirtomon(int dir);
 static void drawbar(Monitor *m);
 static void drawbars(void);
+static void drawfhints(void);
 static void drawstatus(void);
 static void drawtab(Monitor *m);
 static void drawtabhelper(Monitor *m, int onlystack);
 static void drawtabs(void);
 //static void enternotify(XEvent *e);
 static void expose(XEvent *e);
+static void fhintactivate(int idx);
+static void fhintsmode(const Arg *arg);
 static void focus(Client *c);
 static void focusalt(Client *c, int doarrange);
 static void focusclient(Client *c, unsigned int tag);
@@ -363,6 +374,7 @@ static int wstext;           /* width of status text */
 static int th;               /* tab bar geometry */
 static int lrpad;            /* sum of left and right paddings for text */
 static int runningstate;
+static int fhintson = 0;     /* focus hints */
 static int (*xerrorxlib)(Display *, XErrorEvent *);
 static unsigned int dsblockssig;
 static unsigned int numlockmask = 0;
@@ -1105,6 +1117,40 @@ drawbars(void)
 }
 
 void
+drawfhints(void)
+{
+        int w;
+        XSetWindowAttributes wa = {
+                .background_pixel = scheme[SchemeSel][ColBg].pixel,
+        };
+
+        for (Client *c = selmon->clients; c; c = c->next)
+                if (c->hidx > 0) {
+                        w = TEXTW(fhints[c->hidx - 1].h);
+                        c->hwin = XCreateWindow(dpy, c->win, 0, 0, w, bh, 0,
+                                        CopyFromParent, CopyFromParent, CopyFromParent,
+                                        CWBackPixel, &wa);
+                        XMapWindow(dpy, c->hwin);
+                        drw_setscheme(drw, scheme[SchemeSel]);
+                        drw_text(drw, 0, 0, w, bh, lrpad / 2, fhints[c->hidx - 1].h, 0);
+                        drw_map(drw, c->hwin, 0, 0, w, bh);
+                }
+}
+
+void
+destroyfhints(void)
+{
+        for (Monitor *m = mons; m; m = m->next)
+                for (Client *c = m->clients; c; c = c->next) {
+                        c->hidx = 0;
+                        if (c->hwin) {
+                                XDestroyWindow(dpy, c->hwin);
+                                c->hwin = 0;
+                        }
+                }
+}
+
+void
 drawstatus(void)
 {
         int x;
@@ -1163,6 +1209,8 @@ drawtabhelper(Monitor *m, int onlystack)
         int i;
         int ntabs, tbw, lft;
         int x = 0;
+        char buf[264];
+        char *n;
         Client *c;
 
         if (onlystack) {
@@ -1178,11 +1226,16 @@ drawtabhelper(Monitor *m, int onlystack)
         tbw = m->ww / ntabs; /* provisional width for each tab */
         lft = m->ww - tbw * ntabs; /* leftover pixels */
         for (i = 0; i < ntabs; c = nexttiled(c->next), i++) {
+                n = c->name;
                 drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
                                           c == selmon->sel ? SchemeSel :
                                           i % 2 == 0 ? SchemeNorm : SchemeStts]);
+                if (c->hidx > 0) {
+                        snprintf(buf, sizeof buf, "[%s] %s", fhints[c->hidx - 1].h, n);
+                        n = buf;
+                }
                 /* lrpad / 2 below for padding */
-                x = drw_text(drw, x, 0, (i < lft ? tbw + 1 : tbw) - lrpad / 2, th, lrpad / 2, c->name, 0);
+                x = drw_text(drw, x, 0, (i < lft ? tbw + 1 : tbw) - lrpad / 2, th, lrpad / 2, n, 0);
                 drw_rect(drw, x, 0, lrpad / 2, th, 1, 1); x += lrpad / 2; /* clear right padding */
         }
         drw_map(drw, m->tabwin, 0, 0, m->ww, th);
@@ -1232,6 +1285,33 @@ expose(XEvent *e)
                         drawtab(m);
                         return;
                 }
+}
+
+void
+fhintactivate(int idx)
+{
+        Client *c;
+
+        for (c = selmon->clients; c && c->hidx != idx; c = c->next);
+        if (c && ISVISIBLE(c))
+                focusalt(c, 0);
+}
+
+void
+fhintsmode(const Arg *arg)
+{
+        int i = 1;
+
+        for (Client *c = selmon->clients; c; c = c->next)
+                if (ISVISIBLE(c)) {
+                        c->hidx = i;
+                        if (i++ > LENGTH(fhints))
+                                break;
+                }
+        fhintson = 1;
+        grabkeys();
+        drawfhints();
+        drawtab(selmon);
 }
 
 void
@@ -1556,6 +1636,13 @@ grabbuttons(Client *c, int focused)
 void
 grabkeys(void)
 {
+        if (fhintson) {
+		XUngrabKey(dpy, AnyKey, AnyModifier, root);
+		XGrabKeyboard(dpy, root, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+		return;
+        } else
+                XUngrabKeyboard(dpy, CurrentTime);
+
 	updatenumlockmask();
 	{
 		unsigned int i, j, k;
@@ -1639,11 +1726,21 @@ keypress(XEvent *e)
 
 	ev = &e->xkey;
 	keysym = XKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0);
-	for (i = 0; i < LENGTH(keys); i++)
-		if (keysym == keys[i].keysym
-		&& CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
-		&& keys[i].func)
-			keys[i].func(&(keys[i].arg));
+        if (fhintson) {
+                for (i = 0; i < LENGTH(fhints); i++)
+                        if (keysym == fhints[i].keysym)
+                                fhintactivate(i + 1);
+                fhintson = 0;
+                grabkeys();
+                destroyfhints();
+                drawtabs();
+        } else {
+                for (i = 0; i < LENGTH(keys); i++)
+                        if (keysym == keys[i].keysym
+                        && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
+                        && keys[i].func)
+                                keys[i].func(&(keys[i].arg));
+        }
 }
 
 void

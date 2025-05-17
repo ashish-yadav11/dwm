@@ -198,6 +198,40 @@ static void winview(const Arg* arg);
 static void zoomswap(const Arg *arg);
 static void zoomvar(const Arg *arg);
 
+static const Fhint fhints[] = {
+	/* key                          hint */
+	{ XK_f,                         "F" },
+	{ XK_j,                         "J" },
+	{ XK_d,                         "D" },
+	{ XK_k,                         "K" },
+	{ XK_s,                         "S" },
+	{ XK_l,                         "L" },
+	{ XK_a,                         "A" },
+	{ XK_semicolon,                 ";" },
+	{ XK_g,                         "G" },
+	{ XK_h,                         "H" },
+	{ XK_space,                     "_" },
+	{ XK_t,                         "T" },
+	{ XK_y,                         "Y" },
+	{ XK_r,                         "R" },
+	{ XK_u,                         "U" },
+	{ XK_e,                         "E" },
+	{ XK_i,                         "I" },
+	{ XK_w,                         "W" },
+	{ XK_o,                         "O" },
+	{ XK_v,                         "V" },
+	{ XK_c,                         "C" },
+	{ XK_n,                         "N" },
+	{ XK_m,                         "M" },
+	{ XK_b,                         "B" },
+	{ XK_p,                         "P" },
+	{ XK_x,                         "X" },
+	{ XK_z,                         "Z" },
+	{ XK_q,                         "Q" },
+	{ XK_comma,                     "," },
+	{ XK_period,                    "." },
+};
+
 static const Key keys[] = {
 	/* modifier                     key             function                argument */
 	{ MODLKEY,                      XK_d,           spawn,                  ROFIDRUN },
@@ -253,10 +287,11 @@ static const Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = 0} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
 	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {0} },
-	{ MODLKEY,                      XK_f,           togglefocusfloat,       {0} },
+	{ MODLKEY,                      XK_f,           fhintsmode,             {0} },
 	{ MODLKEY|ShiftMask,            XK_f,           togglefullscreen,       {0} },
 	{ SUPKEY,                       XK_f,           togglefloating,         {.i = 1} },
 	{ SUPKEY|ShiftMask,             XK_f,           togglefloating,         {.i = 0} },
+	{ MODLKEY,                      XK_v,           togglefocusfloat,       {0} },
 	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
 	{ MODLKEY,                      XK_e,           setlayout,              {.i = 0} },
 	{ MODLKEY|ShiftMask,            XK_e,           setlayout,              {.i = 1} },
