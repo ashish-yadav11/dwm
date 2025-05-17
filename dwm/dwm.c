@@ -245,7 +245,7 @@ static void drawtabhelper(Monitor *m, int onlystack);
 static void drawtabs(void);
 //static void enternotify(XEvent *e);
 static void expose(XEvent *e);
-static void fhintactivate(int idx);
+static Client *fhintsclient(int idx);
 static void fhintsmode(const Arg *arg);
 static void focus(Client *c);
 static void focusalt(Client *c, int doarrange);
@@ -1121,7 +1121,7 @@ drawfhints(void)
 {
         int w;
         XSetWindowAttributes wa = {
-                .background_pixel = scheme[SchemeSel][ColBg].pixel,
+                .background_pixel = scheme[SchemeNorm][ColBg].pixel,
         };
 
         for (Client *c = selmon->clients; c; c = c->next)
@@ -1131,7 +1131,7 @@ drawfhints(void)
                                         CopyFromParent, CopyFromParent, CopyFromParent,
                                         CWBackPixel, &wa);
                         XMapWindow(dpy, c->hwin);
-                        drw_setscheme(drw, scheme[SchemeSel]);
+                        drw_setscheme(drw, scheme[SchemeNorm]);
                         drw_text(drw, 0, 0, w, bh, lrpad / 2, fhints[c->hidx - 1].h, 0);
                         drw_map(drw, c->hwin, 0, 0, w, bh);
                 }
@@ -1287,14 +1287,15 @@ expose(XEvent *e)
                 }
 }
 
-void
-fhintactivate(int idx)
+Client *
+fhintsclient(int idx)
 {
         Client *c;
 
         for (c = selmon->clients; c && c->hidx != idx; c = c->next);
         if (c && ISVISIBLE(c))
-                focusalt(c, 0);
+                return c;
+        return NULL;
 }
 
 void
@@ -1721,6 +1722,7 @@ void
 keypress(XEvent *e)
 {
 	unsigned int i;
+        Client *c = NULL;
 	KeySym keysym;
 	XKeyEvent *ev;
 
@@ -1729,11 +1731,14 @@ keypress(XEvent *e)
         if (fhintson) {
                 for (i = 0; i < LENGTH(fhints); i++)
                         if (keysym == fhints[i].keysym)
-                                fhintactivate(i + 1);
+                                if ((c = fhintsclient(i + 1)))
+                                        break;
                 fhintson = 0;
-                grabkeys();
                 destroyfhints();
+                grabkeys();
                 drawtabs();
+                if (c)
+                        focusalt(c, 0);
         } else {
                 for (i = 0; i < LENGTH(keys); i++)
                         if (keysym == keys[i].keysym
