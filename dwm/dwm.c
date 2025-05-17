@@ -1313,7 +1313,7 @@ fhintsmode(const Arg *arg)
                         if (i++ > LENGTH(fhints))
                                 break;
                 }
-        fhintson = 1;
+        fhintson = arg->i ? 2 : 1;
         grabkeys();
         drawfhints();
         drawtab(selmon);
@@ -1725,6 +1725,7 @@ isuniquegeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info)
 void
 keypress(XEvent *e)
 {
+        int fh;
 	unsigned int i;
         Client *c = NULL;
 	KeySym keysym;
@@ -1737,12 +1738,17 @@ keypress(XEvent *e)
                         if (keysym == fhints[i].keysym)
                                 if ((c = fhintsclient(i + 1)))
                                         break;
+                fh = fhintson;
                 fhintson = 0;
                 destroyfhints();
                 grabkeys();
                 drawtabs();
-                if (c)
-                        focusalt(c, 0);
+                if (c) {
+                        if (fh == 1)
+                                focusalt(c, 0);
+                        else
+                                pop(c);
+                }
         } else {
                 for (i = 0; i < LENGTH(keys); i++)
                         if (keysym == keys[i].keysym
