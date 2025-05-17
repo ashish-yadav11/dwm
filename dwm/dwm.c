@@ -1121,15 +1121,20 @@ drawfhints(void)
 {
         int w;
         XSetWindowAttributes wa = {
+                .override_redirect = True,
                 .background_pixel = scheme[SchemeFhint][ColBg].pixel,
         };
+	XWindowChanges wc;
 
         for (Client *c = selmon->clients; c; c = c->next)
                 if (c->hidx > 0) {
                         w = TEXTW(fhints[c->hidx - 1].h);
-                        c->hwin = XCreateWindow(dpy, c->win, 0, 0, w - 6, bh - 4, 0,
-                                        CopyFromParent, CopyFromParent, CopyFromParent,
-                                        CWBackPixel, &wa);
+                        c->hwin = XCreateWindow(dpy, root, c->x + c->bw, c->y + c->bw,
+                                        w - 6, bh - 4, 0, DefaultDepth(dpy, screen), CopyFromParent,
+                                        DefaultVisual(dpy, screen), CWOverrideRedirect|CWBackPixel, &wa);
+                        wc.sibling = c->win;
+                        wc.stack_mode = Above;
+                        XConfigureWindow(dpy, c->hwin, CWSibling|CWStackMode, &wc);
                         XMapWindow(dpy, c->hwin);
                         drw_setscheme(drw, scheme[SchemeFhint]);
                         drw_text(drw, 0, 0, w-6, bh-4, lrpad/2 - 3, fhints[c->hidx-1].h, 0);
