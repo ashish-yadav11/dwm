@@ -950,7 +950,7 @@ Monitor *
 createmon(void)
 {
 	Monitor *m;
-	unsigned int i, dl = Restarted ? 1 : def_layouts[1];
+	unsigned int i, dl = runningstate == Restarted ? 1 : def_layouts[1];
 
 	m = ecalloc(1, sizeof(Monitor));
 	m->tagset[0] = m->tagset[1] = 1;
@@ -1208,6 +1208,8 @@ enternotify(XEvent *e)
 	m = c ? c->mon : wintomon(ev->window);
 	if (m != selmon) {
 		unfocus(selmon->sel);
+		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
+		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
                 updateselmon(m);
 	} else if (!c || c == selmon->sel)
 		return;
@@ -2181,7 +2183,7 @@ failure:
 void
 restoresession(void)
 {
-        int i, n = 0;
+        int i, nc;
         int mn, sb, nm, st, sp0, sp1, f, h, sk;
         unsigned int tgc, tgp, ct, pt, ltc, ltp, atc, atp, tg;
         unsigned long w;
@@ -2197,17 +2199,17 @@ restoresession(void)
                 return;
         }
         unfocus(selmon->sel); /* unfocus current selmon->sel */
-        while ((n = fscanf(fp, "M %d %d %u %u %u %u\n",
-                           &mn, &sb, &tgc, &tgp, &ct, &pt)) != EOF) {
-                if (n != 6) {
+        do {
+                nc = fscanf(fp, "M %d %d %u %u %u %u\n", &mn, &sb, &tgc, &tgp, &ct, &pt);
+                if (nc != 6) {
                         fputs("dwm: corrupt monitor data in sessionfile\n", stderr);
-                        do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                        do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
                         continue;
                 }
                 for (m = mons; m && m->num != mn; m = m->next);
                 if (!m) {
                         fputs("dwm: restoresession couldn't find monitor\n", stderr);
-                        do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                        do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
                         continue;
                 }
                 p = m->pertag;
@@ -2215,26 +2217,26 @@ restoresession(void)
                 || !((ct == 0 && tgc == TAGMASK) || (1 << (ct - 1)) & tgc)
                 || !((pt == 0 && tgp == TAGMASK) || (1 << (pt - 1)) & tgp)) {
                         fputs("dwm: corrupt monitor data in sessionfile\n", stderr);
-                        do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                        do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
                         continue;
                 }
                 m->showbar = sb;
                 m->tagset[m->seltags] = tgc, m->tagset[m->seltags ^ 1] = tgp;
                 p->curtag = ct, p->prevtag = pt;
                 for (i = 0; i <= LENGTH(tags); i++) {
-                        if ((n = fscanf(fp, "T %d %f %d %u %u %u %u %d %d\n",
+                        if ((nc = fscanf(fp, "T %d %f %d %u %u %u %u %d %d\n",
                                          &nm, &mf, &st, &ltc, &ltp,
                                          &atc, &atp, &sp0, &sp1)) != 9) {
-                                if (n == 0) break;
+                                if (nc == 0) break;
                                 fputs("dwm: corrupt pertag data in sessionfile\n", stderr);
-                                do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                                do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
                                 continue;
                         }
                         if (nm < 0 || mf < MINMFACT || mf > MAXMFACT || st < 0 || st > 1
                         || ltc >= LENGTH(layouts) || ltp >= LENGTH(layouts)
                         || atc >= LENGTH(attachs) || atp >= LENGTH(attachs)) {
                                 fputs("dwm: corrupt pertag data in sessionfile\n", stderr);
-                                do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                                do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
                                 continue;
                         }
                         p->nmasters[i] = nm, p->mfacts[i] = mf, p->showtabs[i] = st;
@@ -2244,46 +2246,56 @@ restoresession(void)
                 }
                 m->lt[0] = &layouts[m->pertag->ltidxs[ct][0]];
                 m->lt[1] = &layouts[m->pertag->ltidxs[ct][1]];
-                while (fscanf(fp, "C %lu %u %d %d %d\n", &w, &tg, &f, &h, &sk) == 5) {
+                while ((nc = fscanf(fp, "C %lu %u %d %d %d\n", &w, &tg, &f, &h, &sk)) == 5) {
                         if (!(c = wintoclient(w)))
                                 continue;
                         if (tg != (tg & TAGMASK) || f < 0 || f > 1 || h < 0 || h > 1) {
                                 fputs("dwm: corrupt client data in sessionfile\n", stderr);
-                                do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                                do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
                                 continue;
                         }
                         c->tags = tg, c->isfloating = f, c->ishidden = h;
                         if (!c->scratchkey)
                                 c->scratchkey = sk;
-                        detach(c);
+                        /* detach from stack */
                         for (tc = &c->mon->stack; *tc && *tc != c; tc = &(*tc)->snext);
                         *tc = c->snext;
                         c->mon = m;
-                        /* attach stack bottom to preserve order */
+                        /* attach at the bottom of the stack to restore order */
+                        c->snext = NULL;
                         if (m->stack) {
                                 for (s = m->stack; s->snext; s = s->snext);
                                 s->snext = c;
-                        } else {
+                        } else
                                 m->stack = c;
-                        }
                         updateclientdesktop(c, 0);
                 }
-                m->sel = m->stack;
-                /* attaching here to preserve order set by restackwindows in cleanup() */
-                for (c = selmon->clients; c; c = c->next)
-                        if (c->mon == m)
+                /* down here to preserve the layout order set by restackwindows in cleanup() */
+                if (m != selmon) {
+                        for (c = selmon->clients; c; c = c->next) {
+                                if (c->mon != m)
+                                        continue;
+                                for (tc = &selmon->clients; *tc && *tc != c; tc = &(*tc)->next);
+                                *tc = c->next;
                                 attachbottom(c);
-                arrange(m);
-        }
-        /* update selmon and thus selmon->sel and focus */
-        selmon = m;
+                        }
+                        arrange(m);
+                }
+        } while (nc != EOF);
+        arrange(selmon); /* arrange selmon after restoring wins to their previous mon */
+        selmon = m; /* restore selmon */
+        for (c = selmon->stack; c && !ISVISIBLE(c); c = c->snext);
+        selmon->sel = c;
         if (selmon->sel) {
                 if (selmon->sel->isurgent)
                         seturgent(selmon->sel, 0);
                 grabbuttons(selmon->sel, 1);
                 XSetWindowBorder(dpy, selmon->sel->win, scheme[SchemeSel][ColBorder].pixel);
                 setfocus(selmon->sel);
-        }
+        } else {
+		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
+		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
+	}
         if (fclose(fp) != 0)
                 fputs("dwm: restoresession: failed to close sessionfile\n", stderr);
         if (unlink(SESSIONFILE) != 0)
