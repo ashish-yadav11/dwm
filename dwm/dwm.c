@@ -26,7 +26,6 @@
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -63,12 +62,16 @@
 #define TAGMASK                         ((1 << LENGTH(tags)) - 1)
 #define TEXTW(X)                        (drw_fontset_getwidth(drw, (X)) + lrpad)
 #define TTEXTW(X)                       (drw_fontset_getwidth(drw, (X)))
-#define PTATTACH(M)                     (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
-#define PTLAYOUT(M)                     (M->pertag->ltidxs[M->pertag->curtag][M->pertag->sellts[M->pertag->curtag]])
+#define PTATT(M)                        (M->pertag->attidxs[M->pertag->curtag][M->pertag->selatts[M->pertag->curtag]])
+#define PTLYT(M)                        (M->pertag->ltidxs[M->pertag->curtag][M->pertag->sellts[M->pertag->curtag]])
 #define PTSPLUS(M)                      (M->pertag->splus[M->pertag->curtag])
+
+#define MINMFACT                        0.05
+#define MAXMFACT                        0.95
 
 #define STATUSLENGTH                    256
 #define ROOTNAMELENGTH                  320 /* fake signal + status */
+#define SESSIONFILE                     "/tmp/dwm-session"
 #define DSBLOCKSLOCKFILE                "/var/local/dsblocks/dsblocks.pid"
 #define DELIMITERENDCHAR                10
 
@@ -86,7 +89,7 @@ enum { NetSupported, NetWMName, NetWMState, NetWMCheck,
        NetSystemTray, NetSystemTrayOP, NetSystemTrayOrientation,
        NetSystemTrayOrientationHorz, NetWMFullscreen, NetActiveWindow,
        NetWMWindowType, NetWMWindowTypeDialog, NetDesktopNames,
-       NetWMDesktop, NetClientList, NetClientInfo, NetLast }; /* EWMH atoms */
+       NetWMDesktop, NetClientList, NetLast }; /* EWMH atoms */
 enum { Manager, Xembed, XembedInfo, XLast }; /* Xembed atoms */
 enum { WMProtocols, WMDelete, WMState, WMTakeFocus, WMWindowRole,
        WMLast }; /* default atoms */
@@ -153,7 +156,7 @@ typedef struct {
 typedef struct {
 	const char *symbol;
 	void (*arrange)(Monitor *);
-        const Attach *attach;
+        unsigned int defatt;
 } Layout;
 
 typedef struct Pertag Pertag;
@@ -267,16 +270,16 @@ static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
 static void removesystrayicon(Icon *i);
-static void restoreclients(void);
 static void reparentnotify(XEvent *e);
 static void resetsplus(const Arg *arg);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
 static void restack(Monitor *m);
+static void restoresession(void);
 static void restorestatus(void);
 static void run(void);
-static void saveclienttagmon(Client *c);
+static void savesession(void);
 static void scan(void);
 static void scratchhidehelper(void);
 static int scratchshowhelper(int key);
@@ -397,10 +400,10 @@ struct Pertag {
 	int nmasters[LENGTH(tags) + 1]; /* number of windows in master area */
 	float mfacts[LENGTH(tags) + 1]; /* mfacts per tag */
 	unsigned int sellts[LENGTH(tags) + 1]; /* selected layouts */
-	const Layout *ltidxs[LENGTH(tags) + 1][2]; /* matrix of tags and layouts indexes */
+	unsigned int ltidxs[LENGTH(tags) + 1][2]; /* matrix of tags and layouts indexes */
         /* custom */
         unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions */
-        const Attach *attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
+        unsigned int attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
         int showtabs[LENGTH(tags) + 1]; /* display tab per tag */
         int splus[LENGTH(tags) + 1][2]; /* extra size per tag - first master and first stack */
 };
@@ -708,15 +711,6 @@ checkotherwm(void)
 }
 
 void
-saveclienttagmon(Client *c)
-{
-	uint32_t data[] = { (uint32_t)c->tags, (uint32_t)c->mon->num };
-
-	XChangeProperty(dpy, c->win, netatom[NetClientInfo], XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) data, 2);
-}
-
-void
 cleanup(void)
 {
         int j, n = 0;
@@ -726,17 +720,13 @@ cleanup(void)
 	size_t i;
 
         for (m = mons; m; m = m->next) {
-                if (runningstate == Restart) {
-                        for (c = m->clients; c; c = c->next, n++)
-                                saveclienttagmon(c);
-                } else
-                        for (c = m->clients; c; c = c->next, n++);
-                m->tagset[0] = m->tagset[1] = ~0 & TAGMASK;
+                m->tagset[0] = m->tagset[1] = TAGMASK;
                 m->lt[0] = m->lt[1] = &layouts[1];
                 strncpy(m->ltsymbol, layouts[1].symbol, sizeof m->ltsymbol - 1);
                 selmon = m;
                 focus(NULL);
                 arrange(selmon);
+                for (c = m->clients; c; c = c->next, n++);
         }
         wins = ecalloc(n, sizeof(Window));
         n = 0;
@@ -960,7 +950,7 @@ Monitor *
 createmon(void)
 {
 	Monitor *m;
-	unsigned int i;
+	unsigned int i, dl = Restarted ? 1 : def_layouts[1];
 
 	m = ecalloc(1, sizeof(Monitor));
 	m->tagset[0] = m->tagset[1] = 1;
@@ -969,22 +959,22 @@ createmon(void)
 	m->showbar = showbar;
 	m->topbar = topbar;
 	m->toptab = toptab;
-        m->lt[0] = m->lt[1] = &layouts[runningstate == Restarted ? 1 : def_layouts[1]];;
-        strncpy(m->ltsymbol, m->lt[0]->symbol, sizeof m->ltsymbol - 1);
+        m->lt[0] = m->lt[1] = &layouts[dl];;
+        strncpy(m->ltsymbol, layouts[dl].symbol, sizeof m->ltsymbol - 1);
 
 	m->pertag = ecalloc(1, sizeof(Pertag));
 	m->pertag->curtag = m->pertag->prevtag = 1;
 	for (i = 0; i <= LENGTH(tags); i++) {
 		m->pertag->nmasters[i] = m->nmaster;
 		m->pertag->mfacts[i] = m->mfact;
-		m->pertag->ltidxs[i][0] = m->pertag->ltidxs[i][1] = &layouts[def_layouts[i]];
+		m->pertag->ltidxs[i][0] = m->pertag->ltidxs[i][1] = def_layouts[i];
 		m->pertag->sellts[i] = m->sellt;
                 /* custom */
-                m->pertag->attidxs[i][0] = m->pertag->attidxs[i][1] = &attachs[def_attachs[i]];
+                m->pertag->attidxs[i][0] = m->pertag->attidxs[i][1] = def_attachs[i];
                 m->pertag->showtabs[i] = showtab;
                 m->pertag->splus[i][0] = m->pertag->splus[i][1] = 0;
 	}
-        m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = m->lt[0];
+        m->pertag->ltidxs[1][0] = m->pertag->ltidxs[1][1] = dl;
 
 	return m;
 }
@@ -1074,9 +1064,9 @@ drawbar(Monitor *m)
 		x = w;
 	}
         if (nhid)
-                snprintf(hal, sizeof hal, "%u %s %s", nhid, PTATTACH(m)->symbol, m->ltsymbol);
+                snprintf(hal, sizeof hal, "%u %s %s", nhid, attachs[PTATT(m)].symbol, m->ltsymbol);
         else
-                snprintf(hal, sizeof hal, "%s %s", PTATTACH(m)->symbol, m->ltsymbol);
+                snprintf(hal, sizeof hal, "%s %s", attachs[PTATT(m)].symbol, m->ltsymbol);
         w = TEXTW(hal);
         drw_setscheme(drw, scheme[SchemeLtSm]);
         x = drw_text(drw, x, 0, w, bh, lrpad / 2, hal, 0);
@@ -1720,7 +1710,7 @@ manage(Window w, XWindowAttributes *wa)
 		c->isfloating = c->oldstate = trans != None || c->isfixed;
 	if (c->isfloating)
 		XRaiseWindow(dpy, c->win);
-        PTATTACH(c->mon)->attach(c);
+        attachs[PTATT(c->mon)].attach(c);
 	attachstack(c);
 	XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32, PropModeAppend,
 		(unsigned char *) &(c->win), 1);
@@ -2142,6 +2132,165 @@ run(void)
 }
 
 void
+savesession(void)
+{
+        Monitor *m = selmon;
+        Pertag *p;
+        FILE *fp = fopen(SESSIONFILE, "w");
+
+        if (!fp) {
+                fputs("dwm: failed to open sessionfile for writing\n", stderr);
+                goto failure;
+        }
+        do {
+                m = m->next ? m->next : mons; /* selmon at the end */
+                p = m->pertag;
+                if (fprintf(fp, "M %d %d %u %u %u %u\n", m->num, m->showbar,
+                            m->tagset[m->seltags], m->tagset[m->seltags ^ 1],
+                            p->curtag, p->prevtag) < 0) {
+                        fputs("dwm: writing to sessionfile failed\n", stderr);
+                        goto failure;
+                }
+                for (int i = 0; i <= LENGTH(tags); i++) {
+                        if (fprintf(fp, "T %d %f %d %u %u %u %u %d %d\n",
+                                    p->nmasters[i], p->mfacts[i], p->showtabs[i],
+                                    p->ltidxs[i][p->sellts[i]], p->ltidxs[i][p->sellts[i] ^ 1],
+                                    p->attidxs[i][p->selatts[i]], p->attidxs[i][p->selatts[i] ^ 1],
+                                    p->splus[i][0], p->splus[i][1]) < 0) {
+                                fputs("dwm: writing to sessionfile failed\n", stderr);
+                                goto failure;
+                        }
+                }
+                for (Client *c = m->stack; c; c = c->snext) {
+                        if (fprintf(fp, "C %lu %u %d %d %d\n", c->win, c->tags,
+                                    c->isfloating, c->ishidden, c->scratchkey) < 0) {
+                                fputs("dwm: writing to sessionfile failed\n", stderr);
+                                goto failure;
+                        }
+                }
+        } while (m != selmon);
+        if (fclose(fp) != 0)
+                fputs("dwm: savesession: failed to close sessionfile\n", stderr);
+        return;
+failure:
+        fclose(fp);
+        if (unlink(SESSIONFILE) != 0)
+                fputs("dwm: savesession: failed to delete sessionfile\n", stderr);
+}
+
+void
+restoresession(void)
+{
+        int i, n = 0;
+        int mn, sb, nm, st, sp0, sp1, f, h, sk;
+        unsigned int tgc, tgp, ct, pt, ltc, ltp, atc, atp, tg;
+        unsigned long w;
+        float mf;
+        Monitor *m = selmon;
+        Pertag *p;
+        Client *c, *s;
+        Client **tc;
+        FILE *fp = fopen(SESSIONFILE, "r");
+
+        if (!fp) {
+                fputs("dwm: failed to open sessionfile for reading\n", stderr);
+                return;
+        }
+        unfocus(selmon->sel); /* unfocus current selmon->sel */
+        while ((n = fscanf(fp, "M %d %d %u %u %u %u\n",
+                           &mn, &sb, &tgc, &tgp, &ct, &pt)) != EOF) {
+                if (n != 6) {
+                        fputs("dwm: corrupt monitor data in sessionfile\n", stderr);
+                        do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                        continue;
+                }
+                for (m = mons; m && m->num != mn; m = m->next);
+                if (!m) {
+                        fputs("dwm: restoresession couldn't find monitor\n", stderr);
+                        do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                        continue;
+                }
+                p = m->pertag;
+                if (sb < 0 || sb > 1 || tgc != (tgc & TAGMASK) || tgp != (tgp & TAGMASK)
+                || !((ct == 0 && tgc == TAGMASK) || (1 << (ct - 1)) & tgc)
+                || !((pt == 0 && tgp == TAGMASK) || (1 << (pt - 1)) & tgp)) {
+                        fputs("dwm: corrupt monitor data in sessionfile\n", stderr);
+                        do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                        continue;
+                }
+                m->showbar = sb;
+                m->tagset[m->seltags] = tgc, m->tagset[m->seltags ^ 1] = tgp;
+                p->curtag = ct, p->prevtag = pt;
+                for (i = 0; i <= LENGTH(tags); i++) {
+                        if ((n = fscanf(fp, "T %d %f %d %u %u %u %u %d %d\n",
+                                         &nm, &mf, &st, &ltc, &ltp,
+                                         &atc, &atp, &sp0, &sp1)) != 9) {
+                                if (n == 0) break;
+                                fputs("dwm: corrupt pertag data in sessionfile\n", stderr);
+                                do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                                continue;
+                        }
+                        if (nm < 0 || mf < MINMFACT || mf > MAXMFACT || st < 0 || st > 1
+                        || ltc >= LENGTH(layouts) || ltp >= LENGTH(layouts)
+                        || atc >= LENGTH(attachs) || atp >= LENGTH(attachs)) {
+                                fputs("dwm: corrupt pertag data in sessionfile\n", stderr);
+                                do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                                continue;
+                        }
+                        p->nmasters[i] = nm, p->mfacts[i] = mf, p->showtabs[i] = st;
+                        p->ltidxs[i][p->sellts[i]] = ltc, p->ltidxs[i][p->sellts[i] ^ 1] = ltp;
+                        p->attidxs[i][p->selatts[i]] = atc, p->attidxs[i][p->selatts[i] ^ 1] = atp;
+                        p->splus[i][0] = sp0, p->splus[i][1] = sp1;
+                }
+                m->lt[0] = &layouts[m->pertag->ltidxs[ct][0]];
+                m->lt[1] = &layouts[m->pertag->ltidxs[ct][1]];
+                while (fscanf(fp, "C %lu %u %d %d %d\n", &w, &tg, &f, &h, &sk) == 5) {
+                        if (!(c = wintoclient(w)))
+                                continue;
+                        if (tg != (tg & TAGMASK) || f < 0 || f > 1 || h < 0 || h > 1) {
+                                fputs("dwm: corrupt client data in sessionfile\n", stderr);
+                                do { n = fgetc(fp); } while (n != EOF && n != '\n');
+                                continue;
+                        }
+                        c->tags = tg, c->isfloating = f, c->ishidden = h;
+                        if (!c->scratchkey)
+                                c->scratchkey = sk;
+                        detach(c);
+                        for (tc = &c->mon->stack; *tc && *tc != c; tc = &(*tc)->snext);
+                        *tc = c->snext;
+                        c->mon = m;
+                        /* attach stack bottom to preserve order */
+                        if (m->stack) {
+                                for (s = m->stack; s->snext; s = s->snext);
+                                s->snext = c;
+                        } else {
+                                m->stack = c;
+                        }
+                        updateclientdesktop(c, 0);
+                }
+                m->sel = m->stack;
+                /* attaching here to preserve order set by restackwindows in cleanup() */
+                for (c = selmon->clients; c; c = c->next)
+                        if (c->mon == m)
+                                attachbottom(c);
+                arrange(m);
+        }
+        /* update selmon and thus selmon->sel and focus */
+        selmon = m;
+        if (selmon->sel) {
+                if (selmon->sel->isurgent)
+                        seturgent(selmon->sel, 0);
+                grabbuttons(selmon->sel, 1);
+                XSetWindowBorder(dpy, selmon->sel->win, scheme[SchemeSel][ColBorder].pixel);
+                setfocus(selmon->sel);
+        }
+        if (fclose(fp) != 0)
+                fputs("dwm: restoresession: failed to close sessionfile\n", stderr);
+        if (unlink(SESSIONFILE) != 0)
+                fputs("dwm: restoresession: failed to delete sessionfile\n", stderr);
+}
+
+void
 scan(void)
 {
 	unsigned int i, num;
@@ -2202,7 +2351,7 @@ scratchshowhelper(int key)
                         c->tags = selmon->tagset[selmon->seltags];
                         updateclientdesktop(c, 0);
                         detach(c);
-                        PTATTACH(c->mon)->attach(c);
+                        attachs[PTATT(c->mon)].attach(c);
                         focusalt(c, 1);
                         return 1;
                 }
@@ -2264,7 +2413,7 @@ sendmon(Client *c, Monitor *m)
 	c->mon = m;
 	c->tags = m->tagset[m->seltags]; /* assign tags of target monitor */
 	updateclientdesktop(c, 0);
-        PTATTACH(c->mon)->attach(c);
+        attachs[PTATT(c->mon)].attach(c);
 	attachstack(c);
 	focus(c);
 	arrange(NULL);
@@ -2273,17 +2422,17 @@ sendmon(Client *c, Monitor *m)
 void
 setattach(const Arg *arg)
 {
-        if (!arg || !arg->v || arg->v != PTATTACH(selmon))
+        if (!arg || !BETWEEN(arg->i, 0, LENGTH(attachs)) || arg->i != PTATT(selmon))
                 selmon->pertag->selatts[selmon->pertag->curtag] ^= 1; /* toggle or save the previous */
-        if (arg && arg->v)
-                PTATTACH(selmon) = (Attach *)arg->v;
+        if (arg && BETWEEN(arg->i, 0, LENGTH(attachs)))
+                PTATT(selmon) = arg->i;
         drawbar(selmon);
 }
 
 void
 setattorprev(const Arg *arg)
 {
-	setattach(PTATTACH(selmon) == arg->v ? NULL : arg);
+	setattach(arg->ui == PTATT(selmon) ? NULL : arg);
 }
 
 void
@@ -2352,19 +2501,24 @@ setfullscreen(Client *c, int fullscreen)
 void
 setlayout(const Arg *arg)
 {
-        int wasptattdef = PTATTACH(selmon) == selmon->lt[selmon->sellt]->attach;
+        int wasptattdef = PTATT(selmon) == selmon->lt[selmon->sellt]->defatt;
 
-	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
+	if (!arg || !BETWEEN(arg->i, 0, LENGTH(attachs)) ||
+                        selmon->lt[selmon->sellt] != &layouts[arg->i])
 		selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag] ^= 1;
-	if (arg && arg->v)
-		selmon->lt[selmon->sellt] = PTLAYOUT(selmon) = (Layout *)arg->v;
+	if (arg && BETWEEN(arg->i, 0, LENGTH(attachs))) {
+		selmon->lt[selmon->sellt] = &layouts[arg->ui];
+                PTLYT(selmon) = arg->ui;
+        }
         if (wasptattdef)
-                PTATTACH(selmon) = selmon->lt[selmon->sellt]->attach;
-	strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol, sizeof selmon->ltsymbol - 1);
+                PTATT(selmon) = selmon->lt[selmon->sellt]->defatt;
 	if (selmon->sel)
 		arrange(selmon);
-	else
+	else {
+                strncpy(selmon->ltsymbol, selmon->lt[selmon->sellt]->symbol,
+                                sizeof selmon->ltsymbol - 1);
 		drawbar(selmon);
+        }
 }
 
 void
@@ -2382,7 +2536,7 @@ setmfact(const Arg *arg)
 	if (!selmon->lt[selmon->sellt]->arrange || selmon->lt[selmon->sellt]->arrange == monocle)
 		return;
 	f = arg->f < 1.0 ? arg->f + selmon->mfact : arg->f - 1.0;
-	if (f < 0.05 || f > 0.95)
+	if (f < MINMFACT || f > MAXMFACT)
 		return;
 	selmon->mfact = selmon->pertag->mfacts[selmon->pertag->curtag] = f;
 	arrange(selmon);
@@ -2470,7 +2624,6 @@ setup(void)
 	netatom[NetDesktopNames] = XInternAtom(dpy, "_NET_DESKTOP_NAMES", False);
 	netatom[NetWMDesktop] = XInternAtom(dpy, "_NET_WM_DESKTOP", False);
 	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
-        netatom[NetClientInfo] = XInternAtom(dpy, "_NET_CLIENT_INFO", False);
 	xatom[Manager] = XInternAtom(dpy, "MANAGER", False);
 	xatom[Xembed] = XInternAtom(dpy, "_XEMBED", False);
 	xatom[XembedInfo] = XInternAtom(dpy, "_XEMBED_INFO", False);
@@ -3152,8 +3305,8 @@ updateclientdesktop(Client *c, unsigned int tag)
                 t = 1 + LENGTH(tags);
                 goto skip;
         }
-        if (!tag && selmon->pertag->curtag)
-                tag = selmon->pertag->curtag - 1;
+        if (!tag && c->mon->pertag->curtag)
+                tag = c->mon->pertag->curtag - 1;
         if (tag && c->tags & 1 << tag)
                 t = tag + 1;
         else {
@@ -3275,7 +3428,7 @@ updategeom(void)
 				m->clients = c->next;
 				detachstack(c);
 				c->mon = mons;
-				PTATTACH(c->mon)->attach(c);
+				attachs[PTATT(c->mon)].attach(c);
 				attachstack(c);
 			}
 			if (m == selmon)
@@ -3349,8 +3502,8 @@ updatepertag(void)
 	selmon->nmaster = selmon->pertag->nmasters[ct];
 	selmon->mfact = selmon->pertag->mfacts[ct];
 	selmon->sellt = selmon->pertag->sellts[ct];
-	selmon->lt[0] = selmon->pertag->ltidxs[ct][0];
-	selmon->lt[1] = selmon->pertag->ltidxs[ct][1];
+	selmon->lt[0] = &layouts[selmon->pertag->ltidxs[ct][0]];
+	selmon->lt[1] = &layouts[selmon->pertag->ltidxs[ct][1]];
 
         /* restore default pertag settings for prevtag if it is empty */
         prevtagset = pt ? 1 << (pt - 1) : TAGMASK;
@@ -3359,9 +3512,9 @@ updatepertag(void)
                 return;
         selmon->pertag->nmasters[pt] = nmaster;
         selmon->pertag->mfacts[pt] = mfact;
-        selmon->pertag->ltidxs[pt][0] = selmon->pertag->ltidxs[pt][1] = &layouts[def_layouts[pt]];
+        selmon->pertag->ltidxs[pt][0] = selmon->pertag->ltidxs[pt][1] = def_layouts[pt];
         /* custom */
-        selmon->pertag->attidxs[pt][0] = selmon->pertag->attidxs[pt][1] = &attachs[def_attachs[pt]];
+        selmon->pertag->attidxs[pt][0] = selmon->pertag->attidxs[pt][1] = def_attachs[pt];
         selmon->pertag->showtabs[pt] = showtab;
         selmon->pertag->splus[pt][0] = selmon->pertag->splus[pt][1] = 0;
 }
@@ -3724,42 +3877,6 @@ zoom(const Arg *arg)
 	pop(c);
 }
 
-void
-restoreclients(void)
-{
-        int i, di;
-        unsigned long n, dl;
-        uint32_t *data;
-        Atom da;
-
-        for (Client *c = selmon->clients; c; c = c->next) {
-                if (XGetWindowProperty(dpy, c->win, netatom[NetClientInfo], 0L, 2L, False, XA_CARDINAL,
-                               &da, &di, &n, &dl, (unsigned char **)&data) == Success) {
-                        if (n == 2) {
-                                if (data[0] & TAGMASK)
-                                        c->tags = data[0] & TAGMASK;
-                                for (Monitor *m = mons; m; m = m->next)
-                                        if (m->num == data[1]) {
-                                                c->mon = m;
-                                                break;
-                                        }
-                                if (c->tags == (~0 & TAGMASK))
-                                        i = 0;
-                                else {
-                                        for (i = 0; i < LENGTH(tags) && !(c->tags & 1 << i); i++);
-                                        i++;
-                                }
-                                if (i <= LENGTH(tags))
-                                        c->mon->pertag->ltidxs[i][c->mon->pertag->sellts[i]] = &layouts[1];
-                        }
-                        XFree(data);
-                        XDeleteProperty(dpy, c->win, netatom[NetClientInfo]);
-                }
-        }
-        for (Monitor *m = mons; m; m = m->next)
-                arrange(m);
-}
-
 int
 main(int argc, char *argv[])
 {
@@ -3777,9 +3894,11 @@ main(int argc, char *argv[])
 	setup();
 	scan();
         if (runningstate == Restarted)
-                restoreclients();
+                restoresession();
         runningstate = Running;
 	run();
+        if (runningstate == Restart)
+                savesession();
 	cleanup();
         restorestatus();
 	XCloseDisplay(dpy);
