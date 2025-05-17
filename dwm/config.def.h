@@ -66,9 +66,12 @@ static const char col1[]                = "#8fb4a6"; /* default icon color */
 static const char col2[]                = "#bebd82"; /* alternate icon color */
 static const char col3[]                = "#cda091"; /* mail block - syncing */
 static const char col4[]                = "#9e95cd"; /* mail block - frozen */
+static const char col5[]                = "#fabd2f";
+static const char col6[]                = "#1d2021";
 
-enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3, SchemeCol4,
-       SchemeCol5, SchemeNorm, SchemeSel, SchemeUrg, SchemeLtSm }; /* color schemes */
+enum { SchemeStts, SchemeCol1, SchemeCol2, SchemeCol3,
+       SchemeCol4, SchemeCol5, SchemeNorm, SchemeSel,
+       SchemeUrg, SchemeLtSm, SchemeFhint }; /* color schemes */
 
 static const char *colors[][3] = {
         /*                  fg            bg              border   */
@@ -78,9 +81,10 @@ static const char *colors[][3] = {
 	[SchemeCol3]    = { col3,         col_black,      col_gray2 },
 	[SchemeCol4]    = { col4,         col_black,      col_gray2 },
 	[SchemeNorm]    = { col_white1,   col_gray1,      col_gray2 },
-	[SchemeSel]     = { col_white1,   col_cyan,       col_cyan },
-	[SchemeUrg]     = { col_white1,   col_red,        col_red },
+	[SchemeSel]     = { col_white1,   col_cyan,       col_cyan  },
+	[SchemeUrg]     = { col_white1,   col_red,        col_red   },
 	[SchemeLtSm]    = { col_white2,   col_black,      col_gray2 },
+	[SchemeFhint]   = { col6,         col5,           col5      },
 };
 
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
@@ -202,29 +206,29 @@ static const Fhint fhints[] = {
 	/* key                          hint */
 	{ XK_f,                         "F" },
 	{ XK_j,                         "J" },
-	{ XK_d,                         "D" },
 	{ XK_k,                         "K" },
-	{ XK_s,                         "S" },
 	{ XK_l,                         "L" },
-	{ XK_a,                         "A" },
-	{ XK_semicolon,                 ";" },
-	{ XK_g,                         "G" },
+	{ XK_d,                         "D" },
+	{ XK_s,                         "S" },
 	{ XK_h,                         "H" },
-	{ XK_space,                     "_" },
-	{ XK_t,                         "T" },
 	{ XK_y,                         "Y" },
-	{ XK_r,                         "R" },
 	{ XK_u,                         "U" },
+	{ XK_g,                         "G" },
+	{ XK_t,                         "T" },
+	{ XK_r,                         "R" },
 	{ XK_e,                         "E" },
-	{ XK_i,                         "I" },
-	{ XK_w,                         "W" },
 	{ XK_o,                         "O" },
-	{ XK_v,                         "V" },
-	{ XK_c,                         "C" },
+	{ XK_w,                         "W" },
 	{ XK_n,                         "N" },
 	{ XK_m,                         "M" },
-	{ XK_b,                         "B" },
+	{ XK_space,                     "_" },
+	{ XK_semicolon,                 ";" },
+	{ XK_a,                         "A" },
+	{ XK_i,                         "I" },
+	{ XK_v,                         "V" },
+	{ XK_c,                         "C" },
 	{ XK_p,                         "P" },
+	{ XK_b,                         "B" },
 	{ XK_x,                         "X" },
 	{ XK_z,                         "Z" },
 	{ XK_q,                         "Q" },

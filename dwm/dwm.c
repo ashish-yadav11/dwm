@@ -1121,18 +1121,18 @@ drawfhints(void)
 {
         int w;
         XSetWindowAttributes wa = {
-                .background_pixel = scheme[SchemeNorm][ColBg].pixel,
+                .background_pixel = scheme[SchemeFhint][ColBg].pixel,
         };
 
         for (Client *c = selmon->clients; c; c = c->next)
                 if (c->hidx > 0) {
                         w = TEXTW(fhints[c->hidx - 1].h);
-                        c->hwin = XCreateWindow(dpy, c->win, 0, 0, w, bh, 0,
+                        c->hwin = XCreateWindow(dpy, c->win, 0, 0, w - 6, bh - 4, 0,
                                         CopyFromParent, CopyFromParent, CopyFromParent,
                                         CWBackPixel, &wa);
                         XMapWindow(dpy, c->hwin);
-                        drw_setscheme(drw, scheme[SchemeNorm]);
-                        drw_text(drw, 0, 0, w, bh, lrpad / 2, fhints[c->hidx - 1].h, 0);
+                        drw_setscheme(drw, scheme[SchemeFhint]);
+                        drw_text(drw, 0, 0, w-6, bh-4, lrpad/2 - 3, fhints[c->hidx-1].h, 0);
                         drw_map(drw, c->hwin, 0, 0, w, bh);
                 }
 }
@@ -1208,9 +1208,7 @@ drawtabhelper(Monitor *m, int onlystack)
 {
         int i;
         int ntabs, tbw, lft;
-        int x = 0;
-        char buf[264];
-        char *n;
+        int x = 0, xo, w;
         Client *c;
 
         if (onlystack) {
@@ -1226,17 +1224,18 @@ drawtabhelper(Monitor *m, int onlystack)
         tbw = m->ww / ntabs; /* provisional width for each tab */
         lft = m->ww - tbw * ntabs; /* leftover pixels */
         for (i = 0; i < ntabs; c = nexttiled(c->next), i++) {
-                n = c->name;
+                xo = x;
                 drw_setscheme(drw, scheme[c->isurgent ? SchemeUrg :
                                           c == selmon->sel ? SchemeSel :
                                           i % 2 == 0 ? SchemeNorm : SchemeStts]);
+                /* lrpad/2 below for padding */
+                x = drw_text(drw, x, 0, (i < lft ? tbw+1 : tbw) - lrpad/2, th, lrpad/2, c->name, 0);
+                drw_rect(drw, x, 0, lrpad/2, th, 1, 1); x += lrpad/2; /* clear right padding */
                 if (c->hidx > 0) {
-                        snprintf(buf, sizeof buf, "[%s] %s", fhints[c->hidx - 1].h, n);
-                        n = buf;
+                        w = TEXTW(fhints[c->hidx - 1].h);
+                        drw_setscheme(drw, scheme[SchemeFhint]);
+                        drw_text(drw, xo, 4, w - 6, th - 4, lrpad/2 - 3, fhints[c->hidx - 1].h, 0);
                 }
-                /* lrpad / 2 below for padding */
-                x = drw_text(drw, x, 0, (i < lft ? tbw + 1 : tbw) - lrpad / 2, th, lrpad / 2, n, 0);
-                drw_rect(drw, x, 0, lrpad / 2, th, 1, 1); x += lrpad / 2; /* clear right padding */
         }
         drw_map(drw, m->tabwin, 0, 0, m->ww, th);
 }
