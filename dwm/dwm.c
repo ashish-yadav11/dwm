@@ -3278,6 +3278,7 @@ togglewin(const Arg *arg)
                         focusclient(c, selmon->pertag->prevtag);
                 else
                         view(&((Arg){0}));
+                return;
         } else {
                 for (c = selmon->stack; c; c = c->snext)
                         if (c->scratchkey == ((Win*)(arg->v))->scratchkey) {
