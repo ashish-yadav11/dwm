@@ -199,7 +199,7 @@ static void windowlineupcv(const Arg *arg);
 static void windowlineups(const Arg *arg);
 static void windowswitcher(const Arg *arg);
 static void winview(const Arg* arg);
-static void zoomswap(const Arg *arg);
+static void zoomswap(const Arg* arg);
 static void zoomvar(const Arg *arg);
 
 static const Fhint fhints[] = {
@@ -289,6 +289,7 @@ static const Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_i,           incnmaster,             {.i = -1 } },
 	{ MODLKEY,                      XK_space,       zoomvar,                {.i = 1} },
 	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = 0} },
+	{ MODLKEY|ControlMask,          XK_space,       zoom,                   {0} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
 	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {0} },
 	{ MODLKEY,                      XK_f,           togglefocusfloat,       {0} },
@@ -886,28 +887,25 @@ showfloating(const Arg *arg)
 void
 togglefocusarea(const Arg *arg)
 {
-        int curidx, inrel;
-        Client *c, *i;
+        int loc, ismaster;
+        Client *c, *n;
 
         if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
                 return;
-        for (curidx = 0, i = selmon->clients; i != selmon->sel; i = i->next)
-                if (!i->isfloating && ISVISIBLE(i))
-                        curidx++;
-        inrel = (curidx < selmon->nmaster);
-        c = selmon->sel;
+        for (loc = 0, c = selmon->clients; c != selmon->sel; c = c->next)
+                if (!c->isfloating && ISVISIBLE(c))
+                        loc++;
+        ismaster = (loc < selmon->nmaster);
+        n = selmon->sel;
         do {
-                do
-                        c = c->snext;
-                while (c && (c->isfloating || !ISVISIBLE(c)));
-                if (c) {
-                        for (curidx = 0, i = selmon->clients; i != c; i = i->next)
-                                if (!i->isfloating && ISVISIBLE(i))
-                                        curidx++;
-                } else
+                while ((n = n->snext) && (n->isfloating || !ISVISIBLE(n)));
+                if (!n)
                         return;
-        } while ((curidx < selmon->nmaster) == inrel);
-        focusalt(c, 0);
+                for (loc = 0, c = selmon->clients; c != n; c = c->next)
+                        if (!c->isfloating && ISVISIBLE(c))
+                                loc++;
+        } while ((loc < selmon->nmaster) == ismaster);
+        focusalt(n, 0);
 }
 
 void
@@ -1031,12 +1029,44 @@ winview(const Arg* arg)
 }
 
 void
-zoomswap(const Arg *arg)
+zoomswap(const Arg* arg)
 {
-	Client *nmc, *bnmc, *omc;
+	Client *nm, *bnm, *om;
 
-	if (!selmon->sel)
+	if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
 		return;
+
+        nm = selmon->sel;
+        om = nexttiled(selmon->clients);
+	if (nm == om) {
+                while ((nm = nm->snext) && (nm->isfloating || !ISVISIBLE(nm)));
+                if (!nm)
+                        return;
+        } else {
+                Client **bom;
+
+                /* make om the "snext" without focusing it */
+                for (bom = &om->mon->stack; *bom && *bom != om; bom = &(*bom)->snext);
+                *bom = om->snext;
+                attachstack(om);
+        }
+        for (bnm = selmon->clients; bnm->next != nm; bnm = bnm->next);
+	detach(nm);
+	attach(nm);
+	/* swap nm and om instead of pushing the om down */
+	if (bnm != om) {
+                detach(om);
+                om->next = bnm->next;
+                bnm->next = om;
+	}
+	focusalt(nm, 1);
+}
+
+void
+zoomvar(const Arg *arg)
+{
+        if (!selmon->sel)
+                return;
         if (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange) {
                 resize(selmon->sel,
                        selmon->mx + (selmon->mw - WIDTH(selmon->sel)) / 2,
@@ -1044,37 +1074,6 @@ zoomswap(const Arg *arg)
                        selmon->sel->w, selmon->sel->h, 0);
                 return;
         }
-        nmc = selmon->sel;
-        omc = nexttiled(selmon->clients);
-	if (nmc == omc) {
-                do
-                        nmc = nmc->snext;
-                while (nmc && (nmc->isfloating || !ISVISIBLE(nmc)));
-                if (!nmc)
-                        return;
-        } else {
-                Client **bomc;
-
-                /* make omc the "snext" without focusing it */
-                for (bomc = &omc->mon->stack; *bomc && *bomc != omc; bomc = &(*bomc)->snext);
-                *bomc = omc->snext;
-                attachstack(omc);
-        }
-        for (bnmc = selmon->clients; bnmc->next != nmc; bnmc = bnmc->next);
-	detach(nmc);
-	attach(nmc);
-	/* swap nmc and omc instead of pushing the omc down */
-	if (bnmc != omc) {
-                detach(omc);
-                omc->next = bnmc->next;
-                bnmc->next = omc;
-	}
-	focusalt(nmc, 1);
-}
-
-void
-zoomvar(const Arg *arg)
-{
         if (((selmon->lt[selmon->sellt]->arrange == deckhor ||
               selmon->lt[selmon->sellt]->arrange == deckver) &&
              selmon->ntiles > selmon->nmaster + 1) == (_Bool)arg->i)

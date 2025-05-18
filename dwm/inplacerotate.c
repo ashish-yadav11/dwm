@@ -26,16 +26,16 @@ static void
 inplacerotate(const Arg *arg)
 {
         int argi;
-        int i, selidx;
+        int i, loc;
         Client *c, *head, *tail;
 
         if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
                 return;
         argi = (selmon->lt[selmon->sellt]->arrange == deckhor ||
                 selmon->lt[selmon->sellt]->arrange == deckver) ? -arg->i : arg->i;
-        for (selidx = 0, c = selmon->clients; c != selmon->sel; c = c->next)
+        for (loc = 0, c = selmon->clients; c != selmon->sel; c = c->next)
                 if (!c->isfloating && ISVISIBLE(c))
-                        selidx++;
+                        loc++;
         /* all clients rotate */
         if (argi > 0) {
                 c = head = nexttiled(selmon->clients);
@@ -50,7 +50,7 @@ inplacerotate(const Arg *arg)
                         movebefore(tail, head);
         } else {
                 /* master clients rotate */
-                if (selidx < selmon->nmaster) {
+                if (loc < selmon->nmaster) {
                         c = head = nexttiled(selmon->clients);
                         i = selmon->nmaster;
                         do
@@ -75,7 +75,7 @@ inplacerotate(const Arg *arg)
         }
         /* restore focus position
         for (c = selmon->clients;
-             c->isfloating || !ISVISIBLE(c) || selidx-- > 0;
+             c->isfloating || !ISVISIBLE(c) || loc-- > 0;
              c = c->next);
         focusalt(c, 1); */
         arrange(selmon);

@@ -3988,17 +3988,10 @@ zoom(const Arg *arg)
 {
 	Client *c = selmon->sel;
 
-        if (!c || c->isfullscreen)
-                return;
-        if (c->isfloating || !selmon->lt[selmon->sellt]->arrange) {
-                resize(c, selmon->mx + (selmon->mw - WIDTH(c)) / 2,
-                          selmon->my + (selmon->mh - HEIGHT(c)) / 2,
-                          c->w, c->h, 0);
-                return;
-        }
-	if (c == nexttiled(selmon->clients))
-		if (!c || !(c = nexttiled(c->next)))
-			return;
+	if (!selmon->lt[selmon->sellt]->arrange || !c || c->isfloating)
+		return;
+	if (c == nexttiled(selmon->clients) && !(c = nexttiled(c->next)))
+		return;
 	pop(c);
 }
 
