@@ -181,6 +181,7 @@ static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
 static void hidefloating(const Arg *arg);
 static void hideshowfloating(const Arg *arg);
+static void inplacerotvar(const Arg *arg);
 static Client *nextsamefloat(int next);
 static Client *nextvisible(int next);
 static void push(const Arg *arg);
@@ -261,10 +262,10 @@ static const Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_Down,        push,                   {.i = +1 } },
 	{ MODLKEY|ShiftMask,            XK_k,           push,                   {.i = -1 } },
 	{ MODLKEY|ShiftMask,            XK_Up,          push,                   {.i = -1 } },
-	{ SUPKEY,                       XK_comma,       inplacerotate,          {.i = +1 } },
-	{ SUPKEY,                       XK_period,      inplacerotate,          {.i = +2 } },
-	{ SUPKEY|ShiftMask,             XK_comma,       inplacerotate,          {.i = -1 } },
-	{ SUPKEY|ShiftMask,             XK_period,      inplacerotate,          {.i = -2 } },
+	{ SUPKEY,                       XK_comma,       inplacerotvar,          {.i = -1 } },
+	{ SUPKEY,                       XK_period,      inplacerotvar,          {.i = +1 } },
+	{ SUPKEY|ShiftMask,             XK_comma,       inplacerotvar,          {.i = -2 } },
+	{ SUPKEY|ShiftMask,             XK_period,      inplacerotvar,          {.i = +2 } },
 	{ SUPKEY,                       XK_j,           floatmoveresize,        {.v = (int []){MoveY, +20} } },
 	{ SUPKEY,                       XK_Down,        floatmoveresize,        {.v = (int []){MoveY, +20} } },
 	{ SUPKEY,                       XK_k,           floatmoveresize,        {.v = (int []){MoveY, -20} } },
@@ -287,8 +288,8 @@ static const Key keys[] = {
 	{ SUPKEY|ControlMask,           XK_Up,          floatmoveresize,        {.v = (int []){ResizeA, -20} }},
 	{ MODLKEY,                      XK_i,           incnmaster,             {.i = +1 } },
 	{ MODLKEY|ShiftMask,            XK_i,           incnmaster,             {.i = -1 } },
-	{ MODLKEY,                      XK_space,       zoomvar,                {.i = 1} },
-	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = 0} },
+	{ MODLKEY,                      XK_space,       zoomvar,                {.i = +1} },
+	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = -1} },
 	{ MODLKEY|ControlMask,          XK_space,       zoom,                   {0} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
 	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {0} },
@@ -739,6 +740,19 @@ hideshowfloating(const Arg *arg)
         }
 }
 
+void
+inplacerotvar(const Arg *arg)
+{
+        Arg varg;
+
+        if (selmon->lt[selmon->sellt]->arrange == deckhor ||
+            selmon->lt[selmon->sellt]->arrange == deckver) {
+                varg.i = abs(arg->i) == 1 ? 2 * arg->i : (arg->i > 1) - (arg->i < 1);
+        } else
+                varg.i = arg->i;
+        inplacerotate(&varg);
+}
+
 /* the following two functions assume non-NULL selmon->sel */
 Client *
 nextsamefloat(int next)
@@ -1031,40 +1045,43 @@ winview(const Arg* arg)
 void
 zoomswap(const Arg* arg)
 {
-	Client *nm, *bnm, *om;
+	Client *c = selmon->sel, *bc, *mc;
+        Client **tc;
 
-	if (!selmon->sel || selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange)
+	if (!selmon->lt[selmon->sellt]->arrange || !c || c->isfloating)
 		return;
 
-        nm = selmon->sel;
-        om = nexttiled(selmon->clients);
-	if (nm == om) {
-                while ((nm = nm->snext) && (nm->isfloating || !ISVISIBLE(nm)));
-                if (!nm)
+        mc = nexttiled(selmon->clients);
+	if (c == mc) {
+                while ((c = c->snext) && (c->isfloating || !ISVISIBLE(c)));
+                if (!c)
                         return;
         } else {
-                Client **bom;
-
-                /* make om the "snext" without focusing it */
-                for (bom = &om->mon->stack; *bom && *bom != om; bom = &(*bom)->snext);
-                *bom = om->snext;
-                attachstack(om);
+                /* make mc "snext" without focusing it */
+                for (tc = &selmon->stack; *tc && *tc != mc; tc = &(*tc)->snext);
+                *tc = mc->snext;
+                mc->snext = c->snext;
+                c->snext = mc;
         }
-        for (bnm = selmon->clients; bnm->next != nm; bnm = bnm->next);
-	detach(nm);
-	attach(nm);
-	/* swap nm and om instead of pushing the om down */
-	if (bnm != om) {
-                detach(om);
-                om->next = bnm->next;
-                bnm->next = om;
+        for (bc = selmon->clients; bc->next != c; bc = bc->next);
+	detach(c);
+	attach(c);
+	/* swap c and mc instead of pushing the mc down */
+	if (bc != mc) {
+                detach(mc);
+                mc->next = bc->next;
+                bc->next = mc;
 	}
-	focusalt(nm, 1);
+	focusalt(c, 1);
 }
 
 void
 zoomvar(const Arg *arg)
 {
+        int n;
+        Client *c;
+        Client **tc;
+
         if (!selmon->sel)
                 return;
         if (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange) {
@@ -1074,13 +1091,43 @@ zoomvar(const Arg *arg)
                        selmon->sel->w, selmon->sel->h, 0);
                 return;
         }
-        if (((selmon->lt[selmon->sellt]->arrange == deckhor ||
-              selmon->lt[selmon->sellt]->arrange == deckver) &&
-             (selmon->nmaster == 1 && selmon->ntiles > selmon->nmaster + 1))
-                        == (_Bool)arg->i)
-                zoomswap(&((Arg){0}));
-        else
+        if (selmon->lt[selmon->sellt]->arrange == monocle) {
+                if (arg->i > 0)
+                        inplacezoom(&((Arg){.i = 1}));
+                else
+                        zoom(&((Arg){0}));
+                return;
+        }
+        if (selmon->lt[selmon->sellt]->arrange == deckhor ||
+            selmon->lt[selmon->sellt]->arrange == deckver) {
+                for (n = 1, c = selmon->clients; c != selmon->sel; c = c->next)
+                        if (!c->isfloating && ISVISIBLE(c))
+                                n++;
+                if (n > selmon->nmaster) {
+                        if (arg->i < 0) {
+                                inplacezoom(&((Arg){.i = -1}));
+                                return;
+                        }
+                        /* last master client */
+                        for (n = selmon->nmaster - 1, c = selmon->clients;
+                             c->isfloating || !ISVISIBLE(c) || n-- > 0;
+                             c = c->next);
+                        /* selmon->sel is already the top client */
+                        if (c == selmon->sel)
+                                return;
+                        /* make the displaced master client "snext" */
+                        for (tc = &selmon->stack; *tc && *tc != c; tc = &(*tc)->snext);
+                        *tc = c->snext;
+                        c->snext = selmon->sel->snext;
+                        selmon->sel->snext = c;
+                        zoom(&((Arg){0}));
+                        return;
+                }
+        }
+        if (arg->i > 0)
                 zoom(&((Arg){0}));
+        else
+                zoomswap(&((Arg){0}));
 }
 
 /* Window rules */

@@ -2316,13 +2316,13 @@ restoresession(void)
                 nc = fscanf(fp, "M %d %d %u %u %u %u\n", &mn, &sb, &tgc, &tgp, &ct, &pt);
                 if (nc != 6) {
                         fputs("dwm: corrupt monitor data in sessionfile\n", stderr);
-                        do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
+                        do nc = fgetc(fp); while (nc != EOF && nc != '\n');
                         continue;
                 }
                 for (m = mons; m && m->num != mn; m = m->next);
                 if (!m) {
                         fputs("dwm: restoresession couldn't find monitor\n", stderr);
-                        do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
+                        do nc = fgetc(fp); while (nc != EOF && nc != '\n');
                         continue;
                 }
                 p = m->pertag;
@@ -2330,11 +2330,12 @@ restoresession(void)
                 || !((ct == 0 && tgc == TAGMASK) || (1 << (ct - 1)) & tgc)
                 || !((pt == 0 && tgp == TAGMASK) || (1 << (pt - 1)) & tgp)) {
                         fputs("dwm: corrupt monitor data in sessionfile\n", stderr);
-                        do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
+                        do nc = fgetc(fp); while (nc != EOF && nc != '\n');
                         continue;
                 }
                 m->showbar = sb;
-                m->tagset[m->seltags] = tgc, m->tagset[m->seltags ^ 1] = tgp;
+                m->tagset[m->seltags] = tgc;
+                m->tagset[m->seltags ^ 1] = tgp;
                 p->curtag = ct, p->prevtag = pt;
                 for (i = 0; i <= LENGTH(tags); i++) {
                         if ((nc = fscanf(fp, "T %d %f %d %u %u %u %u %d %d\n",
@@ -2342,19 +2343,21 @@ restoresession(void)
                                          &atc, &atp, &sp0, &sp1)) != 9) {
                                 if (nc == 0) break;
                                 fputs("dwm: corrupt pertag data in sessionfile\n", stderr);
-                                do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
+                                do nc = fgetc(fp); while (nc != EOF && nc != '\n');
                                 continue;
                         }
                         if (nm < 0 || mf < MINMFACT || mf > MAXMFACT || st < 0 || st > 1
                         || ltc >= LENGTH(layouts) || ltp >= LENGTH(layouts)
                         || atc >= LENGTH(attachs) || atp >= LENGTH(attachs)) {
                                 fputs("dwm: corrupt pertag data in sessionfile\n", stderr);
-                                do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
+                                do nc = fgetc(fp); while (nc != EOF && nc != '\n');
                                 continue;
                         }
                         p->nmasters[i] = nm, p->mfacts[i] = mf, p->showtabs[i] = st;
-                        p->ltidxs[i][p->sellts[i]] = ltc, p->ltidxs[i][p->sellts[i] ^ 1] = ltp;
-                        p->attidxs[i][p->selatts[i]] = atc, p->attidxs[i][p->selatts[i] ^ 1] = atp;
+                        p->ltidxs[i][p->sellts[i]] = ltc;
+                        p->ltidxs[i][p->sellts[i] ^ 1] = ltp;
+                        p->attidxs[i][p->selatts[i]] = atc;
+                        p->attidxs[i][p->selatts[i] ^ 1] = atp;
                         p->splus[i][0] = sp0, p->splus[i][1] = sp1;
                 }
                 m->lt[0] = &layouts[m->pertag->ltidxs[ct][0]];
@@ -2364,7 +2367,7 @@ restoresession(void)
                                 continue;
                         if (tg != (tg & TAGMASK) || f < 0 || f > 1 || h < 0 || h > 1) {
                                 fputs("dwm: corrupt client data in sessionfile\n", stderr);
-                                do { nc = fgetc(fp); } while (nc != EOF && nc != '\n');
+                                do nc = fgetc(fp); while (nc != EOF && nc != '\n');
                                 continue;
                         }
                         c->tags = tg, c->isfloating = f, c->ishidden = h;
