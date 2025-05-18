@@ -926,13 +926,12 @@ void
 togglefocusfloat(const Arg *arg)
 {
         Client *c;
+        _Bool f = selmon->sel->isfloating;
 
         if (!selmon->sel || !selmon->lt[selmon->sellt]->arrange)
                 return;
-        if (selmon->sel->isfloating)
-                for (c = selmon->sel; c && (c->isfloating || !ISVISIBLE(c)); c = c->snext);
-        else
-                for (c = selmon->sel; c && (!c->isfloating || !ISVISIBLE(c)); c = c->snext);
+        for (c = selmon->sel; c &&
+                ((_Bool)c->isfloating == f || !ISVISIBLE(c)); c = c->snext);
         if (c)
                 focusalt(c, 0);
 }
