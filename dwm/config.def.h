@@ -1076,10 +1076,11 @@ zoomvar(const Arg *arg)
         }
         if (((selmon->lt[selmon->sellt]->arrange == deckhor ||
               selmon->lt[selmon->sellt]->arrange == deckver) &&
-             selmon->ntiles > selmon->nmaster + 1) == (_Bool)arg->i)
-                        zoomswap(&((Arg){0}));
+             (selmon->nmaster == 1 && selmon->ntiles > selmon->nmaster + 1))
+                        == (_Bool)arg->i)
+                zoomswap(&((Arg){0}));
         else
-                        zoom(&((Arg){0}));
+                zoom(&((Arg){0}));
 }
 
 /* Window rules */
