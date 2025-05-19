@@ -1490,13 +1490,9 @@ focustiled(const Arg *arg)
                 return;
         if (n < 0)
                 n = selmon->ntiles + n + 1;
-        do
-                c = i;
-        while (--n > 0 && (i = nexttiled(i->next)));
+        do c = i; while (--n > 0 && (i = nexttiled(i->next)));
         if (c == selmon->sel) {
-                do
-                        c = c->snext;
-                while (c && !ISVISIBLE(c));
+                do c = c->snext; while (c && !ISVISIBLE(c));
                 if (!c)
                         return;
         }
@@ -1511,9 +1507,7 @@ focuswin(const Arg* arg)
 
         for (; c && (c->isfloating || !ISVISIBLE(c) || i-- > 0); c = c->next);
         if (c == selmon->sel)
-                do
-                        c = c->snext;
-                while (c && !ISVISIBLE(c));
+                do c = c->snext; while (c && !ISVISIBLE(c));
         if (c)
                 focusalt(c, 0);
 }
