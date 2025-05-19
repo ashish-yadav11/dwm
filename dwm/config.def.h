@@ -319,7 +319,7 @@ static const Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_Tab,         focuslastvisible,       {.i = 1} },
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
-	{ SUPKEY,                       XK_v,           winview,                {0} },
+	{ SUPKEY,                       XK_o,           winview,                {0} },
 	{ MODLKEY,                      XK_q,           windowswitcher,         {.i = +1} },
 	{ MODLKEY|ControlMask,          XK_q,           windowswitcher,         {.i = -1} },
 	{ SUPKEY,                       XK_q,           windowswitcher,         {.i = +2} },
