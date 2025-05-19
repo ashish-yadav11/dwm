@@ -122,7 +122,6 @@ static const char *const *scratchcmds[] = {
 	(const char *[]){ "st", "-n", "calcurse-st", "-t", "Calcurse", "-e", "calcurse", NULL },
 	ASKLAUNCH("Signal", "signal-desktop", "--use-tray-icon"),
 	ASKLAUNCH("Telegram", "telegram-desktop"),
-	(const char *[]){ SCRIPT("scrcpy.sh"), NULL },
 	(const char *[]){ "st", "-n", "music-st", "-e", "ranger", "/media/storage/Music", NULL },
 	(const char *[]){ "st", "-n", "neovim-st", "-e", "nvim", NULL },
 };
@@ -297,6 +296,8 @@ static const Key keys[] = {
 	{ MODLKEY|ShiftMask,            XK_f,           togglefullscreen,       {0} },
 	{ SUPKEY,                       XK_f,           togglefloating,         {.i = 1} },
 	{ SUPKEY|ShiftMask,             XK_f,           togglefloating,         {.i = 0} },
+	{ MODLKEY,                      XK_o,           fhintsmode,             {.i = 0} },
+	{ MODLKEY|ShiftMask,            XK_o,           fhintsmode,             {.i = 1} },
 	{ MODLKEY,                      XK_v,           fhintsmode,             {.i = 0} },
 	{ MODLKEY|ShiftMask,            XK_v,           fhintsmode,             {.i = 1} },
 	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
@@ -318,7 +319,7 @@ static const Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_Tab,         focuslastvisible,       {.i = 1} },
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
-	{ MODLKEY,                      XK_o,           winview,                {0} },
+	{ SUPKEY,                       XK_v,           winview,                {0} },
 	{ MODLKEY,                      XK_q,           windowswitcher,         {.i = +1} },
 	{ MODLKEY|ControlMask,          XK_q,           windowswitcher,         {.i = -1} },
 	{ SUPKEY,                       XK_q,           windowswitcher,         {.i = +2} },
@@ -334,9 +335,8 @@ static const Key keys[] = {
 	{ SUPKEY,                       XK_c,           scratchtoggle,          {.i = 4} },
 	{ SUPKEY,                       XK_e,           scratchtoggle,          {.i = 5} },
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
-	{ SUPKEY,                       XK_o,           scratchtoggle,          {.i = 7} },
-	{ SUPKEY,                       XK_y,           scratchtoggle,          {.i = 8} },
-	{ SUPKEY,                       XK_u,           scratchtoggle,          {.i = 9} },
+	{ SUPKEY,                       XK_y,           scratchtoggle,          {.i = 7} },
+	{ SUPKEY,                       XK_u,           scratchtoggle,          {.i = 8} },
 	{ SUPKEY,                       XK_a,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(1) } },
 	{ SUPKEY|ShiftMask,             XK_a,           dynscratchunmark,       {.i = DYNSCRATCHKEY(1) } },
 	{ SUPKEY,                       XK_s,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(2) } },
@@ -1166,13 +1166,13 @@ applyrules(Client *c)
                 c->h = 450;
                 center(c);
         } else if (strcmp(instance, "music-st") == 0) {
-                markscratch(c, 8);
+                markscratch(c, 7);
                 c->isfloating = 1;
                 center(c);
         } else if (strcmp(instance, "neomutt-st") == 0) {
                 markscratch(c, mail.scratchkey);
         } else if (strcmp(instance, "neovim-st") == 0) {
-                markscratch(c, 9);
+                markscratch(c, 8);
                 c->isfloating = 1;
                 c->w = 1060;
                 c->h = 590;
@@ -1188,10 +1188,6 @@ applyrules(Client *c)
                 c->isfloating = 1;
                 c->w = 980;
                 c->h = 570;
-                center(c);
-        } else if (strcmp(class, "scrcpy") == 0) {
-                markscratch(c, 7);
-                c->isfloating = 1;
                 center(c);
         } else if (strcmp(class, "Signal") == 0) {
                 markscratch(c, 5);
