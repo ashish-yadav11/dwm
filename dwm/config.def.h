@@ -298,8 +298,6 @@ static const Key keys[] = {
 	{ SUPKEY|ShiftMask,             XK_f,           togglefloating,         {.i = 0} },
 	{ MODLKEY,                      XK_o,           fhintsmode,             {.i = 0} },
 	{ MODLKEY|ShiftMask,            XK_o,           fhintsmode,             {.i = 1} },
-	{ MODLKEY,                      XK_v,           fhintsmode,             {.i = 0} },
-	{ MODLKEY|ShiftMask,            XK_v,           fhintsmode,             {.i = 1} },
 	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
 	{ MODLKEY,                      XK_e,           setlayout,              {.i = 0} },
 	{ MODLKEY|ShiftMask,            XK_e,           setlayout,              {.i = 1} },
