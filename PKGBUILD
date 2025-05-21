@@ -12,7 +12,7 @@ depends=(libx11 libxft freetype2)
 optdepends=('rofi: default app launcher and window switcher')
 provides=(dwm)
 conflicts=(dwm)
-options=('!strip')
+options=(debug '!strip')
 source=("$_pkgname.tar.gz"
         "$_pkgname.desktop")
 sha256sums=(SKIP
