@@ -3264,7 +3264,7 @@ togglewin(const Arg *arg)
 {
         int key = ((Win *)(arg->v))->scratchkey;
         unsigned int tag = ((Win *)(arg->v))->tag;
-        Client *c, *f, *g;
+        Client *c, *f;
 
         if (selmon->sel && selmon->sel->scratchkey == key) {
                 for (c = selmon->sel->snext; c && (c->ishidden || !c->tags); c = c->snext);
@@ -3275,18 +3275,16 @@ togglewin(const Arg *arg)
                 }
                 return;
         } else {
-                for (f = g = NULL, c = selmon->stack; c; c = c->snext)
+                for (f = NULL, c = selmon->stack; c; c = c->snext)
                         if (c->scratchkey == key) {
-                                if (c->tags & selmon->tagset[selmon->seltags]) {
-                                        focusalt(c, unhideifhidden(c, tag));
-                                        return;
-                                } else if (!f && tag && c->tags & 1 << (tag - 1)) {
+                                if (tag && c->tags & 1 << (tag - 1)) {
                                         f = c;
-                                } else if (!g) {
-                                        g = c;
+                                        break;
                                 }
+                                if (!f)
+                                        f = c;
                         }
-                if (f || (f = g)) {
+                if (f) {
                         focusclient(f, tag);
                         return;
                 }
