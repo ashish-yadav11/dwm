@@ -3283,7 +3283,7 @@ togglewin(const Arg *arg)
                                 }
                         }
                 if (f) {
-                        focusclient(c, ((Win*)(arg->v))->tag);
+                        focusclient(f, ((Win*)(arg->v))->tag);
                         return;
                 }
                 for (Monitor *m = mons; m; m = m->next) {
