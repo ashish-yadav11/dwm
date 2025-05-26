@@ -3267,6 +3267,14 @@ togglewin(const Arg *arg)
         Client *c, *f;
 
         if (selmon->sel && selmon->sel->scratchkey == key) {
+                if (tag && !(selmon->sel->tags & 1 << (tag - 1))) {
+                        for (c = selmon->stack; c; c = c->snext)
+                                if (c->scratchkey == key && c->tags & 1 << (tag - 1)) {
+                                        focusclient(c, tag);
+                                        return;
+                                }
+                        return;
+                }
                 for (c = selmon->sel->snext; c && (c->ishidden || !c->tags); c = c->snext);
                 if (c) {
                         focusclient(c, selmon->pertag->prevtag);
@@ -3278,8 +3286,8 @@ togglewin(const Arg *arg)
                 for (f = NULL, c = selmon->stack; c; c = c->snext)
                         if (c->scratchkey == key) {
                                 if (tag && c->tags & 1 << (tag - 1)) {
-                                        f = c;
-                                        break;
+                                        focusclient(c, tag);
+                                        return;
                                 }
                                 if (!f)
                                         f = c;
