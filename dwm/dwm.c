@@ -3262,9 +3262,11 @@ toggleview(const Arg *arg)
 void
 togglewin(const Arg *arg)
 {
-        Client *c, *f;
+        int key = ((Win *)(arg->v))->scratchkey;
+        unsigned int tag = ((Win *)(arg->v))->tag;
+        Client *c, *f, *g;
 
-        if (selmon->sel && selmon->sel->scratchkey == ((Win*)(arg->v))->scratchkey) {
+        if (selmon->sel && selmon->sel->scratchkey == key) {
                 for (c = selmon->sel->snext; c && (c->ishidden || !c->tags); c = c->snext);
                 if (c) {
                         focusclient(c, selmon->pertag->prevtag);
@@ -3273,32 +3275,36 @@ togglewin(const Arg *arg)
                 }
                 return;
         } else {
-                for (f = NULL, c = selmon->stack; c; c = c->snext)
-                        if (c->scratchkey == ((Win*)(arg->v))->scratchkey) {
+                for (f = g = NULL, c = selmon->stack; c; c = c->snext)
+                        if (c->scratchkey == key) {
                                 if (c->tags & selmon->tagset[selmon->seltags]) {
-                                        focusalt(c, unhideifhidden(c, ((Win*)(arg->v))->tag));
+                                        focusalt(c, unhideifhidden(c, tag));
                                         return;
-                                } else if (!f) {
+                                } else if (!f && tag && c->tags & 1 << (tag - 1)) {
                                         f = c;
+                                } else if (!g) {
+                                        g = c;
                                 }
                         }
-                if (f) {
-                        focusclient(f, ((Win*)(arg->v))->tag);
+                if (f || (f = g)) {
+                        focusclient(f, tag);
                         return;
                 }
                 for (Monitor *m = mons; m; m = m->next) {
                         if (m == selmon)
                                 continue;
                         for (c = m->stack; c; c = c->snext)
-                                if (c->scratchkey == ((Win*)(arg->v))->scratchkey) {
-                                        view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
+                                if (c->scratchkey == key) {
+                                        if (tag)
+                                                view(&((Arg){ .ui = 1 << (tag - 1) }));
                                         sendmon(c, selmon);
                                         return;
                                 }
                 }
         }
-        view(&((Arg){ .ui = 1 << (((Win*)(arg->v))->tag - 1) }));
-        spawn(&((Win*)(arg->v))->cmd);
+        if (tag)
+                view(&((Arg){ .ui = 1 << (tag - 1) }));
+        spawn(&((Win *)(arg->v))->cmd);
 }
 
 void
