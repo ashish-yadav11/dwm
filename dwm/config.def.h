@@ -1086,7 +1086,7 @@ zoomvar(const Arg *arg)
         Client *c;
         Client **tc;
 
-        if (!selmon->sel)
+        if (!selmon->sel || selmon->sel->isfullscreen)
                 return;
         if (selmon->sel->isfloating || !selmon->lt[selmon->sellt]->arrange) {
                 resize(selmon->sel,
