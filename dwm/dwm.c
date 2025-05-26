@@ -846,9 +846,10 @@ clientmessage(XEvent *e)
                                           (cme->data.l[0] == NET_WM_STATE_TOGGLE &&
                                            !c->isfullscreen)));
                 }
-	} else if (cme->message_type == netatom[NetActiveWindow])
+	} else if (cme->message_type == netatom[NetActiveWindow]) {
                 if (c != selmon->sel)
                         focusclient(c, 0);
+        }
 /*
 	} else if (cme->message_type == netatom[NetActiveWindow]) {
                 if (c->mon == selmon) {
@@ -1045,10 +1046,11 @@ dirtomon(int dir)
 	if (dir > 0) {
 		if (!(m = selmon->next))
 			m = mons;
-	} else if (selmon == mons)
+	} else if (selmon == mons) {
 		for (m = mons; m->next; m = m->next);
-	else
+        } else {
 		for (m = mons; m->next != selmon; m = m->next);
+        }
 	return m;
 }
 */
@@ -1114,8 +1116,9 @@ drawbar(Monitor *m)
                 if (m->sel->isfloating)
                         drw_rect(drw, x + boxs, boxs, boxw, boxw, m->sel->isfixed, 0);
                 drw_rect(drw, w, 0, lrpad / 2, bh, 1, 1); /* clear right padding */
-        } else if (w > 0)
+        } else if (w > 0) {
                 drw_rect(drw, x, 0, w, bh, 1, 1); /* clear title area */
+        }
 
 	drw_map(drw, m->barwin, 0, 0, m->ww, bh);
 }
@@ -1278,8 +1281,9 @@ enternotify(XEvent *e)
 		XSetInputFocus(dpy, root, RevertToPointerRoot, CurrentTime);
 		XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
                 updateselmon(m);
-	} else if (!c || c == selmon->sel)
+	} else if (!c || c == selmon->sel) {
 		return;
+        }
 	focus(c);
 }
 */
@@ -2044,15 +2048,17 @@ propertynotify(XEvent *e)
 			if (c == c->mon->sel)
 				drawbar(c->mon);
 			drawtab(c->mon);
-		} else if (ev->atom == netatom[NetWMWindowType])
+		} else if (ev->atom == netatom[NetWMWindowType]) {
 			updatewindowtype(c, 0);
+                }
         } else if ((i = wintosystrayicon(ev->window))) {
                 if (ev->atom == XA_WM_NORMAL_HINTS) {
                         updatesizehints(i->win, &i->sh);
                         if (updatesystrayicongeom(i, i->w, i->h) && i->ismapped)
                                 updatesystray();
-                } else if (ev->atom == xatom[XembedInfo])
+                } else if (ev->atom == xatom[XembedInfo]) {
                         updatesystrayiconstate(i, ev);
+                }
         }
 }
 

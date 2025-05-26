@@ -519,11 +519,12 @@ dynscratchtoggle(const Arg *arg)
                         focuslast(&((Arg){0}));
                 }
         } else if (!scratchshowhelper(arg->i)) {
-                if (selmon->sel->scratchkey == 0) {
+                if (selmon->sel->scratchkey <= 0) {
                         selmon->sel->scratchkey = arg->i;
                         spawn(&((Arg)NOTIFYDYNSCRATCH1));
-                } else
+                } else {
                         spawn(&((Arg)NOTIFYDYNSCRATCH2));
+                }
         }
 }
 
