@@ -13,9 +13,9 @@ movebefore(Client *c, Client *p)
         Client *i;
 
         detach(c);
-        if (p == selmon->clients)
+        if (p == selmon->clients) {
                 attach(c);
-        else {
+        } else {
                 for (i = selmon->clients; i->next != p; i = i->next);
                 i->next = c;
                 c->next = p;
@@ -55,10 +55,11 @@ inplacerotate(const Arg *arg)
         }
         if (head == tail)
                 return;
-        if (arg->i < 0)
+        if (arg->i < 0) {
                 moveafter(head, tail);
-        else
+        } else {
                 movebefore(tail, head);
+        }
         arrange(selmon);
 }
 

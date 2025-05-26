@@ -513,10 +513,11 @@ void
 dynscratchtoggle(const Arg *arg)
 {
         if (selmon->sel && selmon->sel->scratchkey == arg->i) {
-                if (selmon->sel->isfloating)
+                if (selmon->sel->isfloating) {
                         scratchhidehelper();
-                else
+                } else {
                         focuslast(&((Arg){0}));
+                }
         } else if (!scratchshowhelper(arg->i)) {
                 if (selmon->sel->scratchkey == 0) {
                         selmon->sel->scratchkey = arg->i;
@@ -550,10 +551,11 @@ floatmoveresize(const Arg *arg)
                         int mw = selmon->wx + selmon->ww;
 
                         /* snap to monitor edge on first try of crossover */
-                        if (nx < selmon->wx && selmon->sel->x > selmon->wx)
+                        if (nx < selmon->wx && selmon->sel->x > selmon->wx) {
                                 nx = selmon->wx;
-                        else if (nx + cw > mw && selmon->sel->x + cw < mw)
+                        } else if (nx + cw > mw && selmon->sel->x + cw < mw) {
                                 nx = mw - cw;
+                        }
                         resize(selmon->sel, nx, selmon->sel->y, selmon->sel->w, selmon->sel->h, 1);
                 }
                         break;
@@ -564,10 +566,11 @@ floatmoveresize(const Arg *arg)
                         int mh = selmon->wy + selmon->wh;
 
                         /* snap to monitor edge on first try of crossover */
-                        if (ny < selmon->wy && selmon->sel->y > selmon->wy)
+                        if (ny < selmon->wy && selmon->sel->y > selmon->wy) {
                                 ny = selmon->wy;
-                        else if (ny + ch > mh && selmon->sel->y + ch < mh)
+                        } else if (ny + ch > mh && selmon->sel->y + ch < mh) {
                                 ny = mh - ch;
+                        }
                         resize(selmon->sel, selmon->sel->x, ny, selmon->sel->w, selmon->sel->h, 1);
                 }
                         break;
@@ -633,10 +636,8 @@ focusstackalt(const Arg *arg)
 
 	if (!selmon->sel)
 		return;
-        if (!selmon->sel->isfloating &&
-            (selmon->lt[selmon->sellt]->arrange == deckhor ||
-             selmon->lt[selmon->sellt]->arrange == deckver) &&
-            selmon->ntiles > selmon->nmaster + 1) {
+        if (!selmon->sel->isfloating && ISDECKED(selmon) &&
+                        selmon->ntiles > selmon->nmaster + 1) {
                 int n;
 
                 for (n = 1, c = selmon->clients; c != selmon->sel; c = c->next)
@@ -644,36 +645,39 @@ focusstackalt(const Arg *arg)
                                 n++;
                 c = NULL;
                 if (arg->i > 0) {
-                        if (n == selmon->nmaster) /* focus first master client */
+                        if (n == selmon->nmaster) { /* focus first master client */
                                 for (c = selmon->clients;
                                      c->isfloating || !ISVISIBLE(c);
                                      c = c->next);
-                        else if (n == selmon->ntiles) /* focus first stack client */
+                        } else if (n == selmon->ntiles) { /* focus first stack client */
                                 for (n = selmon->nmaster, c = selmon->clients;
                                      c->isfloating || !ISVISIBLE(c) || n-- > 0;
                                      c = c->next);
-                        else /* focus next client */
+                        } else { /* focus next client */
                                 for (c = selmon->sel->next;
                                      c->isfloating || !ISVISIBLE(c);
                                      c = c->next);
+                        }
                 } else {
-                        if (selmon->nmaster && n == 1) /* focus last master client */
+                        if (selmon->nmaster && n == 1) { /* focus last master client */
                                 for (n = selmon->nmaster, c = selmon->clients;
                                      c->isfloating || !ISVISIBLE(c) || --n > 0;
                                      c = c->next);
-                        else if (n == selmon->nmaster + 1) /* focus last stack client */
+                        } else if (n == selmon->nmaster + 1) { /* focus last stack client */
                                 for (n = selmon->ntiles, c = selmon->clients;
                                      c->isfloating || !ISVISIBLE(c) || --n > 0;
                                      c = c->next);
-                        else /* focus previous client */
+                        } else { /* focus previous client */
                                 for (c = selmon->clients;
                                      c->isfloating || !ISVISIBLE(c) || --n > 1;
                                      c = c->next);
+                        }
                 }
-        } else if (selmon->lt[selmon->sellt]->arrange)
+        } else if (selmon->lt[selmon->sellt]->arrange) {
                 c = nextsamefloat(arg->i);
-        else
+        } else {
                 c = nextvisible(arg->i);
+        }
 	if (c)
 		focusalt(c, 0);
 }
@@ -745,11 +749,11 @@ inplacerotvar(const Arg *arg)
 {
         Arg varg;
 
-        if (selmon->lt[selmon->sellt]->arrange == deckhor ||
-            selmon->lt[selmon->sellt]->arrange == deckver) {
+        if (ISDECKED(selmon)) {
                 varg.i = abs(arg->i) == 1 ? 2 * arg->i : (arg->i > 1) - (arg->i < 1);
-        } else
+        } else {
                 varg.i = arg->i;
+        }
         inplacerotate(&varg);
 }
 
@@ -876,10 +880,11 @@ scratchshow(const Arg *arg)
 void
 scratchtoggle(const Arg *arg)
 {
-        if (selmon->sel && selmon->sel->scratchkey == arg->i)
+        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
                 scratchhidehelper();
-        else if (!scratchshowhelper(arg->i))
+        } else if (!scratchshowhelper(arg->i)) {
                 spawn(&((Arg){ .v = scratchcmds[arg->i - 1] }));
+        }
 }
 
 void
@@ -1091,14 +1096,14 @@ zoomvar(const Arg *arg)
                 return;
         }
         if (selmon->lt[selmon->sellt]->arrange == monocle) {
-                if (arg->i > 0)
+                if (arg->i > 0) {
                         inplacezoom(&((Arg){.i = 1}));
-                else
+                } else {
                         zoom(&((Arg){0}));
+                }
                 return;
         }
-        if (selmon->lt[selmon->sellt]->arrange == deckhor ||
-            selmon->lt[selmon->sellt]->arrange == deckver) {
+        if (ISDECKED(selmon)) {
                 for (n = 1, c = selmon->clients; c != selmon->sel; c = c->next)
                         if (!c->isfloating && ISVISIBLE(c))
                                 n++;
@@ -1123,10 +1128,11 @@ zoomvar(const Arg *arg)
                         return;
                 }
         }
-        if (arg->i > 0)
+        if (arg->i > 0) {
                 zoom(&((Arg){0}));
-        else
+        } else {
                 zoomswap(&((Arg){0}));
+        }
 }
 
 /* Window rules */
