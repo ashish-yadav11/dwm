@@ -415,15 +415,15 @@ static Window root, wmcheckwin;
 
 struct Pertag {
 	unsigned int curtag, prevtag; /* current and previous tag */
-	int nmasters[LENGTH(tags) + 1]; /* number of windows in master area */
+	int nmasters[LENGTH(tags) + 1]; /* number of windows in master area per tag */
 	float mfacts[LENGTH(tags) + 1]; /* mfacts per tag */
-	unsigned int sellts[LENGTH(tags) + 1]; /* selected layouts */
-	unsigned int ltidxs[LENGTH(tags) + 1][2]; /* matrix of tags and layouts indexes */
+	unsigned int sellts[LENGTH(tags) + 1]; /* selected layouts per tag */
+	unsigned int ltidxs[LENGTH(tags) + 1][2]; /* matrix of layout indexes per tag */
         /* custom */
-        unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions */
-        unsigned int attidxs[LENGTH(tags) + 1][2]; /* matrix of tags and attach positions indexes */
+        unsigned int selatts[LENGTH(tags) + 1]; /* selected attach positions per tag */
+        unsigned int attidxs[LENGTH(tags) + 1][2]; /* matrix of attach position indexes per tag */
         int showtabs[LENGTH(tags) + 1]; /* display tab per tag */
-        int splus[LENGTH(tags) + 1][2]; /* extra size per tag - first master and first stack */
+        int splus[LENGTH(tags) + 1][2]; /* extra size per tag: first master and first stack */
 };
 
 /* compile-time check if all tags fit into an unsigned int bit array. */
@@ -952,8 +952,9 @@ configurerequest(XEvent *e)
 			configure(c);
         } else if ((i = wintosystrayicon(ev->window))) {
                 if (ev->value_mask & (CWWidth|CWHeight) &&
-                    updatesystrayicongeom(i, ev->width, ev->height) && i->ismapped)
+                    updatesystrayicongeom(i, ev->width, ev->height) && i->ismapped) {
                         updatesystray();
+                }
         } else {
 		wc.x = ev->x;
 		wc.y = ev->y;
@@ -1715,10 +1716,12 @@ initsystray(void)
 static int
 isuniquegeom(XineramaScreenInfo *unique, size_t n, XineramaScreenInfo *info)
 {
-	while (n--)
+	while (n--) {
 		if (unique[n].x_org == info->x_org && unique[n].y_org == info->y_org
-		&& unique[n].width == info->width && unique[n].height == info->height)
+		&& unique[n].width == info->width && unique[n].height == info->height) {
 			return 0;
+                }
+        }
 	return 1;
 }
 #endif /* XINERAMA */
@@ -1752,11 +1755,13 @@ keypress(XEvent *e)
                         pop(c);
                 }
         } else {
-                for (i = 0; i < LENGTH(keys); i++)
+                for (i = 0; i < LENGTH(keys); i++) {
                         if (keysym == keys[i].keysym
                         && CLEANMASK(keys[i].mod) == CLEANMASK(ev->state)
-                        && keys[i].func)
+                        && keys[i].func) {
                                 keys[i].func(&(keys[i].arg));
+                        }
+                }
         }
 }
 
@@ -2557,7 +2562,11 @@ setattach(const Arg *arg)
 void
 setattorprev(const Arg *arg)
 {
-	setattach(arg->ui == PTATT(selmon) ? NULL : arg);
+        if (!BETWEEN(arg->i, 0, LENGTH(attachs)) || arg->i == PTATT(selmon)) {
+                setattach(NULL);
+        } else {
+                setattach(arg);
+        }
 }
 
 void
@@ -2628,12 +2637,13 @@ setlayout(const Arg *arg)
 {
         int wasptattdef = PTATT(selmon) == selmon->lt[selmon->sellt]->defatt;
 
-	if (!arg || !BETWEEN(arg->i, 0, LENGTH(attachs)) ||
-                        selmon->lt[selmon->sellt] != &layouts[arg->i])
+	if (!arg || !BETWEEN(arg->i, 0, LENGTH(layouts)) ||
+                        selmon->lt[selmon->sellt] != &layouts[arg->i]) {
 		selmon->sellt = selmon->pertag->sellts[selmon->pertag->curtag] ^= 1;
-	if (arg && BETWEEN(arg->i, 0, LENGTH(attachs))) {
-		selmon->lt[selmon->sellt] = &layouts[arg->ui];
-                PTLYT(selmon) = arg->ui;
+        }
+	if (arg && BETWEEN(arg->i, 0, LENGTH(layouts))) {
+		selmon->lt[selmon->sellt] = &layouts[arg->i];
+                PTLYT(selmon) = arg->i;
         }
         if (wasptattdef)
                 PTATT(selmon) = selmon->lt[selmon->sellt]->defatt;
@@ -2649,7 +2659,12 @@ setlayout(const Arg *arg)
 void
 setltorprev(const Arg *arg)
 {
-	setlayout(selmon->lt[selmon->sellt] == arg->v ? NULL : arg);
+        if (!BETWEEN(arg->i, 0, LENGTH(layouts)) ||
+                        selmon->lt[selmon->sellt] == &layouts[arg->i]) {
+                setlayout(NULL);
+        } else {
+                setlayout(arg);
+        }
 }
 
 /* arg > 1.0 will set mfact absolutely */
@@ -3569,8 +3584,7 @@ updategeom(void)
 		for (i = 0, m = mons; i < nn && m; m = m->next, i++)
 			if (i >= n
 			|| unique[i].x_org != m->mx || unique[i].y_org != m->my
-			|| unique[i].width != m->mw || unique[i].height != m->mh)
-			{
+			|| unique[i].width != m->mw || unique[i].height != m->mh) {
 				dirty = 1;
 				m->num = i;
 				m->mx = m->wx = unique[i].x_org;
@@ -3997,8 +4011,9 @@ xerror(Display *dpy, XErrorEvent *ee)
 	|| (ee->request_code == X_ConfigureWindow && ee->error_code == BadMatch)
 	|| (ee->request_code == X_GrabButton && ee->error_code == BadAccess)
 	|| (ee->request_code == X_GrabKey && ee->error_code == BadAccess)
-	|| (ee->request_code == X_CopyArea && ee->error_code == BadDrawable))
+	|| (ee->request_code == X_CopyArea && ee->error_code == BadDrawable)) {
 		return 0;
+        }
 	fprintf(stderr, "dwm: fatal error: request code=%d, error code=%d\n",
 		ee->request_code, ee->error_code);
 	return xerrorxlib(dpy, ee); /* may call exit */

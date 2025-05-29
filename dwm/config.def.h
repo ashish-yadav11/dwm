@@ -90,8 +90,8 @@ static const char *colors[][3] = {
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" };
 
 /* first element is for all-tag view */
-static int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
-static int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
+static unsigned int def_layouts[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2};
+static unsigned int def_attachs[1 + LENGTH(tags)] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1};
 
 static const Attach attachs[] = {
 	/* symbol       attach function */
@@ -301,13 +301,12 @@ static const Key keys[] = {
 	{ MODLKEY,                      XK_v,           fhintsmode,             {.i = 0} },
 	{ MODLKEY|ShiftMask,            XK_v,           fhintsmode,             {.i = 1} },
 	{ MODLKEY,                      XK_Escape,      killclient,             {0} },
-	{ MODLKEY,                      XK_e,           setlayout,              {.i = 0} },
-	{ MODLKEY|ShiftMask,            XK_e,           setlayout,              {.i = 1} },
-	{ MODLKEY|ControlMask,          XK_e,           setlayout,              {.i = 4} },
-	{ MODLKEY,                      XK_w,           setlayout,              {.i = 2} },
-	{ MODLKEY|ShiftMask,            XK_w,           setlayout,              {.i = 3} },
-	{ MODLKEY|ControlMask,          XK_w,           setlayout,              {.i = 5} },
-	{ MODLKEY,                      XK_t,           setlayout,              {.i = -1} },
+	{ MODLKEY,                      XK_e,           setltorprev,            {.i = 0} },
+	{ MODLKEY|ShiftMask,            XK_e,           setltorprev,            {.i = 1} },
+	{ MODLKEY|ControlMask,          XK_e,           setltorprev,            {.i = 4} },
+	{ MODLKEY,                      XK_w,           setltorprev,            {.i = 2} },
+	{ MODLKEY|ShiftMask,            XK_w,           setltorprev,            {.i = 3} },
+	{ MODLKEY|ControlMask,          XK_w,           setltorprev,            {.i = 5} },
 	{ MODLKEY,                      XK_F1,          setattorprev,           {.i = 0} },
 	{ MODLKEY,                      XK_F2,          setattorprev,           {.i = 1} },
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.i = 2} },
