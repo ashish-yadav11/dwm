@@ -2460,8 +2460,8 @@ scratchhidehelper(void)
         unsigned long t;
 
         selmon->sel->tags = 0;
-        t = selmon->sel->scratchkey > LENGTH(scratchcmds) ?
-                3 * (1 + LENGTH(tags)) + selmon->sel->scratchkey - LENGTH(scratchcmds) : 0;
+        t = selmon->sel->scratchkey > DYNSCRATCHKEY(0) ?
+                3 * (1 + LENGTH(tags)) + selmon->sel->scratchkey - DYNSCRATCHKEY(0) : 0;
         XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
                         PropModeReplace, (unsigned char *) &t, 1);
         focus(NULL);
