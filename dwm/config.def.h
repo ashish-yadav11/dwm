@@ -50,7 +50,7 @@ static const int showtab                = ShowtabAuto; /* default tab bar displa
 static const int toptab                 = 0;           /* 0 means bottom tab bar */
 
 static const char *fonts[] = {
-        "Fira Sans:size=12",
+        "Fira Math:size=12",
         "Siji:pixelsize=12",
         "Noto Color Emoji:pixelsize=12",
 };
