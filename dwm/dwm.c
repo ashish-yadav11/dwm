@@ -21,6 +21,7 @@
  * To understand everything else, start reading main().
  */
 #include <errno.h>
+#include <fribidi.h>
 #include <limits.h>
 #include <locale.h>
 #include <signal.h>
@@ -74,6 +75,7 @@
 #define MAXMFACT                        0.95
 
 #define STATUSLENGTH                    256
+#define WINNAMELENGTH                   256
 #define ROOTNAMELENGTH                  320 /* fake signal + status */
 #define SESSIONFILE                     "/tmp/dwm-session"
 #define DSBLOCKSLOCKFILE                "/var/local/dsblocks/dsblocks.pid"
@@ -125,7 +127,7 @@ typedef struct {
 typedef struct Monitor Monitor;
 typedef struct Client Client;
 struct Client {
-	char name[256];
+	char name[WINNAMELENGTH];
 	int x, y, w, h;
 	int sfx, sfy, sfw, sfh; /* stored float geometry, used on mode revert */
 	int oldx, oldy, oldw, oldh;
@@ -215,6 +217,7 @@ typedef struct {
 
 /* function declarations */
 static void addsystrayicon(Icon *i);
+static void applyfribidi(char *s);
 static int applygeomhints(Client *c, int *x, int *y, int *w, int *h, int interact);
 static void applyrules(Client *c); /* defined in config.h */
 static void applysizehints(SizeHints *sh, int *w, int *h);
@@ -455,6 +458,20 @@ addsystrayicon(Icon *i)
                 updatesystray();
                 XMapWindow(dpy, i->win);
         }
+}
+
+void
+applyfribidi(char *s)
+{
+	FriBidiStrIndex len = strlen(s);
+	FriBidiChar logical[WINNAMELENGTH];
+	FriBidiChar visual[WINNAMELENGTH];
+	FriBidiParType base = FRIBIDI_PAR_ON;
+
+	len = fribidi_charset_to_unicode(FRIBIDI_CHAR_SET_UTF8, s, len, logical);
+	fribidi_log2vis(logical, len, &base, visual, NULL, NULL, NULL);
+	len = fribidi_remove_bidi_marks(visual, len, NULL, NULL, NULL);
+	fribidi_unicode_to_charset(FRIBIDI_CHAR_SET_UTF8, visual, len, s);
 }
 
 int
@@ -3894,6 +3911,7 @@ updatetitle(Client *c)
 		gettextprop(c->win, XA_WM_NAME, c->name, sizeof c->name);
 	if (c->name[0] == '\0') /* hack to mark broken clients */
 		strcpy(c->name, broken);
+	applyfribidi(c->name);
 }
 
 void
