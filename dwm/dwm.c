@@ -3302,17 +3302,9 @@ togglewin(const Arg *arg)
 {
         int key = ((Win *)(arg->v))->scratchkey;
         unsigned int tag = ((Win *)(arg->v))->tag;
-        Client *c, *f;
+        Client *c, *f, *g;
 
         if (selmon->sel && selmon->sel->scratchkey == key) {
-                if (tag && !(selmon->sel->tags & 1 << (tag - 1))) {
-                        for (c = selmon->stack; c; c = c->snext)
-                                if (c->scratchkey == key && c->tags & 1 << (tag - 1)) {
-                                        focusclient(c, tag);
-                                        return;
-                                }
-                        return;
-                }
                 for (c = selmon->sel->snext; c && (c->ishidden || !c->tags); c = c->snext);
                 if (c) {
                         focusclient(c, selmon->pertag->prevtag);
@@ -3321,16 +3313,18 @@ togglewin(const Arg *arg)
                 }
                 return;
         } else {
-                for (f = NULL, c = selmon->stack; c; c = c->snext)
+                for (f = g = NULL, c = selmon->stack; c; c = c->snext)
                         if (c->scratchkey == key) {
-                                if (tag && c->tags & 1 << (tag - 1)) {
-                                        focusclient(c, tag);
-                                        return;
-                                }
-                                if (!f)
+                                if (c->tags & selmon->tagset[selmon->seltags]) {
+                                         focusalt(c, unhideifhidden(c, tag));
+                                         return;
+                                } else if (!f && tag && c->tags & 1 << (tag - 1)) {
                                         f = c;
+                                } else if (!g) {
+                                        g = c;
+                                }
                         }
-                if (f) {
+                if (f || (f = g)) {
                         focusclient(f, tag);
                         return;
                 }
