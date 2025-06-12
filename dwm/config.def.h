@@ -186,6 +186,7 @@ static Client *nextvisible(int next);
 static void push(const Arg *arg);
 static void scratchhide(const Arg *arg);
 static void scratchhidevisible(const Arg *arg);
+static void scratchmark(const Arg *arg);
 static void scratchshow(const Arg *arg);
 static void scratchtoggle(const Arg *arg);
 static void showfloating(const Arg *arg);
@@ -336,12 +337,12 @@ static const Key keys[] = {
 	{ SUPKEY,                       XK_w,           scratchtoggle,          {.i = 6} },
 	{ SUPKEY,                       XK_y,           scratchtoggle,          {.i = 7} },
 	{ SUPKEY,                       XK_u,           scratchtoggle,          {.i = 8} },
-	{ SUPKEY,                       XK_a,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(1) } },
-	{ SUPKEY|ShiftMask,             XK_a,           dynscratchunmark,       {.i = DYNSCRATCHKEY(1) } },
-	{ SUPKEY,                       XK_s,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(2) } },
-	{ SUPKEY|ShiftMask,             XK_s,           dynscratchunmark,       {.i = DYNSCRATCHKEY(2) } },
-	{ SUPKEY,                       XK_d,           dynscratchtoggle,       {.i = DYNSCRATCHKEY(3) } },
-	{ SUPKEY|ShiftMask,             XK_d,           dynscratchunmark,       {.i = DYNSCRATCHKEY(3) } },
+	{ SUPKEY,                       XK_a,           dynscratchtoggle,       {.i = 1} },
+	{ SUPKEY|ShiftMask,             XK_a,           dynscratchunmark,       {.i = 1} },
+	{ SUPKEY,                       XK_s,           dynscratchtoggle,       {.i = 2} },
+	{ SUPKEY|ShiftMask,             XK_s,           dynscratchunmark,       {.i = 2} },
+	{ SUPKEY,                       XK_d,           dynscratchtoggle,       {.i = 3} },
+	{ SUPKEY|ShiftMask,             XK_d,           dynscratchunmark,       {.i = 3} },
 	{ SUPKEY|ControlMask,           XK_a,           spawn,                  SCRIPTCMD("dynscript.sh", "1") },
 	{ SUPKEY|ControlMask,           XK_s,           spawn,                  SCRIPTCMD("dynscript.sh", "2") },
 	{ SUPKEY|ControlMask,           XK_d,           spawn,                  SCRIPTCMD("dynscript.sh", "3") },
@@ -500,6 +501,7 @@ static Signal signals[] = {
 	{ "scrh",               scratchhide },
 	{ "scrs",               scratchshow },
 	{ "scrt",               scratchtoggle },
+	{ "scrm",               scratchmark },
 	{ "sfvw",               shiftview },
 	{ "sftg",               shifttag },
 	{ "view",               view },
@@ -511,15 +513,17 @@ static Signal signals[] = {
 void
 dynscratchtoggle(const Arg *arg)
 {
-        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
+        int key = DYNSCRATCHKEY(arg->i);
+
+        if (selmon->sel && selmon->sel->scratchkey == key) {
                 if (selmon->sel->isfloating) {
                         scratchhidehelper();
                 } else {
                         focuslast(&((Arg){0}));
                 }
-        } else if (!scratchshowhelper(arg->i)) {
+        } else if (!scratchshowhelper(key)) {
                 if (selmon->sel->scratchkey <= 0) {
-                        selmon->sel->scratchkey = arg->i;
+                        selmon->sel->scratchkey = key;
                         spawn(&((Arg)NOTIFYDYNSCRATCH1));
                 } else {
                         spawn(&((Arg)NOTIFYDYNSCRATCH2));
@@ -530,7 +534,7 @@ dynscratchtoggle(const Arg *arg)
 void
 dynscratchunmark(const Arg *arg)
 {
-        if (selmon->sel && selmon->sel->scratchkey == arg->i) {
+        if (selmon->sel && selmon->sel->scratchkey == DYNSCRATCHKEY(arg->i)) {
                 selmon->sel->scratchkey = 0;
                 spawn(&((Arg)NOTIFYDYNSCRATCH0));
         }
@@ -1249,4 +1253,16 @@ markscratch(Client *c, int key)
                         if (i->scratchkey == key)
                                 return;
         c->scratchkey = key;
+}
+
+void
+scratchmark(const Arg *arg)
+{
+        if (!selmon->sel)
+                return;
+        if (arg->i <= 0) { /* we allow multiple Win marks (<0) */
+                selmon->sel->scratchkey = arg->i;
+        } else {
+                markscratch(selmon->sel, arg->i);
+        }
 }
