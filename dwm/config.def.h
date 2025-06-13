@@ -1047,15 +1047,8 @@ windowswitchers(const Arg *arg)
 void
 windowswitchert(const Arg *arg)
 {
-        char *rofiwin[] = { "rofi", "-show", "window", "-steal-focus", "-no-lazy-grab",
-                "-kb-accept-entry", "!Super+Super_R,Super+Return,Return",
-                "-kb-cancel", "Super+Escape,Escape,Control+g,Control+bracketleft",
-                "-kb-element-next", "Super+Tab,Super+Down,Super+Control+j,Tab",
-                "-kb-element-prev", "Super+ISO_Left_Tab,Super+Up,Super+Control+k,ISO_Left_Tab",
-                "-selected-row", "1", "-no-plugins", NULL };
-
         windowlineups(&((Arg){0}));
-        spawn(&((Arg){.v = rofiwin}));
+        spawn(&((Arg)SCRIPTCMD("alttab.sh")));
 }
 
 void
