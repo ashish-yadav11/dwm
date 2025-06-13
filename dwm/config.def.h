@@ -131,9 +131,9 @@ static const char *const *scratchcmds[] = {
 #include "inplacerotate.c"
 #include <X11/XF86keysym.h>
 
-#define MODLKEY Mod3Mask
+#define MODLKEY Mod4Mask
 #define MODRKEY Mod1Mask
-#define SUPKEY  Mod4Mask
+#define SUPKEY  Mod3Mask
 #define TAGKEYS(KEY,TAG) \
 	{ MODLKEY,                      KEY,      vieworprev,     {.ui = 1 << TAG} }, \
 	{ MODLKEY|ShiftMask,            KEY,      tag,            {.ui = 1 << TAG} }, \
@@ -198,7 +198,9 @@ static int hasleasttag(Client *c, int tag);
 static unsigned int windowlineupcn(void);
 static void windowlineupcv(const Arg *arg);
 static void windowlineups(const Arg *arg);
-static void windowswitcher(const Arg *arg);
+static void windowswitcherc(const Arg *arg);
+static void windowswitchers(const Arg *arg);
+static void windowswitchert(const Arg *arg);
 static void winview(const Arg* arg);
 static void zoomswap(const Arg* arg);
 static void zoomvar(const Arg *arg);
@@ -313,17 +315,16 @@ static const Key keys[] = {
 	{ MODLKEY,                      XK_F3,          setattorprev,           {.i = 2} },
 	{ MODLKEY,                      XK_F4,          setattorprev,           {.i = 3} },
 	{ MODLKEY,                      XK_F5,          setattorprev,           {.i = 4} },
-	{ MODLKEY,                      XK_Tab,         focuslast,              {.i = 0} },
-	{ MODLKEY|ShiftMask,            XK_Tab,         focuslast,              {.i = 1} },
+	{ MODLKEY,                      XK_Tab,         windowswitchert,        {0} },
 	{ SUPKEY,                       XK_Tab,         focuslastvisible,       {.i = 0} },
 	{ SUPKEY|ShiftMask,             XK_Tab,         focuslastvisible,       {.i = 1} },
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
 	{ SUPKEY,                       XK_o,           winview,                {0} },
-	{ MODLKEY,                      XK_q,           windowswitcher,         {.i = +1} },
-	{ MODLKEY|ControlMask,          XK_q,           windowswitcher,         {.i = -1} },
-	{ SUPKEY,                       XK_q,           windowswitcher,         {.i = +2} },
-	{ SUPKEY|ControlMask,           XK_q,           windowswitcher,         {.i = -2} },
+	{ MODLKEY,                      XK_q,           windowswitchers,        {.i = +1} },
+	{ MODLKEY|ControlMask,          XK_q,           windowswitchers,        {.i = -1} },
+	{ SUPKEY,                       XK_q,           windowswitcherc,        {.i = +1} },
+	{ SUPKEY|ControlMask,           XK_q,           windowswitcherc,        {.i = -1} },
 	{ MODLKEY,                      XK_comma,       shiftview,              {.i = -1 } },
 	{ MODLKEY,                      XK_period,      shiftview,              {.i = +1 } },
 	{ MODLKEY|ShiftMask,            XK_comma,       shifttag,               {.i = -1 } },
@@ -1020,27 +1021,41 @@ windowlineups(const Arg *arg)
 }
 
 void
-windowswitcher(const Arg *arg)
+windowswitcherc(const Arg *arg)
 {
         char index[8] = "0";
+        char *rofiwin[] = { "rofi", "-show", "window", "-selected-row", index,
+                "-matching", "regex", NULL };
 
-        switch (abs(arg->i)) {
-                case 1:
-                        windowlineups(&((Arg){0}));
-                        break;
-                case 2:
-                        snprintf(index, sizeof index, "%u", windowlineupcn());
-                        break;
-        }
-        if (arg->i > 0) {
-                char *rofiwinnorm[] = { "rofi", "-show", "window", "-selected-row", index, NULL };
+        snprintf(index, sizeof index, "%u", windowlineupcn());
+        if (arg->i > 0)
+                rofiwin[5] = NULL;
+        spawn(&((Arg){.v = rofiwin}));
+}
 
-                spawn(&((Arg){.v = rofiwinnorm}));
-        } else {
-                char *rofiwinregx[] = { "rofi", "-show", "window", "-selected-row", index, "-matching", "regex", NULL };
+void
+windowswitchers(const Arg *arg)
+{
+        char *rofiwin[] = { "rofi", "-show", "window", "-matching", "regex", NULL };
 
-                spawn(&((Arg){.v = rofiwinregx}));
-        }
+        windowlineups(&((Arg){0}));
+        if (arg->i > 0)
+                rofiwin[3] = NULL;
+        spawn(&((Arg){.v = rofiwin}));
+}
+
+void
+windowswitchert(const Arg *arg)
+{
+        char *rofiwin[] = { "rofi", "-show", "window",
+                "-kb-accept-entry", "!Super+Super_R,Super+Return,Return",
+                "-kb-cancel", "Super+Escape,Escape,Control+g,Control+bracketleft",
+                "-kb-element-next", "Super+Tab,Super+Down,Super+Control+j,Tab",
+                "-kb-element-prev", "Super+ISO_Left_Tab,Super+Up,Super+Control+k,ISO_Left_Tab",
+                "-selected-row", "1", NULL };
+
+        windowlineups(&((Arg){0}));
+        spawn(&((Arg){.v = rofiwin}));
 }
 
 void
