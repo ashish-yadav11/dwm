@@ -1047,7 +1047,7 @@ windowswitchers(const Arg *arg)
 void
 windowswitchert(const Arg *arg)
 {
-        char *rofiwin[] = { "rofi", "-show", "window",
+        char *rofiwin[] = { "rofi", "-show", "window", "-steal-focus",
                 "-kb-accept-entry", "!Super+Super_R,Super+Return,Return",
                 "-kb-cancel", "Super+Escape,Escape,Control+g,Control+bracketleft",
                 "-kb-element-next", "Super+Tab,Super+Down,Super+Control+j,Tab",
