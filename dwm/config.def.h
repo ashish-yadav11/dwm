@@ -1048,7 +1048,7 @@ void
 windowswitchert(const Arg *arg)
 {
         windowlineups(&((Arg){0}));
-        spawn(&((Arg)SCRIPTCMD("alttab.sh")));
+        spawn(&((Arg)SCRIPTCMD("alttab.sh", selmon->sel ? "1" : "0")));
 }
 
 void
