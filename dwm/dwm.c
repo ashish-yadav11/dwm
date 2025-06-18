@@ -2479,8 +2479,8 @@ scratchhidehelper(void)
         selmon->sel->tags = 0;
         t = selmon->sel->scratchkey > DYNSCRATCHKEY(0) ?
                 3 * (1 + LENGTH(tags)) + selmon->sel->scratchkey - DYNSCRATCHKEY(0) : 0;
-        XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                        PropModeReplace, (unsigned char *) &t, 1);
+        XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL,
+                        32, PropModeReplace, (unsigned char *) &t, 1);
         focus(NULL);
         arrange(selmon);
 }
@@ -2949,13 +2949,12 @@ void
 swaptags(const Arg *arg)
 {
         unsigned int ct, nt;
-        unsigned int curtagset, newtagset = 1 << arg->ui;
+        unsigned int curtagset, newtagset = 1 << arg->ui & TAGMASK;
         Client* c;
 
-        if (newtagset & selmon->tagset[selmon->seltags])
+        if (!newtagset || newtagset & selmon->tagset[selmon->seltags])
                 return;
-        /* selmon->pertag->curtag can't be 0 if we reach here */
-        curtagset = 1 << (selmon->pertag->curtag - 1);
+        curtagset = 1 << (selmon->pertag->curtag - 1); /* curtag can't be 0 here */
         for (c = selmon->clients; c; c = c->next)
                 if (c->tags & newtagset) {
                         c->tags = (c->tags ^ newtagset) | curtagset;
@@ -3008,20 +3007,28 @@ tag(const Arg *arg)
 void
 tagandview(const Arg *arg)
 {
-        unsigned long t;
+        unsigned long t = arg->ui;
+        unsigned int ts = arg->ui ? 1 << (arg->ui - 1) & TAGMASK : 0;
 
         if (!selmon->sel)
                 return;
-        if (!arg->ui || 1 << (arg->ui - 1) == selmon->tagset[selmon->seltags]) {
+        if (!ts || ts == selmon->tagset[selmon->seltags]) {
+                if (ts && selmon->sel->tags != ts) {
+                        selmon->sel->tags = ts;
+                        XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL,
+                                        32, PropModeReplace, (unsigned char *) &t, 1);
+                        drawbar(selmon);
+                        return;
+                }
                 if (!selmon->pertag->prevtag)
                         return;
                 t = selmon->pertag->prevtag;
-        } else
-                t = arg->ui;
+                ts = 1 << (selmon->pertag->prevtag - 1);
+        }
         selmon->seltags ^= 1;
-        selmon->sel->tags = selmon->tagset[selmon->seltags] = 1 << (t - 1);
-        XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-                        PropModeReplace, (unsigned char *) &t, 1);
+        selmon->sel->tags = selmon->tagset[selmon->seltags] = ts;
+        XChangeProperty(dpy, selmon->sel->win, netatom[NetWMDesktop], XA_CARDINAL,
+                        32, PropModeReplace, (unsigned char *) &t, 1);
         selmon->pertag->prevtag = selmon->pertag->curtag;
         selmon->pertag->curtag = t;
         updatepertag();
@@ -3286,13 +3293,14 @@ toggleview(const Arg *arg)
                         selmon->pertag->curtag = 0;
                         updatepertag();
                 }
-        } else
+        } else {
                 if (!selmon->pertag->curtag || !(newtagset & 1 << (selmon->pertag->curtag - 1))) {
                         selmon->pertag->prevtag = selmon->pertag->curtag;
                         for (i = 0; !(newtagset & 1 << i); i++);
                         selmon->pertag->curtag = i + 1;
                         updatepertag();
                 }
+        }
         focus(NULL);
         arrange(selmon);
 }
@@ -3508,8 +3516,8 @@ skip:
                 t += 1 + LENGTH(tags);
         }
 update:
-	XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL, 32,
-			PropModeReplace, (unsigned char *) &t, 1);
+	XChangeProperty(dpy, c->win, netatom[NetWMDesktop], XA_CARDINAL,
+                        32, PropModeReplace, (unsigned char *) &t, 1);
 }
 
 void
