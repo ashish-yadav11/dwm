@@ -818,36 +818,30 @@ nextvisible(int next)
 void
 push(const Arg *arg)
 {
-        Client *c;
-	Client *ps = NULL, *pc = NULL;
-        Client *i, *tmp;
+        int d = arg->i;
+        Client *c, **pc;
+        Client *s = selmon->sel;
 
-        if (!selmon->sel)
+        if (!s)
                 return;
-        c = selmon->lt[selmon->sellt]->arrange ?
-                nextsamefloat(arg->i) : nextvisible(arg->i);
-        if (!c || c == selmon->sel)
+        c = selmon->lt[selmon->sellt]->arrange ? nextsamefloat(d) : nextvisible(d);
+        if (!c || c == s)
                 return;
-	for (i = selmon->clients; i && (!ps || !pc); i = i->next) {
-		if (i->next == selmon->sel)
-			ps = i;
-		if (i->next == c)
-			pc = i;
-	}
-	/* swap c and selmon->sel in the selmon->clients list */
-        tmp = selmon->sel->next == c ? selmon->sel : selmon->sel->next;
-        selmon->sel->next = c->next == selmon->sel ? c : c->next;
-        c->next = tmp;
-        if (ps) {
-                if (ps != c)
-                        ps->next = c;
-        } else
-                selmon->clients = c;
-        if (pc) {
-                if (pc != selmon->sel)
-                        pc->next = selmon->sel;
-        } else
-                selmon->clients = selmon->sel;
+        if (s->tags != selmon->tagset[selmon->seltags] &&
+                        c->tags == selmon->tagset[selmon->seltags]) {
+                s = c;
+                c = selmon->sel;
+                d = -d;
+        }
+        detach(s);
+        if (d > 0) {
+                s->next = c->next;
+                c->next = s;
+        } else {
+                for (pc = &selmon->clients; *pc && *pc != c; pc = &(*pc)->next);
+                *pc = s;
+                s->next = c;
+        }
         arrange(selmon);
 }
 

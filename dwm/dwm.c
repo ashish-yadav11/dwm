@@ -608,7 +608,7 @@ attachaside(Client *c)
         int n;
         Client *i;
 
-        if (!c->mon->nmaster || c->isfloating) {
+        if (c->mon->nmaster < 1 || c->isfloating) {
                 attach(c);
                 return;
         }
