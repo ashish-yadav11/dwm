@@ -128,7 +128,6 @@ static const char *const *scratchcmds[] = {
 
 #define DYNSCRATCHKEY(i)                (LENGTH(scratchcmds) + i)
 
-#include "inplacerotate.c"
 #include <X11/XF86keysym.h>
 
 #define MODLKEY Mod4Mask
@@ -180,9 +179,9 @@ static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
 static void hidefloating(const Arg *arg);
 static void hideshowfloating(const Arg *arg);
+static void inplacerotate(const Arg *arg);
 static void inplacerotvar(const Arg *arg);
-static Client *nextsamefloat(int next);
-static Client *nextvisible(int next);
+static void displaceclient(Client *c, int dirn, Client *p);
 static void push(const Arg *arg);
 static void scratchhide(const Arg *arg);
 static void scratchhidevisible(const Arg *arg);
@@ -637,7 +636,7 @@ focusmaster(const Arg *arg)
 void
 focusstackalt(const Arg *arg)
 {
-	Client *c;
+	Client *c, *i;
 
 	if (!selmon->sel)
 		return;
@@ -678,10 +677,28 @@ focusstackalt(const Arg *arg)
                                      c = c->next);
                         }
                 }
-        } else if (selmon->lt[selmon->sellt]->arrange) {
-                c = nextsamefloat(arg->i);
         } else {
-                c = nextvisible(arg->i);
+                _Bool na = !selmon->lt[selmon->sellt]->arrange;
+                _Bool sf = selmon->sel->isfloating;
+
+                if (arg->i > 0) {
+                        for (c = selmon->sel->next;
+                             c && !((na || (_Bool)c->isfloating == sf) && ISVISIBLE(c));
+                             c = c->next);
+                        if (!c)
+                                for (c = selmon->clients;
+                                     c && !((na || (_Bool)c->isfloating == sf) && ISVISIBLE(c));
+                                     c = c->next);
+                } else {
+                        c = NULL;
+                        for (i = selmon->clients; i != selmon->sel; i = i->next)
+                                if ((na || (_Bool)i->isfloating == sf) && ISVISIBLE(i))
+                                        c = i;
+                        if (!c)
+                                for (; i; i = i->next)
+                                        if ((na || (_Bool)i->isfloating == sf) && ISVISIBLE(i))
+                                                c = i;
+                }
         }
 	if (c)
 		focusalt(c, 0);
@@ -750,6 +767,47 @@ hideshowfloating(const Arg *arg)
 }
 
 void
+inplacerotate(const Arg *arg)
+{
+        int i, loc;
+        Client *c, *head, *tail;
+
+        if (!selmon->sel || selmon->sel->isfloating
+                         || !selmon->lt[selmon->sellt]->arrange)
+                return;
+        /* all clients rotate */
+        if (abs(arg->i) == 1 || selmon->nmaster == 0) {
+                c = head = nexttiled(selmon->clients);
+                do tail = c; while ((c = nexttiled(c->next)));
+        } else {
+                for (loc = 0, c = selmon->clients; c != selmon->sel; c = c->next)
+                        if (!c->isfloating && ISVISIBLE(c))
+                                loc++;
+                /* master clients rotate */
+                if (loc < selmon->nmaster) {
+                        c = head = nexttiled(selmon->clients);
+                        i = selmon->nmaster;
+                        do tail = c; while (--i > 0 && (c = nexttiled(c->next)));
+                /* stack clients rotate */
+                } else {
+                        for (i = selmon->nmaster, c = selmon->clients;
+                             c->isfloating || !ISVISIBLE(c) || i-- > 0;
+                             c = c->next);
+                        head = c;
+                        do tail = c; while ((c = nexttiled(c->next)));
+                }
+        }
+        if (head == tail)
+                return;
+        if (arg->i < 0) {
+                displaceclient(head, +1, tail);
+        } else {
+                displaceclient(tail, -1, head);
+        }
+        arrange(selmon);
+}
+
+void
 inplacerotvar(const Arg *arg)
 {
         Arg varg;
@@ -762,86 +820,101 @@ inplacerotvar(const Arg *arg)
         inplacerotate(&varg);
 }
 
-/* the following two functions assume non-NULL selmon->sel */
-Client *
-nextsamefloat(int next)
+static void
+inplacezoom(const Arg *arg)
 {
-        _Bool f = selmon->sel->isfloating;
-        Client *c;
+        int i, loc;
+        Client *c, *head, *tail, *mtail;
 
-        if (next > 0) {
-                for (c = selmon->sel->next;
-                     c && ((_Bool)c->isfloating != f || !ISVISIBLE(c));
-                     c = c->next);
-                if (!c)
-                        for (c = selmon->clients;
-                             c && ((_Bool)c->isfloating != f || !ISVISIBLE(c));
-                             c = c->next);
+        if (!selmon->sel || selmon->sel->isfloating
+                         || !selmon->lt[selmon->sellt]->arrange)
+                return;
+        /* make master of all clients */
+        if (arg->i >= 0 || selmon->nmaster == 0) {
+                c = head = nexttiled(selmon->clients);
+                do tail = c; while ((c = nexttiled(c->next)));
+                while (head != selmon->sel) {
+                        displaceclient(head, +1, tail);
+                        tail = head;
+                        head = nexttiled(selmon->clients);
+                }
         } else {
-                Client *i;
-
-                c = NULL;
-                for (i = selmon->clients; i != selmon->sel; i = i->next)
-                        if ((_Bool)i->isfloating == f && ISVISIBLE(i))
-                                c = i;
-                if (!c)
-                        for (; i; i = i->next)
-                                if ((_Bool)i->isfloating == f && ISVISIBLE(i))
-                                        c = i;
+                for (loc = 0, c = selmon->clients; c != selmon->sel; c = c->next)
+                        if (!c->isfloating && ISVISIBLE(c))
+                                loc++;
+                /* make master of master clients */
+                if (loc < selmon->nmaster) {
+                        c = head = nexttiled(selmon->clients);
+                        i = selmon->nmaster;
+                        do tail = c; while (--i > 0 && (c = nexttiled(c->next)));
+                        while (head != selmon->sel) {
+                                displaceclient(head, +1, tail);
+                                tail = head;
+                                head = nexttiled(selmon->clients);
+                        }
+                /* make master of stack rotate */
+                } else {
+                        for (i = selmon->nmaster - 1, c = selmon->clients;
+                             c->isfloating || !ISVISIBLE(c) || i-- > 0;
+                             c = c->next);
+                        mtail = c;
+                        head = nexttiled(mtail->next);
+                        do tail = c; while ((c = nexttiled(c->next)));
+                        while (head != selmon->sel) {
+                                displaceclient(head, +1, tail);
+                                tail = head;
+                                head = nexttiled(mtail->next);
+                        }
+                }
         }
-        return c;
+        arrange(selmon);
 }
 
-Client *
-nextvisible(int next)
+void
+displaceclient(Client *c, int dirn,  Client *p)
 {
-        Client *c = NULL;
+        Client **pp;
 
-	if (next > 0) {
-		for (c = selmon->sel->next; c && !ISVISIBLE(c); c = c->next);
-		if (!c)
-			for (c = selmon->clients; c && !ISVISIBLE(c); c = c->next);
-	} else {
-                Client *i;
-
-		for (i = selmon->clients; i != selmon->sel; i = i->next)
-			if (ISVISIBLE(i))
-				c = i;
-		if (!c)
-			for (; i; i = i->next)
-				if (ISVISIBLE(i))
-					c = i;
-	}
-        return c;
+        detach(c);
+        if (dirn > 0) {
+                c->next = p->next;
+                p->next = c;
+        } else {
+                for (pp = &selmon->clients; *pp && *pp != p; pp = &(*pp)->next);
+                *pp = c;
+                c->next = p;
+        }
 }
 
 void
 push(const Arg *arg)
 {
-        int d = arg->i;
-        Client *c, **pc;
-        Client *s = selmon->sel;
+        int dirn = arg->i;
+        _Bool na = !selmon->lt[selmon->sellt]->arrange;
+        _Bool sf = selmon->sel->isfloating;
+        Client *b, *c, *s = selmon->sel;
 
         if (!s)
                 return;
-        c = selmon->lt[selmon->sellt]->arrange ? nextsamefloat(d) : nextvisible(d);
-        if (!c || c == s)
+        if (dirn > 0) {
+                for (c = selmon->sel->next;
+                     c && !((na || (_Bool)c->isfloating == sf) && ISVISIBLE(c));
+                     c = c->next);
+        } else {
+                c = NULL;
+                for (b = selmon->clients; b != selmon->sel; b = b->next)
+                        if ((na || (_Bool)b->isfloating == sf) && ISVISIBLE(b))
+                                c = b;
+        }
+        if (!c)
                 return;
         if (s->tags != selmon->tagset[selmon->seltags] &&
                         c->tags == selmon->tagset[selmon->seltags]) {
                 s = c;
                 c = selmon->sel;
-                d = -d;
+                dirn = -dirn;
         }
-        detach(s);
-        if (d > 0) {
-                s->next = c->next;
-                c->next = s;
-        } else {
-                for (pc = &selmon->clients; *pc && *pc != c; pc = &(*pc)->next);
-                *pc = s;
-                s->next = c;
-        }
+        displaceclient(s, dirn, c);
         arrange(selmon);
 }
 
