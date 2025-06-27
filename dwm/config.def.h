@@ -892,9 +892,9 @@ push(const Arg *arg)
         int dirn = arg->i;
         _Bool na = !selmon->lt[selmon->sellt]->arrange;
         _Bool sf = selmon->sel->isfloating;
-        Client *b, *c, *s = selmon->sel;
+        Client *b, *c;
 
-        if (!s)
+        if (!selmon->sel)
                 return;
         if (dirn > 0) {
                 for (c = selmon->sel->next;
@@ -908,13 +908,11 @@ push(const Arg *arg)
         }
         if (!c)
                 return;
-        if (s->tags != selmon->tagset[selmon->seltags] &&
-                        c->tags == selmon->tagset[selmon->seltags]) {
-                s = c;
-                c = selmon->sel;
-                dirn = -dirn;
+        if (c->tags != selmon->tagset[selmon->seltags]) {
+                displaceclient(selmon->sel, dirn, c);
+        } else {
+                displaceclient(c, -dirn, selmon->sel);
         }
-        displaceclient(s, dirn, c);
         arrange(selmon);
 }
 
