@@ -130,9 +130,11 @@ static const char *const *scratchcmds[] = {
 
 #include <X11/XF86keysym.h>
 
-#define MODLKEY Mod4Mask
-#define MODRKEY Mod1Mask
-#define SUPKEY  Mod3Mask
+#define MODLKEY                 Mod4Mask
+#define MODRKEY                 Mod1Mask
+#define SUPKEY                  Mod3Mask
+#define ControlShiftMask        ControlMask|ShiftMask
+
 #define TAGKEYS(KEY,TAG) \
 	{ MODLKEY,                      KEY,      vieworprev,     {.ui = 1 << TAG} }, \
 	{ MODLKEY|ShiftMask,            KEY,      tag,            {.ui = 1 << TAG} }, \
@@ -242,7 +244,7 @@ static const Key keys[] = {
 	/* modifier                     key             function                argument */
 	{ MODLKEY,                      XK_d,           spawn,                  ROFIDRUN },
 	{ MODLKEY|ShiftMask,            XK_d,           spawn,                  ROFIRUN },
-	{ MODLKEY,                      XK_Return,      spawn,                  CMD("st") },
+	{ MODLKEY,                      XK_t,           spawn,                  CMD("st") },
 	{ MODLKEY,                      XK_b,           togglebar,              {0} },
 	{ MODLKEY|ShiftMask,            XK_b,           tabmode,                {0} },
 	{ MODLKEY,                      XK_j,           focusstackalt,          {.i = +1 } },
@@ -289,9 +291,11 @@ static const Key keys[] = {
 	{ SUPKEY|ControlMask,           XK_Up,          floatmoveresize,        {.v = (int []){ResizeA, -20} }},
 	{ MODLKEY,                      XK_i,           incnmaster,             {.i = +1 } },
 	{ MODLKEY|ShiftMask,            XK_i,           incnmaster,             {.i = -1 } },
-	{ MODLKEY,                      XK_space,       zoomvar,                {.i = +1} },
-	{ MODLKEY|ShiftMask,            XK_space,       zoomvar,                {.i = -1} },
-	{ MODLKEY|ControlMask,          XK_space,       zoom,                   {0} },
+	{ MODLKEY,                      XK_Return,      zoomvar,                {.i = +1} },
+	{ MODLKEY|ShiftMask,            XK_Return,      zoomvar,                {.i = -1} },
+	{ MODLKEY|ControlMask,          XK_Return,      zoom,                   {0} },
+	{ MODLKEY,                      XK_space,       focuslastvisible,       {.i = 0} },
+	{ MODLKEY|ShiftMask,            XK_space,       focuslastvisible,       {.i = 1} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
 	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {0} },
 	{ MODLKEY,                      XK_f,           togglefocusfloat,       {0} },
@@ -315,8 +319,8 @@ static const Key keys[] = {
 	{ MODLKEY,                      XK_F4,          setattorprev,           {.i = 3} },
 	{ MODLKEY,                      XK_F5,          setattorprev,           {.i = 4} },
 	{ MODLKEY,                      XK_Tab,         windowswitchert,        {0} },
-	{ SUPKEY,                       XK_Tab,         focuslastvisible,       {.i = 0} },
-	{ SUPKEY|ShiftMask,             XK_Tab,         focuslastvisible,       {.i = 1} },
+	{ SUPKEY,                       XK_Tab,         focuslast,              {.i = 0} },
+	{ SUPKEY|ShiftMask,             XK_Tab,         focuslast,              {.i = 1} },
 	{ MODLKEY,                      XK_m,           focusmaster,            {0} },
 	{ MODLKEY,                      XK_g,           focusurgent,            {0} },
 	{ SUPKEY,                       XK_o,           winview,                {0} },
@@ -350,9 +354,9 @@ static const Key keys[] = {
 	{ MODRKEY,                      XK_space,       togglewin,              {.v = &browser} },
 	{ SUPKEY,                       XK_m,           togglewin,              {.v = &mail} },
 	{ ControlMask,                  XK_Escape,      spawn,                  CMD("dunstctl", "close") },
-	{ ControlMask|ShiftMask,        XK_Escape,      spawn,                  CMD("dunstctl", "close-all") },
+	{ ControlShiftMask,             XK_Escape,      spawn,                  CMD("dunstctl", "close-all") },
 	{ ControlMask,                  XK_grave,       spawn,                  CMD("dunstctl", "history-pop") },
-	{ ControlMask|ShiftMask,        XK_grave,       spawn,                  CMD("dunstctl", "context") },
+	{ ControlShiftMask,             XK_grave,       spawn,                  CMD("dunstctl", "context") },
 	{ 0,                            XK_Print,       spawn,                  SCRIPTCMD("screenshot.sh", "0") },
 	{ ShiftMask,                    XK_Print,       spawn,                  SCRIPTCMD("screenshot.sh", "1") },
 	{ MODLKEY,                      XK_c,           spawn,                  SCRIPTCMD("color_under_cursor.sh") },
