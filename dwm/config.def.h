@@ -176,6 +176,7 @@ static void dynscratchtoggle(const Arg *arg);
 static void dynscratchunmark(const Arg *arg);
 static void floatmoveresize(const Arg *arg);
 static void focusmaster(const Arg *arg);
+static void focusseclastvis(const Arg *arg);
 static void focusstackalt(const Arg *arg);
 static void focusurgent(const Arg *arg);
 static void hideclient(const Arg *arg);
@@ -296,6 +297,7 @@ static const Key keys[] = {
 	{ MODLKEY|ControlMask,          XK_Return,      zoom,                   {0} },
 	{ MODLKEY,                      XK_space,       focuslastvisible,       {.i = 0} },
 	{ MODLKEY|ShiftMask,            XK_space,       focuslastvisible,       {.i = 1} },
+	{ MODLKEY|ControlMask,          XK_space,       focusseclastvis,        {0} },
 	{ SUPKEY,                       XK_space,       view,                   {0} },
 	{ SUPKEY|ShiftMask,             XK_space,       tagandview,             {0} },
 	{ MODLKEY,                      XK_f,           togglefocusfloat,       {0} },
@@ -635,6 +637,25 @@ focusmaster(const Arg *arg)
 		return;
         if ((c = nexttiled(selmon->clients)))
                 focusalt(c, 0);
+}
+
+void
+focusseclastvis(const Arg *arg)
+{
+        Client *c1, *c2;
+
+        if (!selmon->sel)
+                return;
+        for (c1 = selmon->sel->snext; c1 && !ISVISIBLE(c1); c1 = c1->snext);
+        if (!c1)
+                return;
+        for (c2 = c1->snext; c2 && !ISVISIBLE(c2); c2 = c2->snext);
+        if (!c2)
+                return;
+        /* focus c2, make c1 "snext" (very slightly hackish) */
+        detachstack(c1);
+        attachstack(c1);
+        focusalt(c2, 0);
 }
 
 void
