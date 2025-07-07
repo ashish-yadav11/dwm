@@ -652,7 +652,7 @@ focusseclastvis(const Arg *arg)
         for (c2 = c1->snext; c2 && !ISVISIBLE(c2); c2 = c2->snext);
         if (!c2)
                 return;
-        /* focus c2, make c1 "snext" (very slightly hackish) */
+        /* focus c2, make c1 "snext" */
         detachstack(c1);
         attachstack(c1);
         focusalt(c2, 0);
