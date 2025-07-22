@@ -415,6 +415,8 @@ static const Key keys[] = {
 	{ ControlMask,       XK_F8,                     spawn,                  VOLUMEr },
 	{ ShiftMask,         XK_Prior,                  spawn,                  VOLUMER },
 	{ ShiftMask,         XK_Next,                   spawn,                  VOLUMEL },
+	{ ControlMask,       XK_Prior,                  spawn,                  VOLUMEr },
+	{ ControlMask,       XK_Next,                   spawn,                  VOLUMEl },
 	{ 0,                 XF86XK_AudioPlay,          spawn,                  SCRIPTCMD("doubleclick.sh") },
 	{ 0,                 XF86XK_AudioPrev,          spawn,                  PLAYERP },
 	{ 0,                 XF86XK_AudioNext,          spawn,                  PLAYERN },
