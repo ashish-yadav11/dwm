@@ -2,7 +2,7 @@
 
 pkgname=dwm-cust
 _pkgname=dwm
-pkgver=6.5
+pkgver=6.6
 pkgrel=1
 pkgdesc="Custom build of dwm"
 arch=(i686 x86_64)

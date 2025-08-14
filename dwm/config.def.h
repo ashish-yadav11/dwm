@@ -35,6 +35,7 @@ static const unsigned int snap          = 10;   /* snap pixel */
 static const float mfact                = 0.60; /* factor of master area size (0.05 - 0.95) */
 static const int nmaster                = 1;    /* number of clients in master area */
 static const int resizehints            = 0;    /* 1 means respect size hints in tiled resizals */
+static const int refreshrate            = 60;   /* refresh rate (per second) for client move/resize */
 static const int gappih                 = 1;    /* horiz inner gap between windows */
 static const int gappiv                 = 1;    /* vert inner gap between windows */
 static const int gappoh                 = 1;    /* horiz outer gap between windows and screen edge */
