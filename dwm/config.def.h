@@ -395,6 +395,7 @@ static const Key keys[] = {
 	{ MODRKEY,                      XK_s,           spawn,                  INHIBITSUSPEND1 },
 	{ MODRKEY|ShiftMask,            XK_s,           spawn,                  INHIBITSUSPEND0 },
 	{ MODRKEY,                      XK_semicolon,   spawn,                  SCRIPTCMD("ytmsclu.sh") },
+	{ MODRKEY|ShiftMask,            XK_semicolon,   spawn,                  SCRIPTCMD("ytmsclu.sh", "-l") },
 	{ MODLKEY,                      XK_Delete,      spawn,                  SCRIPTCMD("usbmount.sh") },
 	{ MODLKEY|ShiftMask,            XK_Delete,      spawn,                  SCRIPTCMD("mtpmount.sh") },
 	{ MODLKEY|ControlMask,          XK_Delete,      spawn,                  SCRIPTCMD("android-usbmode.sh") },
