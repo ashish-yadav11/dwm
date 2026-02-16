@@ -749,12 +749,13 @@ checkotherwm(void)
 void
 cleanup(void)
 {
-        int j, n = 0;
+        int nwins;
         Client *c;
 	Monitor *m;
         Window *wins;
 	size_t i;
 
+        nwins = 0;
         for (m = mons; m; m = m->next) {
                 m->tagset[0] = m->tagset[1] = TAGMASK;
                 m->lt[0] = m->lt[1] = &layouts[1];
@@ -762,26 +763,17 @@ cleanup(void)
                 selmon = m;
                 focus(NULL);
                 arrange(selmon);
-                for (c = m->clients; c; c = c->next, n++);
+                for (c = m->clients; c; c = c->next, nwins++);
         }
-        wins = ecalloc(n, sizeof(Window));
-        n = 0;
+        wins = ecalloc(nwins, sizeof(Window));
+        nwins = 0;
         for (m = mons; m; m = m->next) {
                 for (c = m->clients; c; c = c->next)
-                        if (!c->tags) {
-                                wins[n++] = c->win;
-                                c->scratchkey = INT_MAX;
-                        }
-                for (j = 0; j < LENGTH(tags); j++)
-                        for (c = m->clients; c; c = c->next)
-                                if (c->scratchkey != INT_MAX && c->tags & 1 << j) {
-                                        wins[n++] = c->win;
-                                        c->scratchkey = INT_MAX;
-                                }
+                        wins[nwins++] = c->win;
                 while (m->stack)
                         unmanage(m->stack, 0);
         }
-        XRestackWindows(dpy, wins, n);
+        XRestackWindows(dpy, wins, nwins);
         free(wins);
 	XUngrabKey(dpy, AnyKey, AnyModifier, root);
 	while (mons)
