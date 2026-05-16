@@ -721,8 +721,10 @@ buttonpress(XEvent *e)
                 click = ClkTabBar;
                 arg.i = i + ofst;
         } else if ((c = wintoclient(ev->window))) {
-                focusalt(c, 0); /* focus has been already shifted to the monitor of c */
-		XAllowEvents(dpy, ReplayPointer, CurrentTime);
+                if (ev->button <= 90) {
+                        focusalt(c, 0); /* focus has been shifted to c->mon already */
+                        XAllowEvents(dpy, ReplayPointer, CurrentTime);
+                }
 		click = ClkClientWin;
         } else
                 click = ClkRootWin;
