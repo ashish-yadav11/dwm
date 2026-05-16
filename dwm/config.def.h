@@ -494,6 +494,8 @@ static const Button buttons[] = {
 	{ ClkLast,              0,                   91,        spawn,          SCRIPTCMD("doublebtn1.sh") },
 	{ ClkLast,              0,                   92,        spawn,          SCRIPTCMD("doublebtn2.sh") },
 	{ ClkLast,              0,                   93,        spawn,          SCRIPTCMD("doublebtn3.sh") },
+	{ ClkLast,              0,                   98,        spawn,          SCRIPTCMD("doublebtn8.sh") },
+	{ ClkLast,              0,                   99,        spawn,          SCRIPTCMD("doublebtn9.sh") },
 };
 
 #define FSIGID                          "z:"
