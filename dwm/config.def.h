@@ -516,6 +516,7 @@ static Signal signals[] = {
 	{ "scrs",               scratchshow },
 	{ "scrt",               scratchtoggle },
 	{ "scrm",               scratchmark },
+	{ "shdv",               scratchhidevisible },
 	{ "sfvw",               shiftview },
 	{ "sftg",               shifttag },
 	{ "view",               view },
