@@ -2556,6 +2556,8 @@ sendmon(Client *c, Monitor *m)
 	updateclientdesktop(c, 0);
         attachs[PTATT(c->mon)].attach(c);
 	attachstack(c);
+	if (c->isfullscreen)
+		resizeclient(c, m->mx, m->my, m->mw, m->mh);
 	focus(c);
 	arrange(NULL);
 }
