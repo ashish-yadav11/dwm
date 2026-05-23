@@ -1532,15 +1532,15 @@ focuswin(const Arg* arg)
 Atom
 getatomprop(Client *c, Atom prop)
 {
-	int di;
+	int format;
 	unsigned long nitems, dl;
 	unsigned char *p = NULL;
 	Atom da, atom = None;
 
 	if (XGetWindowProperty(dpy, c->win, prop, 0L, sizeof atom, False, XA_ATOM,
-                        &da, &di, &nitems, &dl, &p) == Success && p) {
-		if (nitems > 0)
-			atom = *(Atom *)p;
+                        &da, &format, &nitems, &dl, &p) == Success && p) {
+		if (nitems > 0 && format == 32)
+			atom = *(long *)p;
 		XFree(p);
 	}
 	return atom;
