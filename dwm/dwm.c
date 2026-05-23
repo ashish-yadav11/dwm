@@ -450,7 +450,7 @@ addsystrayicon(Icon *i)
         XSelectInput(dpy, i->win, PropertyChangeMask);
         XAddToSaveSet(dpy, i->win);
         XReparentWindow(dpy, i->win, systray->win, 0, 0);
-        sendevent(i->win, netatom[Xembed], NoEventMask, CurrentTime,
+        sendevent(i->win, xatom[Xembed], NoEventMask, CurrentTime,
                   XEMBED_EMBEDDED_NOTIFY, 0, systray->win, XEMBED_EMBEDDED_VERSION);
         XSync(dpy, False);
         i->ismapped = !(flags = getxembedflags(i->win)) || flags & XEMBED_MAPPED;
