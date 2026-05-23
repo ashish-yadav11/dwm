@@ -2607,11 +2607,10 @@ setdesktopnames(void)
 void
 setfocus(Client *c)
 {
-	if (!c->neverfocus) {
+	if (!c->neverfocus)
 		XSetInputFocus(dpy, c->win, RevertToPointerRoot, CurrentTime);
-		XChangeProperty(dpy, root, netatom[NetActiveWindow], XA_WINDOW, 32,
-			PropModeReplace, (unsigned char *) &(c->win), 1);
-	}
+	XChangeProperty(dpy, root, netatom[NetActiveWindow], XA_WINDOW, 32,
+		PropModeReplace, (unsigned char *)&c->win, 1);
 	sendevent(c->win, wmatom[WMTakeFocus], NoEventMask, wmatom[WMTakeFocus],
                   CurrentTime, 0, 0, 0);
 }
