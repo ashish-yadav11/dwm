@@ -3844,7 +3844,7 @@ updatesystray(void)
                 XMoveWindow(dpy, systray->win, 0, -bh);
         } else
                 XMoveResizeWindow(dpy, systray->win, selmon->wx + selmon->ww - stw, selmon->by, stw, bh);
-        if (stw > oldstw) /* expose event handles w < stw */
+        if (stw != oldstw)
                 drawbar(selmon);
 }
 
